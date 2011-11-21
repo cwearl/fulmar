@@ -89,11 +89,11 @@
 (define/contract (comment-macro-env indent)
   (-> indent/c comment-macro-env/c)
   (environment 'comment-macro indent))
-(provide comment-macro-env/c comment-macro-env comment-macro-env?)
 (define/contract (comment-macro-env? env)
   (-> any/c boolean?)
   (and (environment/c env)
        (eq? (environment-description env) 'comment-macro)))
+(provide comment-macro-env/c comment-macro-env comment-macro-env?)
 
 ;macro definition with embedded comment block environment
 (define macro-comment-env/c (struct/c environment 'macro-comment position/c))
