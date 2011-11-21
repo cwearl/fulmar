@@ -14,15 +14,6 @@
 (define nekot-name/c symbol?)
 (define nekot-body/c any/c)
 (provide nekot-name/c nekot-body/c)
-(define property-name/c symbol?)
-(define optional-property-name/c (or/c property-name/c #false))
-(define property-value/c any/c)
-(define optional-property-value/c (or/c property-value/c #false))
-(define property-hash/c (hash/c property-name/c property-value/c #:immutable #true #:flat? #true))
-(define optional-property-hash/c (or/c property-hash/c #false))
-(provide property-name/c  optional-property-name/c
-         property-value/c optional-property-value/c
-         property-hash/c  optional-property-hash/c)
 (define description/c (or/c 'comment 'macro 'comment-macro 'macro-comment))
 (define optional-description/c (or/c description/c #false))
 (provide description/c optional-description/c)
@@ -55,31 +46,6 @@
   (λ (context)
     (apply error error_content)))
 (provide error-chunk)
-
-;property initializer
-(define/contract initial-properties
-  property-hash/c
-  (hash))
-(provide initial-properties)
-
-;property accessors
-(define/contract (has-property? name properties)
-  (-> property-name/c property-hash/c boolean?)
-  (hash-has-key? properties name))
-(define/contract (property-lookup name properties)
-  (-> property-name/c property-hash/c property-value/c)
-  (hash-ref properties name (λ () (error "Could not find property in property hash; given: " name properties))))
-(provide has-property? property-lookup)
-
-;property mutator (pure - returns new property hash)
-; returns updated property hash if no clash in property names
-;         error if there is a clash
-(define/contract (property-update name value properties)
-  (-> property-name/c property-value/c property-hash/c property-hash/c)
-  (if (has-property? name properties)
-      (error "Could not add property to property hash; it already exists; given: " name value properties)
-      (hash-set properties name value)))
-(provide property-update)
 
 ;environment Structure
 (struct environment (description initial-position) #:transparent)
@@ -165,21 +131,19 @@
 (provide user-env/c possible-env/c combine-env)
 
 ;context Structure
-(struct context (indent line-length env properties) #:transparent)
-(define context/c (struct/c context indent/c line-length/c optional-environment/c property-hash/c))
+(struct context (indent line-length env) #:transparent)
+(define context/c (struct/c context indent/c line-length/c optional-environment/c))
 (provide/contract (struct context ([indent indent/c]
                                    [line-length line-length/c]
-                                   [env optional-environment/c]
-                                   [properties property-hash/c])))
+                                   [env optional-environment/c])))
 (provide context/c)
 
 ;construct context
-(define/contract (construct-context properties line-length)
-  (-> property-hash/c line-length/c context/c)
+(define/contract (construct-context line-length)
+  (-> line-length/c context/c)
   (context 0
            line-length
-           empty-env
-           properties))
+           empty-env))
 (provide construct-context)
 
 ;new environment context

@@ -5,24 +5,6 @@
 
 ;unit tests for fulmar-core.rkt
 
-(define/provide-test-suite test-property-accessors
-  (test-case
-   "Test has-property? and property-lookup"
-   (define properties (hash 'name 'value))
-   (check-false (has-property? 'name initial-properties))
-   (check-false (has-property? 'name2 properties))
-   (check-true (has-property? 'name properties))
-   (check-exn exn:fail? (λ () (property-lookup 'name initial-properties)))
-   (check-exn exn:fail? (λ () (property-lookup 'name2 properties)))
-   (check-eq? (property-lookup 'name properties) 'value)))
-
-(define/provide-test-suite test-property-update
-  (test-case
-   "Test property-update"
-   (define properties (hash 'name 'value))
-   (check-equal? (property-update 'name 'value initial-properties) properties)
-   (check-exn exn:fail? (λ () (property-update 'name 'value2 properties)))))
-
 (define/provide-test-suite test-empty-env
  (test-case
   "Test empty-env and emtpy-env?"
@@ -93,60 +75,60 @@
 (define/provide-test-suite test-construct-context
   (test-case
    "Test construct-context"
-   (check-equal? (construct-context initial-properties 80)
-                 (context 0 80 empty-env initial-properties))
-   (check-equal? (construct-context initial-properties 80)
-                 (context 0 80 empty-env initial-properties))))
+   (check-equal? (construct-context 80)
+                 (context 0 80 empty-env))
+   (check-equal? (construct-context 80)
+                 (context 0 80 empty-env))))
 
 (define/provide-test-suite test-enter-env
   (test-case
    "Test enter-env"
-   (define test-context-1 (construct-context initial-properties 80))
-   (check-equal? (enter-env (comment-env 4) test-context-1) (context 0 80 (comment-env 4) initial-properties))
-   (check-equal? (enter-env macro-env test-context-1) (context 0 80 macro-env initial-properties))))
+   (define test-context-1 (construct-context 80))
+   (check-equal? (enter-env (comment-env 4) test-context-1) (context 0 80 (comment-env 4)))
+   (check-equal? (enter-env macro-env test-context-1) (context 0 80 macro-env))))
 
 (define/provide-test-suite test-context-accessors
   (test-case
    "Test non-standard context accessors - empty environment"
-   (define test-context (construct-context initial-properties 80))
+   (define test-context (construct-context 80))
    (check-false (context-description test-context))
    (check-false (context-initial-position test-context)))
   (test-case
    "Test non-standard context accessors - comment environment"
-   (define comment-context (enter-env (comment-env 4) (construct-context initial-properties 80)))
+   (define comment-context (enter-env (comment-env 4) (construct-context 80)))
    (check-eq? (context-description comment-context) 'comment)
    (check-eq? (context-initial-position comment-context) 4))
   (test-case
    "Test non-standard context accessors - macro environment"
-   (define macro-context (enter-env macro-env (construct-context initial-properties 80)))
+   (define macro-context (enter-env macro-env (construct-context 80)))
    (check-eq? (context-description macro-context) 'macro)
    (check-false (context-initial-position macro-context)))
   (test-case
    "Test non-standard context accessors - comment-macro environment"
-   (define comment-macro-context (enter-env macro-env (enter-env (comment-env 4) (construct-context initial-properties 80))))
+   (define comment-macro-context (enter-env macro-env (enter-env (comment-env 4) (construct-context 80))))
    (check-eq? (context-description comment-macro-context) 'comment-macro)
    (check-eq? (context-initial-position comment-macro-context) 4))
   (test-case
    "Test non-standard context accessors - macro-comment environment"
-   (define macro-comment-context (enter-env (comment-env 4) (enter-env macro-env (construct-context initial-properties 80))))
+   (define macro-comment-context (enter-env (comment-env 4) (enter-env macro-env (construct-context 80))))
    (check-eq? (context-description macro-comment-context) 'macro-comment)
    (check-eq? (context-initial-position macro-comment-context) 4)))
 
 (define/provide-test-suite test-reindent
   (test-case
    "Test reindent"
-   (define test-context (construct-context initial-properties 80))
-   (check-equal? (reindent 4 test-context) (context 4 80 empty-env initial-properties))
-   (check-equal? (reindent 2 (reindent 5 test-context)) (context 7 80 empty-env initial-properties))))
+   (define test-context (construct-context 80))
+   (check-equal? (reindent 4 test-context) (context 4 80 empty-env))
+   (check-equal? (reindent 2 (reindent 5 test-context)) (context 7 80 empty-env))))
 
 (define/provide-test-suite test-enter-comment
   (test-case
    "Test enter-comment-env"
-   (define test-context-1 (construct-context initial-properties 80))
-   (define test-context-2 (context 4 80 (comment-env 4) initial-properties))
-   (define test-context-3 (context 6 80 (comment-env 4) initial-properties))
-   (define test-context-4 (context 0 80 macro-env initial-properties))
-   (define test-context-5 (context 0 80 (macro-comment-env 0) initial-properties))
+   (define test-context-1 (construct-context 80))
+   (define test-context-2 (context 4 80 (comment-env 4)))
+   (define test-context-3 (context 6 80 (comment-env 4)))
+   (define test-context-4 (context 0 80 macro-env))
+   (define test-context-5 (context 0 80 (macro-comment-env 0)))
    (check-equal? (enter-comment-env (reindent 4 test-context-1)) test-context-2)
    (check-equal? (enter-comment-env (reindent 2 test-context-2)) test-context-3)
    (check-equal? (enter-comment-env test-context-4) test-context-5)))
@@ -155,10 +137,10 @@
   (test-case
    "Test enter-macro-env"
    (define chunk (error-chunk "Testing - tried to apply a chunk you shouldn't have."))
-   (define test-context-1 (construct-context initial-properties 80))
-   (define test-context-2 (context 0 80 macro-env initial-properties))
-   (define test-context-3 (context 4 80 (comment-env 4) initial-properties))
-   (define test-context-4 (context 4 80 (comment-macro-env 4) initial-properties))
+   (define test-context-1 (construct-context 80))
+   (define test-context-2 (context 0 80 macro-env))
+   (define test-context-3 (context 4 80 (comment-env 4)))
+   (define test-context-4 (context 4 80 (comment-macro-env 4)))
    (check-equal? (enter-macro-env test-context-1) test-context-2)
    (check-exn exn:fail? (λ () (enter-macro-env test-context-2)))
    (check-equal? (enter-macro-env test-context-3) test-context-4)))

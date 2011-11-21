@@ -49,9 +49,7 @@
 ;fulmar-core tests:
 (define/contract fulmar-core-tests
   (listof test-suite?)
-  (list test-property-accessors
-        test-property-update
-        test-empty-env
+  (list test-empty-env
         test-comment-env
         test-macro-env
         test-comment-macro-env
