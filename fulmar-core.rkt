@@ -198,7 +198,7 @@
 (define/contract (context-initial-position context)
   (-> context/c optional-position/c)
   (let* ([env (context-env context)])
-    (if env (environment-initial-position (context-env context)) #false)))
+    (if env (environment-initial-position env) #false)))
 (provide context-description
          context-initial-position)
 
