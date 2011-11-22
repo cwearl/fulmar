@@ -68,9 +68,9 @@
 ;writer tests:
 (define/contract writer-tests
   (listof test-suite?)
-  (list test-unknown-nekot-type
+  (list test-build-indentation
         test-add-empty
-        test-build-indentation))
+        test-unknown-nekot-type))
 
 (apply test-fail-with-gui? writer-tests)
 ;(apply run-tests-text writer-tests)

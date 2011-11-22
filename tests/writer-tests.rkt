@@ -6,20 +6,6 @@
 
 ;unit tests for writer.rkt
 
-(define/provide-test-suite test-unknown-nekot-type
-  (test-case
-   "Test unknown-nekot-type (writes unknown nekot)"
-   (define test-context (construct-context 80))
-   (check-exn exn:fail? (λ () (unknown-nekot-type "FAIL" test-context '(""))))))
-
-(define/provide-test-suite test-add-empty
-  (test-case
-   "Test add-empty (writes empty nekot)"
-   (define test-context (construct-context 80))
-   (check-equal? (add-empty 'test test-context '("")) '(""))
-   (check-equal? (add-empty 'test test-context '("a")) '("a"))
-   (check-equal? (add-empty 'test test-context '("b" "a")) '("b" "a"))))
-
 (define/provide-test-suite test-build-indentation
   (test-case
    "Test build-indentation (begins a new line correctly)"
@@ -29,4 +15,18 @@
    (check-equal? (build-indentation test-context-2) "   ")
    (define test-context-3 (context 6 80 (comment-env 4)))
    (check-equal? (build-indentation test-context-1) "     * ")))
+
+(define/provide-test-suite test-add-empty
+  (test-case
+   "Test add-empty (writes empty nekot)"
+   (define test-context (construct-context 80))
+   (check-equal? (add-empty 'test test-context '("")) '(""))
+   (check-equal? (add-empty 'test test-context '("a")) '("a"))
+   (check-equal? (add-empty 'test test-context '("b" "a")) '("b" "a"))))
+
+(define/provide-test-suite test-unknown-nekot-type
+  (test-case
+   "Test unknown-nekot-type (writes unknown nekot)"
+   (define test-context (construct-context 80))
+   (check-exn exn:fail? (λ () (unknown-nekot-type "FAIL" test-context '(""))))))
 

@@ -4,6 +4,37 @@
 
 ;fulmar core chunks - these directly build nekots
 
+;;;;;;;;;;;;;;;;;;;
+;;helper functions;
+;;;;;;;;;;;;;;;;;;;
+
+;combine lengths of given values
+(define/contract (combine-lengths . values)
+  (->* () #:rest (listof (or/c string? symbol? natural-number/c)) natural-number/c)
+  (foldl (λ (value total)
+           (+ total
+              (cond [(integer? value) value]
+                    [(string? value) (string-length value)]
+                    [(symbol? value) (string-length (symbol->string value))])))
+         0
+         values))
+(provide combine-lengths)
+
+;combine strings
+(define/contract (combine-strings . values)
+  (->* () #:rest (listof (or/c string? symbol?)) string?)
+  (foldl (λ (str total)
+           (string-append total
+                          (cond [(string? str) str]
+                                [(symbol? str) (symbol->string str)])))
+         ""
+         values))
+(provide combine-strings)
+
+;;;;;;;;;;;;;;;;;;;
+;;chunk functions;;
+;;;;;;;;;;;;;;;;;;;
+
 ;empty (no-op) chunk
 ; only real uses of this chunk are for testing and filing in stubs/empty parameters
 (define/contract empty-chunk
@@ -14,18 +45,18 @@
 
 ;literal chunk
 ; simple string
-(define/contract (literal-chunk string)
-  (-> string? chunk/c)
+(define/contract (literal-chunk . strings)
+  (->* () #:rest (listof (or/c symbol? string?)) chunk/c)
   (λ  (context)
-    (nekot 'literal string context)))
+    (nekot 'literal (apply combine-strings strings) context)))
 (provide literal-chunk)
 
 ;sequence of spaces chunk
 ; adds some number of spaces
-(define/contract (spaces-chunk length)
-  (-> natural-number/c chunk/c)
+(define/contract (spaces-chunk . lengths)
+  (->* () #:rest (listof (or/c string? symbol? natural-number/c)) chunk/c)
   (λ (context)
-    (nekot 'spaces length context)))
+    (nekot 'spaces (apply combine-lengths lengths) context)))
 (provide spaces-chunk)
 
 ;TODO: Move this to chunk-standard.rkt when it's ready
@@ -47,10 +78,10 @@
 
 ;blank lines chunk
 ; adds n blank lines
-(define/contract (blank-lines-chunk length)
-  (-> natural-number/c chunk/c)
+(define/contract (blank-lines-chunk . lengths)
+  (->* () #:rest (listof natural-number/c) chunk/c)
   (λ (context)
-    (nekot 'blank-lines length context)))
+    (nekot 'blank-lines (apply combine-lengths lengths) context)))
 (provide blank-lines-chunk)
 
 ;TODO: Move this to chunk-standard.rkt when it's ready
@@ -63,11 +94,11 @@
 (provide blank-line-chunk)
 
 ;preprocessor directive chunk
-; #something chunk
-(define/contract (pp-directive-chunk string)
-  (-> string? chunk/c)
+; correctly adds # to line
+(define/contract pp-directive-chunk
+  chunk/c
   (λ (context)
-    (nekot 'pp-directive string context)))
+    (nekot 'pp-directive null context)))
 (provide pp-directive-chunk)
 
 ;concatenation chunk
@@ -77,9 +108,10 @@
 (define/contract (concat-chunk . chunks)
   (->* () #:rest (listof chunk/c) chunk/c)
   (λ (context)
-    (nekot 'concat
-          (map (λ (chunk) (chunk context)) chunks)
-          context)))
+    (nekot
+           'concat
+           (map (λ (chunk) (chunk context)) chunks)
+           context)))
 (provide concat-chunk)
 
 ;TODO: Move this to chunk-standard.rkt when it's ready
@@ -94,16 +126,23 @@
          (add-between chunks blank-line-chunk)))
 (provide top-list-chunk)
 
-;TODO: If the current implementation works (or does with modest tweeking),
-;    then it should be moved to chunk-standard.rkt since it relies only
-;         on the capabilities of concat-chunk
-; - this is not a standard use of concat... the context of the concat itself
-;   is different from the context of its nekots...
+;TODO: Move this to chunk-standard.rkt when it's ready
+; - added for convenience (at last edit, chunk-standard.rkt was not set up
 ;enter new environment
 ; starts with new line (using initial-string of new environment)
 ; - given chunk is evaluated within context with new environment
-(define/contract (enter-env-chunk transform chunk)
-  (-> (-> context/c context/c) chunk/c chunk/c)
+(define/contract (enter-env-chunk chunk transform)
+  (-> chunk/c (-> context/c context/c) chunk/c)
   (λ (context)
     (chunk (transform context))))
 (provide enter-env-chunk)
+
+;TODO: Move this to chunk-standard.rkt when it's ready
+; - added for convenience (at last edit, chunk-standard.rkt was not set up
+;indent chunk
+; increases current indent
+(define/contract (indent-chunk chunk . lengths)
+  (->* (chunk/c) #:rest (listof (or/c string? symbol? natural-number/c)) chunk/c)
+  (λ (context)
+    (chunk (reindent (apply combine-lengths lengths) context))))
+(provide indent-chunk)
