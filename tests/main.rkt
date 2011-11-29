@@ -4,7 +4,9 @@
 (require rackunit/gui)
 (require rackunit/text-ui)
 (require "fulmar-core-tests.rkt")
+(require "chunk-core-tests.rkt")
 (require "writer-tests.rkt")
+(require "io-tests.rkt")
 
 ;sequentially check if any tests fail
 ; returns true if all given tests pass
@@ -66,11 +68,38 @@
 ;(apply run-tests-text fulmar-core-tests)
 
 ;writer tests:
+(define/contract chunk-core-tests
+  (listof test-suite?)
+  (list test-combine-lengths
+        test-combine-strings
+        test-empty-chunk
+        test-literal-chunk
+        test-spaces-chunk
+        test-new-line-chunk
+        test-pp-directive-chunk
+        test-concat-chunk))
+
+(apply test-fail-with-gui? chunk-core-tests)
+;(apply run-tests-text chunk-core-tests)
+
+;writer tests:
 (define/contract writer-tests
   (listof test-suite?)
-  (list test-build-indentation
+  (list test-is-whitespace?
+        test-make-whitespace
+        test-remove-whitespace
+        test-build-indentation
+        test-finish-line
+        test-check-speculative-line-length
+        test-add-hash-character
         test-add-empty
-        test-unknown-nekot-type))
+        test-add-literal
+        test-add-spaces
+        test-add-new-line
+        test-add-pp-directive
+        test-add-concatenated
+        test-unknown-nekot-type
+        test-write-nekot))
 
 (apply test-fail-with-gui? writer-tests)
 ;(apply run-tests-text writer-tests)
