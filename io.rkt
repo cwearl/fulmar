@@ -48,7 +48,7 @@
       (error "Could not open file at: " location)
       (open-input-file location)))
 
-;TODO: change this namespace (and/or namespace-anchor) to only include core and standard chunks
+;TODO: change this namespace (and/or namespace-anchor) to only include standard chunks
 ;defintions needed for eval in read-chunks
 (define-namespace-anchor fulmar-chunk-namespace-anchor)
 ;(provide fulmar-namespace-anchor)

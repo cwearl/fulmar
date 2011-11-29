@@ -6,47 +6,117 @@
 ;;helper functions;
 ;;;;;;;;;;;;;;;;;;;
 
-;TODO: take environment into account
-;return n spaces
-(define/contract (build-indentation context)
-  (-> context/c string?)
-  (make-string (context-indent context) #\ ))
-(provide build-indentation)
-
-;TODO: take environment into account
-;finish line
-(define/contract (finish-line lines context)
-  (-> written-lines/c context/c string?)
-  (car lines))
-(provide finish-line)
-
-;check line length
-; returns true if line length is less than or equal to the max length for the current context
-; returns false otherwise
-(define/contract (check-line-length new-length context lines)
-  (-> natural-number/c context/c written-lines/c boolean?)
-  (<= (+ new-length
-         (string-length (car lines)))
-      (context-line-length context)))
-(provide check-line-length)
-
 ;checks if given string is just spaces
 (define/contract (is-whitespace? string)
   (-> written-line/c boolean?)
   (letrec ([is-whitespace-list? (λ (lst) (cond [(empty? lst) #true]
                                                [(eq? #\  (car lst)) (is-whitespace-list? (cdr lst))]
                                                [else #false]))])
-    (is-whitespace-list? string)))
+    (is-whitespace-list? (string->list string))))
 (provide is-whitespace?)
+
+;give n spaces
+(define/contract (make-whitespace n)
+  (-> natural-number/c string?)
+  (make-string n #\ ))
+(provide make-whitespace)
+
+;remove whitespace from the end of a line
+(define/contract (remove-whitespace line)
+  (-> written-line/c written-line/c)
+  (list->string (reverse (cdr (foldl (λ (char result) (if (equal? char #\ )
+                                                           (cons (cons #\  (car result))
+                                                                 (cdr result))
+                                                           (cons '()
+                                                                 (append (cons char (car result))
+                                                                         (cdr result)))))
+                                      '(())
+                                      (string->list line))))))
+(provide remove-whitespace)
+
+;build indentation for new line given current context
+(define/contract (build-indentation context)
+  (-> context/c string?)
+  (if (or (empty-env? (context-env context))
+          (macro-env? (context-env context)))
+      (make-whitespace (context-indent context))
+      ;environment has to have comment in it somewhere: comment, comment-macro, or macro-comment
+      (string-append (make-whitespace (context-initial-position context))
+                     "/* "
+                     (let ([remaining (- (context-indent context)
+                                         (context-initial-position context))])
+                       (if (< 0 remaining)
+                           (make-whitespace remaining)
+                           "")))))
+(provide build-indentation)
+
+;finish line
+(define/contract (finish-line given-line context)
+  (-> written-line/c context/c string?)
+  (let* ([line (remove-whitespace given-line)]
+         [length (string-length line)]
+         [max (context-line-length context)]
+         [env (context-env context)])
+    (cond [(empty-env? env)
+           ;empty environment
+           line]
+          [(and (or (equal? "" line)
+                    (equal? (build-indentation context)
+                            line))
+                (or (comment-env? env)
+                    (comment-macro-env? env)))
+           ;empty comment or comment-macro line
+           ""]
+          [(and (or (equal? "" line)
+                    (equal? (build-indentation context)
+                            line))
+                (or (macro-env? env)
+                    (macro-comment-env? env)))
+           ;empty macro or macro-comment line
+           (string-append (make-whitespace max)
+                          "\\")]
+          [else
+           ;non-empty line
+           (string-append line
+                          (if (< length max)
+                              (make-whitespace (- max length))
+                              " ")
+                          (cond [(comment-env? env) "*/"]
+                                [(macro-env? env) "\\"]
+                                [(comment-macro-env? env) "\\ */"]
+                                [(macro-comment-env? env) "*/ \\"]
+                                [else (error "Contract for finish line should prevent this case from coming up; good luck! Given: " given-line context)]))])))
+(provide finish-line)
+
+;check speculative line
+(define/contract (check-speculative-line-length first-part second-part context)
+  (-> (or/c natural-number/c string?) string? context/c boolean?)
+  (<= (+ (if (string? first-part)
+             (string-length first-part)
+             first-part)
+         (string-length second-part))
+      (context-line-length context)))
+(provide check-speculative-line-length)
+
+;check if lengths match
+(define/contract (match-lengths first-line second-line)
+  (-> (or/c natural-number/c string?) string? boolean?)
+  (= (if (string? first-line)
+         (string-length first-line)
+         first-line)
+         (string-length second-line)))
+(provide match-lengths)
 
 ;add '#' to proper place in given line
 (define/contract (add-hash-character line)
   (-> written-line/c written-line/c)
-  (if (is-whitespace? line)
-      (string-append "#"
-                     (substring line 1))
-      (string-append (substring line 0 (- (string-length line) 2))
-                     "#")))
+  (cond [(= 0 (string-length line)) "#"]
+        [(is-whitespace? line)
+         (string-append "#"
+                        (substring line 1))]
+        [else
+         (string-append (substring line 0 (- (string-length line) 1))
+                        "#")]))
 (provide add-hash-character)
 
 ;;;;;;;;;;;;;;;;;;;
@@ -55,103 +125,82 @@
 
 ;add empty nekot
 ; - equivalent to identity function...
-(define/contract (add-empty body context lines)
-  (-> any/c context/c written-lines/c written-lines/c)
-  lines)
+(define/contract (add-empty body context line)
+  (-> any/c context/c written-line/c written-lines/c)
+  (list line))
 (provide add-empty)
 
 ;add a literal string to current line
-(define/contract (add-literal string context lines)
-  (-> string? context/c written-lines/c written-lines/c)
-  (if (apply check-line-length (string-length string) context lines)
-      (list* (string-append (car lines) string)
-             (cdr lines))
-      (list* (string-append (build-indentation context) string)
-             (finish-line lines context)
-             (cdr lines))))
+(define/contract (add-literal string context line)
+  (-> string? context/c written-line/c written-lines/c)
+  (cond [(= 0 (string-length string))
+         (list line)]
+        [(or (check-speculative-line-length string line context)
+             (>= (string-length (build-indentation context))
+                 (string-length line)))
+         (list (string-append line string))]
+        [else
+         (list (string-append (build-indentation context) string)
+               (finish-line line context))]))
 (provide add-literal)
 
 ;add spaces to current line
-(define/contract (add-spaces count context lines)
-  (-> natural-number/c context/c written-lines/c written-lines/c)
+(define/contract (add-spaces count context line)
+  (-> natural-number/c context/c written-line/c written-lines/c)
   (cond [(= 0 count)
-         lines]
-        [(check-line-length count context lines)
-         (list* (string-append (car lines) (make-string count #\ ))
-                (cdr lines))]
-        [else (list* ""
-                     (finish-line lines context)
-                     (cdr lines))]))
+         (list line)]
+        [(check-speculative-line-length count line context)
+         (list (string-append line (make-whitespace count)))]
+        [else
+         (list ""
+               (finish-line line context))]))
 (provide add-spaces)
 
 ;add new line
-; - guarantees last line of lines is a new line
-; - if last line is blank, resets indent of that line
-;   else                   finishes last line and starts new one
-(define/contract (add-new-line body context lines)
-  (-> any/c context/c written-lines/c written-lines/c)
-  (if (is-whitespace? (car lines))
-      (list* ""
-             (cdr lines))
-      (list* ""
-             (finish-line lines context)
-             (cdr lines))))
+(define/contract (add-new-line body context line)
+  (-> any/c context/c written-line/c written-lines/c)
+  (list ""
+        (finish-line line context)))
 (provide add-new-line)
 
-;add blank line
-(define/contract (add-blank-lines count context lines)
-  (-> natural-number/c context/c written-lines/c written-lines/c)
-  (cond [(= 0 count)
-         lines]
-        [(is-whitespace? (car lines))
-         (add-blank-lines count context (cdr lines))]
-        [else (append (make-list (+ count 1) "")
-                      (list (finish-line lines context))
-                      (cdr lines))]))
-(provide add-blank-lines)
-
 ;add preprocessor directive
-(define/contract (add-pp-directive body context lines)
-  (-> any/c context/c written-lines/c written-lines/c)
-  (cons (add-hash-character (car lines))
-        (cdr lines)))
+(define/contract (add-pp-directive body context line)
+  (-> any/c context/c written-line/c written-lines/c)
+  (list (add-hash-character line)))
 (provide add-pp-directive)
 
 ;add concatenated nekots
-(define/contract (add-concatenated nekots context lines)
-  (-> (listof nekot/c) context/c written-lines/c written-lines/c)
-  (for/fold ([new-lines lines]) ([nekot (in-list nekots)])
-    (write-nekot nekot new-lines)))
+(define/contract (add-concatenated nekots context line)
+  (-> (listof nekot/c) context/c written-line/c written-lines/c)
+  (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
+    (append (write-nekot nekot (car lines))
+            (cdr lines))))
 (provide add-concatenated)
 
 ;error nekot...
-(define/contract (unknown-nekot-type body context lines)
-  (-> any/c context/c written-lines/c written-lines/c)
+(define/contract (unknown-nekot-type body context line)
+  (-> any/c context/c written-line/c written-lines/c)
   (error "Unrecognized nekot/chunk; given: " body))
 (provide unknown-nekot-type)
 
 ;write nekot
-(define/contract (write-nekot nekot lines)
-  (-> nekot/c written-lines/c written-lines/c)
-  (let* ([context-obj (nekot-context nekot)]
-         [nekot-writer (match (nekot-name nekot)
-                         ['empty        add-empty]
-                         ['literal      add-literal]
-                         ['spaces       add-spaces]
-                         ['new-line     add-new-line]
-                         ['blank-lines  add-blank-lines]
-                         ['pp-directive add-pp-directive]
-                         ['concat       add-concatenated]
-                         [_             unknown-nekot-type])]
-         [new-lines (if (equal? (car lines) "")
-                        (cons (build-indentation context-obj)
-                              (cdr lines))
-                        lines)])
-    (nekot-writer (nekot-body nekot) context-obj new-lines)))
+(define/contract write-nekot
+  (case-> (-> nekot/c written-lines/c)
+          (-> nekot/c written-line/c written-lines/c))
+  (case-lambda [(nekot)
+                (write-nekot nekot "")]
+               [(nekot line)
+                (let* ([context-obj (nekot-context nekot)]
+                       [nekot-writer (match (nekot-name nekot)
+                                       ['empty        add-empty]
+                                       ['literal      add-literal]
+                                       ['spaces       add-spaces]
+                                       ['new-line     add-new-line]
+                                       ['pp-directive add-pp-directive]
+                                       ['concat       add-concatenated]
+                                       [_             unknown-nekot-type])]
+                       [new-line (if (equal? line "")
+                                     (build-indentation context-obj)
+                                     line)])
+                  (nekot-writer (nekot-body nekot) context-obj new-line))]))
 (provide write-nekot)
-
-;Write file
-(define/contract (write-file nekot)
-  (-> nekot/c written-lines/c)
-  (write-nekot nekot (list "")))
-(provide write-file)

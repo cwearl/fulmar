@@ -38,4 +38,4 @@
                                               [output (if output-string
                                                           (path->complete-path (string->path output-string))
                                                           (current-output-port))])
-                                         (print-file! (write-file ((read-chunk input) (construct-context (cmdln-line-length)))) output))))
+                                         (print-file! (write-nekot ((read-chunk input) (construct-context (cmdln-line-length)))) output))))
