@@ -76,23 +76,6 @@
     (nekot 'new-line null context)))
 (provide new-line-chunk)
 
-;blank lines chunk
-; adds n blank lines
-(define/contract (blank-lines-chunk . lengths)
-  (->* () #:rest (listof natural-number/c) chunk/c)
-  (λ (context)
-    (nekot 'blank-lines (apply combine-lengths lengths) context)))
-(provide blank-lines-chunk)
-
-;TODO: Move this to chunk-standard.rkt when it's ready
-; - added for convenience (at last edit, chunk-standard.rkt was not set up
-;blank line chunk
-; adds a blank line
-(define/contract blank-line-chunk
-  chunk/c
-  (blank-lines-chunk 1))
-(provide blank-line-chunk)
-
 ;preprocessor directive chunk
 ; correctly adds # to line
 (define/contract pp-directive-chunk
@@ -113,6 +96,26 @@
            (map (λ (chunk) (chunk context)) chunks)
            context)))
 (provide concat-chunk)
+
+;TODO: Move this to chunk-standard.rkt when it's ready
+; - added for convenience (at last edit, chunk-standard.rkt was not set up
+;blank lines chunk
+; adds n blank lines
+(define/contract (blank-lines-chunk . lengths)
+  (->* () #:rest (listof natural-number/c) chunk/c)
+  (apply concat-chunk (make-list (apply combine-lengths lengths) new-line-chunk)))
+;  (λ (context)
+;    (nekot 'blank-lines (apply combine-lengths lengths) context)))
+(provide blank-lines-chunk)
+
+;TODO: Move this to chunk-standard.rkt when it's ready
+; - added for convenience (at last edit, chunk-standard.rkt was not set up
+;blank line chunk
+; adds a blank line
+(define/contract blank-line-chunk
+  chunk/c
+  (blank-lines-chunk 1))
+(provide blank-line-chunk)
 
 ;TODO: Move this to chunk-standard.rkt when it's ready
 ; - added for convenience (at last edit, chunk-standard.rkt was not set up
