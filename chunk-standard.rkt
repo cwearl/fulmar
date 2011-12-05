@@ -22,6 +22,12 @@
          new-line-chunk
          pp-directive-chunk
          concat-chunk
+         bot-list-chunk
+         low-list-chunk
+         mid-list-chunk
+         top-list-chunk
+         comment-env-chunk
+         indent-chunk
          comment-line-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -118,6 +124,7 @@
   (if (string? param)
       (literal-chunk param)
       (concat-chunk (comment-line-chunk (car param))
+                    new-line-chunk
                     (literal-chunk (cdr param)))))
 (provide macro-arg-chunk)
 
@@ -126,8 +133,10 @@
 (define/contract (macro-arg-list-chunk . params)
   (->* () #:rest (listof macro-arg/c) chunk/c)
   (cond [(empty? params)
-         (bot-list-chunk open-paren-chunk
-                          close-paren-chunk)]
+         empty-chunk]
+         ;TODO: Determine which is the better behavior for macro-arg-list-chunk when given no parameters? no parentheses or "()"?
+         ;(bot-list-chunk open-paren-chunk
+         ;                close-paren-chunk)]
         [(= 1 (length params))
          (apply bot-list-chunk (list open-paren-chunk
                                      (car params)
@@ -146,26 +155,18 @@
 ; sets up define for a macro-definition
 (define/contract (macro-header-chunk name params)
   (-> string? (listof macro-arg/c) chunk/c)
-  (let ([indent (+ (string-length pp-define-string)
-                   1 ; for space after define
-                   (string-length name)
-                   1 ; for open parenthesis
-                   )])
-    (concat-chunk pp-define-chunk
-                  (literal-chunk name)
-                  open-paren-chunk
-                  (λ (context)
-                    (let ([new-context (reindent indent context)])
-                      ((macro-arg-list-chunk params) new-context))))))
-;(provide macro-header-chunk)
+  (concat-chunk pp-define-chunk
+                (literal-chunk name)
+                (macro-arg-list-chunk params)))
+(provide macro-header-chunk)
 
 ;macro defintion chunk
 ; a macro definition
 (define/contract (macro-definition-chunk name params . chunks)
   (->* (string? (listof macro-arg/c)) #:rest (listof chunk/c) chunk/c)
   ;(-> string? (listof macro-arg/c) (listof chunk/c) chunk/c)
-  (macro-env-chunk (cons (macro-header-chunk name params)
-                         chunks)))
+  (macro-env-chunk (mid-list-chunk (macro-header-chunk name params)
+                                   chunks)))
 (provide macro-definition-chunk)
 
 
