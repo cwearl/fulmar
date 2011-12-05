@@ -3,9 +3,9 @@
 (require "fulmar-core.rkt")
 (require "chunk-core.rkt")
 
-;;;;;;;;;;;;;;;;;;;
-;;helper functions;
-;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;helper functions;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;checks if given string is just spaces
 (define/contract (is-whitespace? string)
@@ -74,7 +74,7 @@
                             4]
                            [;unknown environment
                             else
-                            (error "Contract for finish line should prevent this case from coming up; good luck! Given: " given-line context)])])
+                            (error "Contract for finish-line should prevent this case from coming up; good luck! Given: " given-line context)])])
     (cond [;empty environment
            (empty-env? env)
            line]
@@ -133,153 +133,165 @@
                         "#")]))
 (provide add-hash-character)
 
-;;;;;;;;;;;;;;;;;;;
-;;nekot handlers;;;
-;;;;;;;;;;;;;;;;;;;
+;build nekot handler
+(define/contract (build-nekot-handler handler-name normal-mode-handler immediate-mode-handler)
+  (-> string?
+      (-> any/c context/c written-line/c written-lines/c)
+      (-> any/c context/c written-line/c written-lines/c)
+      (-> mode/c any/c context/c written-line/c written-lines/c))
+  (λ (mode body context line)
+    ((match mode
+       ['normal    normal-mode-handler]
+       ['immediate immediate-mode-handler]
+       [_          (λ (body context line) (error (string-append "Unknown printing mode - Contract for " handler-name " should prevent this case from coming up; good luck! Given: ")
+                                                 body
+                                                 context
+                                                 line))])
+     body
+     context
+     line)))
+(provide build-nekot-handler)
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;nekot handlers;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+;add a literal string to current line
+(define/contract (add-literal mode string context line)
+  (-> mode/c string? context/c written-line/c written-lines/c)
+  (build-nekot-handler "add-literal"
+                       (λ (string context line) ;normal mode
+                         (cond [(= 0 (string-length string))
+                                (list line)]
+                               [(or (check-speculative-line-length string line context)
+                                    (>= (string-length (build-indentation context))
+                                        (string-length line)))
+                                (list (string-append line string))]
+                               [else
+                                (list (string-append (build-indentation context) string)
+                                      (finish-line line context))]))
+                       (λ (string context line) ;immediate mode
+                         (list (string-append line string)))))
+(provide add-literal)
+
+;add spaces to current line
+(define/contract (add-spaces mode count context line)
+  (-> mode/c natural-number/c context/c written-line/c written-lines/c)
+  (build-nekot-handler "add-spaces"
+                       (λ (count context line) ;normal mode
+                         (cond [(= 0 count)
+                                (list line)]
+                               [(check-speculative-line-length count line context)
+                                (list (string-append line (make-whitespace count)))]
+                               [else
+                                (list ""
+                                      (finish-line line context))]))
+                       (λ (count context line) ;immediate mode
+                         (list (string-append line (make-whitespace count))))))
+(provide add-spaces)
+
+;add new line
+(define/contract (add-new-line mode body context line)
+  (-> mode/c null/c context/c written-line/c written-lines/c)
+  (list ""
+        (finish-line line context)))
+(provide add-new-line)
+
+;add preprocessor directive
+(define/contract (add-pp-directive mode body context line)
+  (-> mode/c null/c context/c written-line/c written-lines/c)
+  (list (add-hash-character line)))
+(provide add-pp-directive)
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;meta-nekot handlers;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;add empty nekot
 ; - equivalent to identity function...
-(define/contract (add-empty body context line)
-  (-> any/c context/c written-line/c written-lines/c)
+(define/contract (add-empty mode body context line)
+  (-> mode/c null/c context/c written-line/c written-lines/c)
   (list (if (equal? (build-indentation context)
                     line)
             ""
             line)))
 (provide add-empty)
 
-;add a literal string to current line
-(define/contract (add-literal string context line)
-  (-> string? context/c written-line/c written-lines/c)
-  (cond [(= 0 (string-length string))
-         (list line)]
-        [(or (check-speculative-line-length string line context)
-             (>= (string-length (build-indentation context))
-                 (string-length line)))
-         (list (string-append line string))]
-        [else
-         (list (string-append (build-indentation context) string)
-               (finish-line line context))]))
-(provide add-literal)
-
-;add spaces to current line
-(define/contract (add-spaces count context line)
-  (-> natural-number/c context/c written-line/c written-lines/c)
-  (cond [(= 0 count)
-         (list line)]
-        [(check-speculative-line-length count line context)
-         (list (string-append line (make-whitespace count)))]
-        [else
-         (list ""
-               (finish-line line context))]))
-(provide add-spaces)
-
-;add new line
-(define/contract (add-new-line body context line)
-  (-> any/c context/c written-line/c written-lines/c)
-  (list ""
-        (finish-line line context)))
-(provide add-new-line)
-
-;add preprocessor directive
-(define/contract (add-pp-directive body context line)
-  (-> any/c context/c written-line/c written-lines/c)
-  (list (add-hash-character line)))
-(provide add-pp-directive)
-
 ;add concatenated nekots
-(define/contract (add-concatenated nekots context line)
-  (-> (non-empty-listof nekot/c) context/c written-line/c written-lines/c)
+(define/contract (add-concatenated mode nekots context line)
+  (-> mode/c (non-empty-listof nekot/c) context/c written-line/c written-lines/c)
   (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
-    (append (write-nekot nekot (car lines))
+    (append (write-nekot mode nekot (car lines))
             (cdr lines))))
 (provide add-concatenated)
 
-;add a bottom-level list of chunks to current line
-; - forces all chunks to go on the same line (except for new line)
-; - no added spaces or new lines
-(define/contract (add-bot-list nekots context line)
-  (-> (non-empty-listof nekot/c) context/c written-line/c written-lines/c)
-  (define/contract (add-bot-list-internal nekots context lines)
-    (-> (listof nekot/c) context/c written-lines/c written-lines/c)
-    (if (empty? nekots)
-        lines
-        (let* ([nekot (car nekots)]
-               [name (nekot-name nekot)]
-               [body (nekot-body nekot)]
-               [context-obj (nekot-context nekot)]
-               [line (car lines)]
-               [new-line (if (equal? "" line)
-                             (build-indentation context)
-                             line)])
-          (add-bot-list-internal (cdr nekots)
-                                 context
-                                 (append (match name
-                                           ['empty        (add-empty body context-obj new-line)]
-                                           ['literal      (list (string-append new-line body))]
-                                           ['spaces       (list (string-append new-line (make-whitespace body)))]
-                                           ['new-line     (add-new-line body context-obj new-line)]
-                                           ['pp-directive (add-pp-directive body context-obj new-line)]
-                                           ['concat       (add-concatenated body context-obj new-line)]
-                                           ['bot-list     (add-bot-list body context-obj new-line)]
-                                           ['low-list     (add-low-list body context-obj new-line)]
-                                           [_             ((unknown-nekot-type name) body context-obj new-line)])
-                                         (cdr lines))))))
-  (add-bot-list-internal nekots context (list line)))
-(provide add-bot-list)
+;add nekot immediately
+(define/contract (add-immediate mode nekot context line)
+  (-> mode/c nekot/c context/c written-line/c written-lines/c)
+  (write-nekot 'immediate nekot line))
+(provide add-immediate)
 
-;add a low-level list of chunks to current line
-; - attempts to put chunks on a single line with a space between each chunk
-; - if that fails, puts chunks on their own lines
-(define/contract (add-low-list chunks context line)
-  (-> (non-empty-listof chunk/c) context/c written-line/c written-lines/c)
-  (let ([attempt (add-concatenated (map (λ (chunk) (chunk context))
-                                        (add-between chunks (spaces-chunk 1)))
-                                   context
-                                   line)])
-    (if (or (= 1 (length attempt))
-            (and (= 2 (length attempt))
-                 (equal? "" (car attempt))))
-        attempt
-        (let* ([new-context (reindent (- (string-length line)
-                                         (context-indent context))
-                                      context)])
-          (add-concatenated (map (λ (chunk) (chunk new-context))
-                                 (add-between chunks new-line-chunk))
-                            new-context
-                            line)))))
-(provide add-low-list)
+;add nekot(s) speculatively
+(define/contract (add-speculative mode body context line)
+  (-> mode/c (list/c nekot/c (-> written-lines/c boolean?) nekot/c) context/c written-line/c written-lines/c)
+  (let* ([attempt (first body)]
+         [success? (second body)]
+         [backup (third body)]
+         [attempted (write-nekot mode attempt line)])
+    (if (success? attempted)
+        attempted
+        (write-nekot mode backup line))))
+(provide add-speculative)
+
+;change indent to length of current line
+(define/contract (change-indent-to-current mode chunk context line)
+  (-> mode/c chunk/c context/c written-line/c written-lines/c)
+  (write-nekot mode
+               (chunk (reindent (- (string-length line)
+                                   (context-indent context))
+                                context))
+               line))
+(provide change-indent-to-current)
 
 ;error nekot...
 (define/contract (unknown-nekot-type name)
-  (-> symbol? (-> any/c context/c written-line/c written-lines/c))
-  (λ (body context line)
-    (error "Unrecognized nekot/chunk; given: " name body context line)))
-;(define/contract (unknown-nekot-type body context line)
-;  (-> any/c context/c written-line/c written-lines/c)
-;  (error "Unrecognized nekot/chunk; given: " body context line))
+  (-> symbol? (-> mode/c any/c context/c written-line/c written-lines/c))
+  (λ (mode body context line)
+    (error "Unrecognized nekot/chunk; given: " name mode body context line)))
 (provide unknown-nekot-type)
 
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;nekot writer;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;write nekot
+; mode determines if pretty-printing is on or not
+; - normal: pretty-printing ON
+; - immediate: pretty-printing OFF
 (define/contract write-nekot
   (case-> (-> nekot/c written-lines/c)
-          (-> nekot/c written-line/c written-lines/c))
+          (-> mode/c nekot/c written-line/c written-lines/c))
   (case-lambda [(nekot)
-                (write-nekot nekot "")]
-               [(nekot line)
+                (write-nekot 'normal nekot "")]
+               [(nekot mode line)
                 (let* ([name (nekot-name nekot)]
                        [context-obj (nekot-context nekot)]
                        [nekot-writer (match name
-                                       ['empty        add-empty]
-                                       ['literal      add-literal]
-                                       ['spaces       add-spaces]
-                                       ['new-line     add-new-line]
-                                       ['pp-directive add-pp-directive]
-                                       ['concat       add-concatenated]
-                                       ['bot-list     add-bot-list]
-                                       ['low-list     add-low-list]
+                                       ;normal nekots
+                                       ['literal         add-literal]
+                                       ['spaces          add-spaces]
+                                       ['new-line        add-new-line]
+                                       ['pp-directive    add-pp-directive]
+                                       ;meta nekots
+                                       ['empty           add-empty]
+                                       ['concat          add-concatenated]
+                                       ['immediate       add-immediate]
+                                       ['speculative     add-speculative]
+                                       ['position-indent change-indent-to-current]
+                                       ;unknown nekot
                                        [_             (unknown-nekot-type name)])]
                        [new-line (if (equal? line "")
                                      (build-indentation context-obj)
                                      line)])
-                  (nekot-writer (nekot-body nekot) context-obj new-line))]))
+                  (nekot-writer mode (nekot-body nekot) context-obj new-line))]))
 (provide write-nekot)

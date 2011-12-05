@@ -34,6 +34,49 @@
 ;standard chunks;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
+;bottom level list chunk
+; forces all chunks to go on the same line
+; - new-line-chunks are exception
+;   but they must be explicitly in the chunks
+;   not implied by the normal writer's rules
+(define/contract (bot-list-chunk . chunks)
+  (->* () #:rest (non-empty-listof chunk/c) chunk/c)
+  (apply concat-chunk
+         (map immediate-chunk
+              chunks)))
+(provide bot-list-chunk)
+
+;low list chunk
+; attempts to put chunks on a single line with a space between each chunk
+; if that fails, puts chunks on their own lines
+(define/contract (low-list-chunk . chunks)
+  (->* () #:rest (non-empty-listof chunk/c) chunk/c)
+  (speculative-chunk (apply concat-chunk (add-between chunks
+                                                      (add-spaces 1)))
+                     (λ (lines) (= 1 (length lines)))
+                     (position-indent-chunk (apply concat-chunk (add-between chunks
+                                                                             new-line-chunk)))))
+
+;mid-level list of chunks
+; each chunk is expanded on its own line
+; - each chunk put on it's own line
+(define/contract (mid-list-chunk . chunks)
+  (->* () #:rest (listof chunk/c) chunk/c)
+  (apply concat-chunk
+         (add-between chunks new-line-chunk)))
+(provide mid-list-chunk)
+
+;top-level list of chunks
+; each chunk is expanded on its own line with a blank line between them
+; - each chunk put on it's own line
+; - blank lines added between chunks
+(define/contract (top-list-chunk . chunks)
+  (->* () #:rest (listof chunk/c) chunk/c)
+  (apply concat-chunk
+         (add-between chunks (concat-chunk new-line-chunk
+                                           new-line-chunk))))
+(provide top-list-chunk)
+
 ;space chunk
 ; adds a space
 (define/contract space-chunk
