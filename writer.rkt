@@ -58,36 +58,48 @@
   (let* ([line (remove-whitespace given-line)]
          [length (string-length line)]
          [max (context-line-length context)]
-         [env (context-env context)])
-    (cond [(empty-env? env)
-           ;empty environment
+         [env (context-env context)]
+         [env-spaces (cond [;empty environment
+                            (empty-env? env)
+                            0]
+                           [;comment environment
+                            (comment-env? env)
+                            2]
+                           [;macro environment
+                            (macro-env? env)
+                            1]
+                           [;comment-macro or macro-comment environment
+                            (or (comment-macro-env? env)
+                                (macro-comment-env? env))
+                            4]
+                           [;unknown environment
+                            else
+                            (error "Contract for finish line should prevent this case from coming up; good luck! Given: " given-line context)])])
+    (cond [;empty environment
+           (empty-env? env)
            line]
-          [(and (or (equal? "" line)
-                    (equal? (build-indentation context)
-                            line))
-                (or (comment-env? env)
-                    (comment-macro-env? env)))
-           ;empty comment or comment-macro line
-           ""]
-          [(and (or (equal? "" line)
-                    (equal? (build-indentation context)
-                            line))
-                (or (macro-env? env)
-                    (macro-comment-env? env)))
-           ;empty macro or macro-comment line
-           (string-append (make-whitespace max)
-                          "\\")]
+          [;empty line
+           (equal? (remove-whitespace (build-indentation context))
+                   line)
+           (cond [;comment or comment-macro line
+                  (or (comment-env? env)
+                      (comment-macro-env? env))
+                  ""]
+                 [; macro or macro-comment line
+                  (or (macro-env? env)
+                      (macro-comment-env? env))
+                  (string-append (make-whitespace max)
+                                 "\\")])]
           [else
            ;non-empty line
            (string-append line
-                          (if (< length max)
-                              (make-whitespace (- max length))
+                          (if (< (+ length env-spaces) max)
+                              (make-whitespace (- max length env-spaces))
                               " ")
                           (cond [(comment-env? env) "*/"]
                                 [(macro-env? env) "\\"]
                                 [(comment-macro-env? env) "\\ */"]
-                                [(macro-comment-env? env) "*/ \\"]
-                                [else (error "Contract for finish line should prevent this case from coming up; good luck! Given: " given-line context)]))])))
+                                [(macro-comment-env? env) "*/ \\"]))])))
 (provide finish-line)
 
 ;check speculative line
@@ -192,6 +204,7 @@
     (if (empty? nekots)
         lines
         (let* ([nekot (car nekots)]
+               [name (nekot-name nekot)]
                [body (nekot-body nekot)]
                [context-obj (nekot-context nekot)]
                [line (car lines)]
@@ -200,7 +213,7 @@
                              line)])
           (add-bot-list-internal (cdr nekots)
                                  context
-                                 (append (match (nekot-name nekot)
+                                 (append (match name
                                            ['empty        (add-empty body context-obj new-line)]
                                            ['literal      (list (string-append new-line body))]
                                            ['spaces       (list (string-append new-line (make-whitespace body)))]
@@ -209,7 +222,7 @@
                                            ['concat       (add-concatenated body context-obj new-line)]
                                            ['bot-list     (add-bot-list body context-obj new-line)]
                                            ['low-list     (add-low-list body context-obj new-line)]
-                                           [_             (unknown-nekot-type body context-obj new-line)])
+                                           [_             ((unknown-nekot-type name) body context-obj new-line)])
                                          (cdr lines))))))
   (add-bot-list-internal nekots context (list line)))
 (provide add-bot-list)
@@ -237,9 +250,13 @@
 (provide add-low-list)
 
 ;error nekot...
-(define/contract (unknown-nekot-type body context line)
-  (-> any/c context/c written-line/c written-lines/c)
-  (error "Unrecognized nekot/chunk; given: " body))
+(define/contract (unknown-nekot-type name)
+  (-> symbol? (-> any/c context/c written-line/c written-lines/c))
+  (λ (body context line)
+    (error "Unrecognized nekot/chunk; given: " name body context line)))
+;(define/contract (unknown-nekot-type body context line)
+;  (-> any/c context/c written-line/c written-lines/c)
+;  (error "Unrecognized nekot/chunk; given: " body context line))
 (provide unknown-nekot-type)
 
 ;write nekot
@@ -249,8 +266,9 @@
   (case-lambda [(nekot)
                 (write-nekot nekot "")]
                [(nekot line)
-                (let* ([context-obj (nekot-context nekot)]
-                       [nekot-writer (match (nekot-name nekot)
+                (let* ([name (nekot-name nekot)]
+                       [context-obj (nekot-context nekot)]
+                       [nekot-writer (match name
                                        ['empty        add-empty]
                                        ['literal      add-literal]
                                        ['spaces       add-spaces]
@@ -259,7 +277,7 @@
                                        ['concat       add-concatenated]
                                        ['bot-list     add-bot-list]
                                        ['low-list     add-low-list]
-                                       [_             unknown-nekot-type])]
+                                       [_             (unknown-nekot-type name)])]
                        [new-line (if (equal? line "")
                                      (build-indentation context-obj)
                                      line)])
