@@ -98,6 +98,8 @@
         test-add-new-line
         test-add-pp-directive
         test-add-concatenated
+        test-add-bot-list
+        test-add-low-list
         test-unknown-nekot-type
         test-write-nekot))
 

@@ -14,9 +14,9 @@
 (define nekot-name/c symbol?)
 (define nekot-body/c any/c)
 (provide nekot-name/c nekot-body/c)
-(define description/c (or/c 'comment 'macro 'comment-macro 'macro-comment))
-(define optional-description/c (or/c description/c #false))
-(provide description/c optional-description/c)
+(define environment-description/c (or/c 'comment 'macro 'comment-macro 'macro-comment))
+(define optional-environment-description/c (or/c environment-description/c #false))
+(provide environment-description/c optional-environment-description/c)
 (define position/c natural-number/c)
 (define optional-position/c (or/c position/c #false))
 (provide position/c optional-position/c)
@@ -49,9 +49,9 @@
 
 ;environment Structure
 (struct environment (description initial-position) #:transparent)
-(define environment/c (struct/c environment description/c optional-position/c))
+(define environment/c (struct/c environment environment-description/c optional-position/c))
 (define optional-environment/c (or/c environment/c #false))
-(provide/contract (struct environment ([description description/c]
+(provide/contract (struct environment ([description environment-description/c]
                                        [initial-position optional-position/c])))
 (provide environment/c optional-environment/c)
 
@@ -154,7 +154,7 @@
 
 ;context accessors
 (define/contract (context-description context)
-  (-> context/c optional-description/c)
+  (-> context/c optional-environment-description/c)
   (let ([env (context-env context)])
     (if env
         (environment-description env)

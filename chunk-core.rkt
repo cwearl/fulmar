@@ -2,11 +2,14 @@
 
 (require "fulmar-core.rkt")
 
-;fulmar core chunks - these directly build nekots
+;fulmar core chunks - these directly build nekots or use fulmar-core functionality
 
-;;;;;;;;;;;;;;;;;;;
-;;helper functions;
-;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;;helper functions;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;fulmar-core definitions
+(provide chunk/c)
 
 ;combine lengths of given values
 (define/contract (combine-lengths . values)
@@ -31,9 +34,9 @@
          values))
 (provide combine-strings)
 
-;;;;;;;;;;;;;;;;;;;
-;;chunk functions;;
-;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;;nekot-building chunks;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;empty (no-op) chunk
 ; only real uses of this chunk are for testing and filing in stubs/empty parameters
@@ -46,8 +49,8 @@
 ;literal chunk
 ; simple string
 (define/contract (literal-chunk . strings)
-  (->* () #:rest (listof (or/c symbol? string?)) chunk/c)
-  (λ  (context)
+  (->* () #:rest (non-empty-listof (or/c symbol? string?)) chunk/c)
+  (λ (context)
     (nekot 'literal (apply combine-strings strings) context)))
 (provide literal-chunk)
 
@@ -58,15 +61,6 @@
   (λ (context)
     (nekot 'spaces (apply combine-lengths lengths) context)))
 (provide spaces-chunk)
-
-;TODO: Move this to chunk-standard.rkt when it's ready
-; - added for convenience (at last edit, chunk-standard.rkt was not set up
-;space chunk
-; adds a space
-(define/contract space-chunk
-  chunk/c
-  (spaces-chunk 1))
-(provide space-chunk)
 
 ;new line chunk
 ; adds a new line
@@ -91,34 +85,44 @@
 (define/contract (concat-chunk . chunks)
   (->* () #:rest (listof chunk/c) chunk/c)
   (λ (context)
-    (nekot
-           'concat
+    (nekot 'concat
            (map (λ (chunk) (chunk context)) chunks)
            context)))
 (provide concat-chunk)
 
-;TODO: Move this to chunk-standard.rkt when it's ready
-; - added for convenience (at last edit, chunk-standard.rkt was not set up
-;blank lines chunk
-; adds n blank lines
-(define/contract (blank-lines-chunk . lengths)
-  (->* () #:rest (listof natural-number/c) chunk/c)
-  (apply concat-chunk (make-list (apply combine-lengths lengths) new-line-chunk)))
-;  (λ (context)
-;    (nekot 'blank-lines (apply combine-lengths lengths) context)))
-(provide blank-lines-chunk)
+;bottom level list chunk
+; forces all chunks to go on the same line
+; - no added spaces or new lines
+(define/contract (bot-list-chunk . chunks)
+  (->* () #:rest (non-empty-listof chunk/c) chunk/c)
+  (λ (context)
+    (nekot 'bot-list
+           (map (λ (chunk) (chunk context)) chunks)
+           context)))
+(provide bot-list-chunk)
 
-;TODO: Move this to chunk-standard.rkt when it's ready
-; - added for convenience (at last edit, chunk-standard.rkt was not set up
-;blank line chunk
-; adds a blank line
-(define/contract blank-line-chunk
-  chunk/c
-  (blank-lines-chunk 1))
-(provide blank-line-chunk)
+;low list chunk
+; attempts to put chunks on a single line with a space between each chunk
+; if that fails, puts chunks on their own lines
+(define/contract (low-list-chunk . chunks)
+  (->* () #:rest (non-empty-listof chunk/c) chunk/c)
+  (λ (context)
+    (nekot 'low-list chunks context)))
+(provide low-list-chunk)
 
-;TODO: Move this to chunk-standard.rkt when it's ready
-; - added for convenience (at last edit, chunk-standard.rkt was not set up
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;;context-aware chunks;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;mid-level list of chunks
+; each chunk is expanded on its own line
+; - each chunk put on it's own line
+(define/contract (mid-list-chunk . chunks)
+  (->* () #:rest (listof chunk/c) chunk/c)
+  (apply concat-chunk
+         (add-between chunks new-line-chunk)))
+(provide mid-list-chunk)
+
 ;top-level list of chunks
 ; each chunk is expanded on its own line with a blank line between them
 ; - each chunk put on it's own line
@@ -126,22 +130,26 @@
 (define/contract (top-list-chunk . chunks)
   (->* () #:rest (listof chunk/c) chunk/c)
   (apply concat-chunk
-         (add-between chunks blank-line-chunk)))
+         (add-between chunks (concat-chunk new-line-chunk
+                                           new-line-chunk))))
 (provide top-list-chunk)
 
-;TODO: Move this to chunk-standard.rkt when it's ready
-; - added for convenience (at last edit, chunk-standard.rkt was not set up
-;enter new environment
-; starts with new line (using initial-string of new environment)
-; - given chunk is evaluated within context with new environment
-(define/contract (enter-env-chunk chunk transform)
-  (-> chunk/c (-> context/c context/c) chunk/c)
+;comment block chunk
+; puts chunks in a comment block environment
+(define/contract (comment-env-chunk chunk)
+  (-> chunk/c chunk/c)
   (λ (context)
-    (chunk (transform context))))
-(provide enter-env-chunk)
+    (chunk (enter-comment-env context))))
+(provide comment-env-chunk)
 
-;TODO: Move this to chunk-standard.rkt when it's ready
-; - added for convenience (at last edit, chunk-standard.rkt was not set up
+;macro environment chunk
+; puts chunks in a macro environment
+(define/contract (macro-env-chunk chunk)
+  (-> chunk/c chunk/c)
+  (λ (context)
+    (chunk (enter-macro-env context))))
+(provide macro-env-chunk)
+
 ;indent chunk
 ; increases current indent
 (define/contract (indent-chunk chunk . lengths)
@@ -149,3 +157,20 @@
   (λ (context)
     (chunk (reindent (apply combine-lengths lengths) context))))
 (provide indent-chunk)
+
+;comment-line chunk
+; single-line comment chunk
+(define/contract (comment-line-chunk . strings)
+  (->* () #:rest (non-empty-listof (or/c symbol? string?)) chunk/c)
+  (λ (context)
+    (let ([env (context-env context)]
+          [string (apply combine-strings strings)])
+      (concat-chunk (if (macro-env? env)
+                        (literal-chunk (string-append "/*"
+                                                      string
+                                                      "*/"))
+                        ; either in empty-env or a comment environment
+                        (literal-chunk (string-append "// "
+                                                      string)))
+                    new-line-chunk))))
+(provide comment-line-chunk)

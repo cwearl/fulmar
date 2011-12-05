@@ -1,6 +1,7 @@
 #lang racket
 
 (require "fulmar-core.rkt")
+(require "chunk-core.rkt")
 
 ;;;;;;;;;;;;;;;;;;;
 ;;helper functions;
@@ -35,14 +36,15 @@
 (provide remove-whitespace)
 
 ;build indentation for new line given current context
-(define/contract (build-indentation context)
+(define/contract (build-indentation context [char #\ ])
   (-> context/c string?)
   (if (or (empty-env? (context-env context))
           (macro-env? (context-env context)))
       (make-whitespace (context-indent context))
       ;environment has to have comment in it somewhere: comment, comment-macro, or macro-comment
       (string-append (make-whitespace (context-initial-position context))
-                     "/* "
+                     "/*"
+                     (string char)
                      (let ([remaining (- (context-indent context)
                                          (context-initial-position context))])
                        (if (< 0 remaining)
@@ -104,7 +106,7 @@
   (= (if (string? first-line)
          (string-length first-line)
          first-line)
-         (string-length second-line)))
+     (string-length second-line)))
 (provide match-lengths)
 
 ;add '#' to proper place in given line
@@ -127,7 +129,10 @@
 ; - equivalent to identity function...
 (define/contract (add-empty body context line)
   (-> any/c context/c written-line/c written-lines/c)
-  (list line))
+  (list (if (equal? (build-indentation context)
+                    line)
+            ""
+            line)))
 (provide add-empty)
 
 ;add a literal string to current line
@@ -171,11 +176,65 @@
 
 ;add concatenated nekots
 (define/contract (add-concatenated nekots context line)
-  (-> (listof nekot/c) context/c written-line/c written-lines/c)
+  (-> (non-empty-listof nekot/c) context/c written-line/c written-lines/c)
   (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
     (append (write-nekot nekot (car lines))
             (cdr lines))))
 (provide add-concatenated)
+
+;add a bottom-level list of chunks to current line
+; - forces all chunks to go on the same line (except for new line)
+; - no added spaces or new lines
+(define/contract (add-bot-list nekots context line)
+  (-> (non-empty-listof nekot/c) context/c written-line/c written-lines/c)
+  (define/contract (add-bot-list-internal nekots context lines)
+    (-> (listof nekot/c) context/c written-lines/c written-lines/c)
+    (if (empty? nekots)
+        lines
+        (let* ([nekot (car nekots)]
+               [body (nekot-body nekot)]
+               [context-obj (nekot-context nekot)]
+               [line (car lines)]
+               [new-line (if (equal? "" line)
+                             (build-indentation context)
+                             line)])
+          (add-bot-list-internal (cdr nekots)
+                                 context
+                                 (append (match (nekot-name nekot)
+                                           ['empty        (add-empty body context-obj new-line)]
+                                           ['literal      (list (string-append new-line body))]
+                                           ['spaces       (list (string-append new-line (make-whitespace body)))]
+                                           ['new-line     (add-new-line body context-obj new-line)]
+                                           ['pp-directive (add-pp-directive body context-obj new-line)]
+                                           ['concat       (add-concatenated body context-obj new-line)]
+                                           ['bot-list     (add-bot-list body context-obj new-line)]
+                                           ['low-list     (add-low-list body context-obj new-line)]
+                                           [_             (unknown-nekot-type body context-obj new-line)])
+                                         (cdr lines))))))
+  (add-bot-list-internal nekots context (list line)))
+(provide add-bot-list)
+
+;add a low-level list of chunks to current line
+; - attempts to put chunks on a single line with a space between each chunk
+; - if that fails, puts chunks on their own lines
+(define/contract (add-low-list chunks context line)
+  (-> (non-empty-listof chunk/c) context/c written-line/c written-lines/c)
+  (let ([attempt (add-concatenated (map (λ (chunk) (chunk context))
+                                        (add-between chunks (spaces-chunk 1)))
+                                   context
+                                   line)])
+    (if (or (= 1 (length attempt))
+            (and (= 2 (length attempt))
+                 (equal? "" (car attempt))))
+        attempt
+        (let* ([new-context (reindent (- (string-length line)
+                                         (context-indent context))
+                                      context)])
+          (add-concatenated (map (λ (chunk) (chunk new-context))
+                                 (add-between chunks new-line-chunk))
+                            new-context
+                            line)))))
+(provide add-low-list)
 
 ;error nekot...
 (define/contract (unknown-nekot-type body context line)
@@ -198,6 +257,8 @@
                                        ['new-line     add-new-line]
                                        ['pp-directive add-pp-directive]
                                        ['concat       add-concatenated]
+                                       ['bot-list     add-bot-list]
+                                       ['low-list     add-low-list]
                                        [_             unknown-nekot-type])]
                        [new-line (if (equal? line "")
                                      (build-indentation context-obj)

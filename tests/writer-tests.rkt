@@ -2,6 +2,7 @@
 
 (require rackunit)
 (require "../fulmar-core.rkt")
+(require "../chunk-core.rkt")
 (require "../writer.rkt")
 
 ;unit tests for writer.rkt
@@ -214,7 +215,9 @@
   (test-case
    "Test add-empty (writes empty nekot)"
    (define test-context (context 0 6 #false))
+   (define test-context-1 (context 1 6 #false))
    (check-equal? (add-empty null test-context "") '(""))
+   (check-equal? (add-empty null test-context-1 " ") '(""))
    (check-equal? (add-empty null test-context "a") '("a"))
    (check-equal? (add-empty null test-context "asdf") '("asdf"))
    (check-equal? (add-empty null test-context "asdfjkl") '("asdfjkl"))))
@@ -370,6 +373,301 @@
                                    test-context
                                    "")
                  '("# asdf" "asdf"))))
+
+(define/provide-test-suite test-add-bot-list
+  (test-case
+   "Test add-bot-list (writes list of nekots) - empty chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (list (empty-chunk test-context))
+                               test-context
+                               "")
+                 '(""))
+   (check-equal? (add-bot-list (list (empty-chunk test-context))
+                               test-context
+                               "1")
+                 '("1"))
+   (check-equal? (add-bot-list (list (empty-chunk test-context))
+                               test-context
+                               "12")
+                 '("12"))
+   (check-equal? (add-bot-list (list (empty-chunk test-context))
+                               test-context
+                               "123456")
+                 '("123456"))
+   (check-equal? (add-bot-list (list (empty-chunk test-context))
+                               test-context
+                               "1234567")
+                 '("1234567")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - single-character literal chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (list ((literal-chunk "a") test-context))
+                               test-context
+                               "")
+                 '("a"))
+   (check-equal? (add-bot-list (list ((literal-chunk "a") test-context))
+                               test-context
+                               "1")
+                 '("1a"))
+   (check-equal? (add-bot-list (list ((literal-chunk "a") test-context))
+                               test-context
+                               "12")
+                 '("12a"))
+   (check-equal? (add-bot-list (list ((literal-chunk "a") test-context))
+                               test-context
+                               "123456")
+                 '("123456a"))
+   (check-equal? (add-bot-list (list ((literal-chunk "a") test-context))
+                               test-context
+                               "1234567")
+                 '("1234567a")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - short literal chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcd") test-context))
+                               test-context
+                               "")
+                 '("abcd"))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcd") test-context))
+                               test-context
+                               "1")
+                 '("1abcd"))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcd") test-context))
+                               test-context
+                               "12")
+                 '("12abcd"))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcd") test-context))
+                               test-context
+                               "123456")
+                 '("123456abcd"))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcd") test-context))
+                               test-context
+                               "1234567")
+                 '("1234567abcd")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - long literal chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcdefg") test-context))
+                               test-context
+                               "")
+                 '("abcdefg"))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcdefg") test-context))
+                               test-context
+                               "1")
+                 '("1abcdefg"))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcdefg") test-context))
+                               test-context
+                               "12")
+                 '("12abcdefg"))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcdefg") test-context))
+                               test-context
+                               "123456")
+                 '("123456abcdefg"))
+   (check-equal? (add-bot-list (list ((literal-chunk "abcdefg") test-context))
+                               test-context
+                               "1234567")
+                 '("1234567abcdefg")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - spaces chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (list ((spaces-chunk 4) test-context))
+                               test-context
+                               "")
+                 '("    "))
+   (check-equal? (add-bot-list (list ((spaces-chunk 4) test-context))
+                               test-context
+                               "1")
+                 '("1    "))
+   (check-equal? (add-bot-list (list ((spaces-chunk 4) test-context))
+                               test-context
+                               "12")
+                 '("12    "))
+   (check-equal? (add-bot-list (list ((spaces-chunk 4) test-context))
+                               test-context
+                               "123456")
+                 '("123456    "))
+   (check-equal? (add-bot-list (list ((spaces-chunk 4) test-context))
+                               test-context
+                               "1234567")
+                 '("1234567    ")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - new-line chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (list (new-line-chunk test-context))
+                               test-context
+                               "")
+                 '("" ""))
+   (check-equal? (add-bot-list (list (new-line-chunk test-context))
+                               test-context
+                               "1")
+                 '("" "1"))
+   (check-equal? (add-bot-list (list (new-line-chunk test-context))
+                               test-context
+                               "12")
+                 '("" "12"))
+   (check-equal? (add-bot-list (list (new-line-chunk test-context))
+                               test-context
+                               "123456")
+                 '("" "123456"))
+   (check-equal? (add-bot-list (list (new-line-chunk test-context))
+                               test-context
+                               "1234567")
+                 '("" "1234567"))
+   (check-equal? (add-bot-list (list (new-line-chunk (enter-comment-env test-context)))
+                               (enter-comment-env test-context)
+                               "1234567")
+                 '("" "1234567 */")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - pp-directive chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (list (pp-directive-chunk test-context))
+                               test-context
+                               "")
+                 '("#"))
+   (check-equal? (add-bot-list (list (pp-directive-chunk test-context))
+                               test-context
+                               "1")
+                 '("#"))
+   (check-equal? (add-bot-list (list (pp-directive-chunk test-context))
+                               test-context
+                               "12")
+                 '("1#"))
+   (check-equal? (add-bot-list (list (pp-directive-chunk test-context))
+                               test-context
+                               "123456")
+                 '("12345#"))
+   (check-equal? (add-bot-list (list (pp-directive-chunk test-context))
+                               test-context
+                               "1234567")
+                 '("123456#")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - concat chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (list ((concat-chunk (literal-chunk "abcd")) test-context))
+                               test-context
+                               "")
+                 '("abcd"))
+   (check-equal? (add-bot-list (list ((concat-chunk (literal-chunk "abcd")) test-context))
+                               test-context
+                               "1")
+                 '("1abcd"))
+   (check-equal? (add-bot-list (list ((concat-chunk (literal-chunk "abcd")) test-context))
+                               test-context
+                               "12")
+                 '("12abcd"))
+   (check-equal? (add-bot-list (list ((concat-chunk (literal-chunk "abcd")) test-context))
+                               test-context
+                               "123456")
+                 '("abcd" "123456"))
+   (check-equal? (add-bot-list (list ((concat-chunk (literal-chunk "abcd")) test-context))
+                               test-context
+                               "1234567")
+                 '("abcd" "1234567")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - bottom list chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (map (λ (chunk) (chunk test-context))
+                                    (list (bot-list-chunk empty-chunk
+                                                          (literal-chunk "a")
+                                                          new-line-chunk
+                                                          (literal-chunk "b"))))
+                               test-context
+                               "")
+                 '("b" "a")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - low list chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-bot-list (map (λ (chunk) (chunk test-context))
+                                    (list (literal-chunk "(")
+                                          (low-list-chunk (bot-list-chunk (literal-chunk "a")
+                                                                          (literal-chunk ","))
+                                                          (bot-list-chunk (literal-chunk "b")
+                                                                          (literal-chunk ","))
+                                                          (bot-list-chunk (literal-chunk "cdefgh")
+                                                                          (literal-chunk ")")))))
+                               test-context
+                               "")
+                 '(" cdefgh)" " b," "(a,")))
+  (test-case
+   "Test add-bot-list (writes list of nekots) - unknown chunk/nekot"
+   (define test-context (context 0 6 #false))
+   (check-exn exn:fail? (λ () (add-bot-list (list (nekot 'error! null test-context))
+                                            test-context
+                                            "")))))
+
+(define/provide-test-suite test-add-low-list
+  (test-case
+   "Test add-low-list (writes spaced/new-lined list of nekots) - empty line"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-low-list (list (literal-chunk 'a))
+                               test-context
+                               "")
+                 '("a"))
+   (check-equal? (add-low-list (list (literal-chunk 'a)
+                                     (literal-chunk 'b))
+                               test-context
+                               "")
+                 '("a b"))
+   (check-equal? (add-low-list (list (literal-chunk 'a)
+                                     (literal-chunk 'b)
+                                     (literal-chunk 'c))
+                               test-context
+                               "")
+                 '("a b c")))
+  (test-case
+   "Test add-low-list (writes spaced/new-lined list of nekots) - short line"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-low-list (list (literal-chunk 'a))
+                               test-context
+                               "123")
+                 '("123a"))
+   (check-equal? (add-low-list (list (literal-chunk 'a)
+                                     (literal-chunk 'b))
+                               test-context
+                               "123")
+                 '("123a b"))
+   (check-equal? (add-low-list (list (literal-chunk 'a)
+                                     (literal-chunk 'b)
+                                     (literal-chunk 'c))
+                               test-context
+                               "123")
+                 '("   c" "   b" "123a")))
+  (test-case
+   "Test add-low-list (writes spaced/new-lined list of nekots) - shortish line"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-low-list (list (literal-chunk 'a))
+                               test-context
+                               "1234")
+                 '("1234a"))
+   (check-equal? (add-low-list (list (literal-chunk 'a)
+                                     (literal-chunk 'b))
+                               test-context
+                               "1234")
+                 '("    b" "1234a"))
+   (check-equal? (add-low-list (list (literal-chunk 'a)
+                                     (literal-chunk 'b)
+                                     (literal-chunk 'c))
+                               test-context
+                               "1234")
+                 '("    c" "    b" "1234a")))
+  (test-case
+   "Test add-low-list (writes spaced/new-lined list of nekots) - long line"
+   (define test-context (context 0 6 #false))
+   (check-equal? (add-low-list (list (literal-chunk 'a))
+                               test-context
+                               "123456")
+                 '("123456a"))
+   (check-equal? (add-low-list (list (literal-chunk 'a)
+                                     (literal-chunk 'b))
+                               test-context
+                               "123456")
+                 '("      b" "123456a"))
+   (check-equal? (add-low-list (list (literal-chunk 'a)
+                                     (literal-chunk 'b)
+                                     (literal-chunk 'c))
+                               test-context
+                               "123456")
+                 '("      c" "      b" "123456a"))))
 
 (define/provide-test-suite test-unknown-nekot-type
   (test-case
