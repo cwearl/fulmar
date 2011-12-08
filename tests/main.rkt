@@ -5,6 +5,7 @@
 (require rackunit/text-ui)
 (require "fulmar-core-tests.rkt")
 (require "chunk-core-tests.rkt")
+(require "chunk-standard-tests.rkt")
 (require "writer-tests.rkt")
 (require "io-tests.rkt")
 
@@ -89,6 +90,23 @@
 
 (apply test-fail-with-gui? chunk-core-tests)
 ;(apply run-tests-text chunk-core-tests)
+
+;standard chunk tests:
+(define/contract standard-core-tests
+  (listof test-suite?)
+  (list test-imm-list-chunk
+        test-arg-list-chunk
+        test-smt-list-chunk
+        test-dfn-list-chunk
+        test-character-chunks
+        test-pp-define-chunk
+        test-pp-ifndef-chunk
+        test-pp-endif-chunk
+        test-pp-header-file-chunk
+        test-macro-definition-chunk))
+
+(apply test-fail-with-gui? standard-core-tests)
+;(apply run-tests-text standard-core-tests)
 
 ;writer tests:
 (define/contract writer-tests
