@@ -133,25 +133,6 @@
                         "#")]))
 (provide add-hash-character)
 
-;build nekot handler
-(define/contract (build-nekot-handler handler-name normal-mode-handler immediate-mode-handler)
-  (-> string?
-      (-> any/c context/c written-line/c written-lines/c)
-      (-> any/c context/c written-line/c written-lines/c)
-      (-> mode/c any/c context/c written-line/c written-lines/c))
-  (λ (mode body context line)
-    ((match mode
-       ['normal    normal-mode-handler]
-       ['immediate immediate-mode-handler]
-       [_          (λ (body context line) (error (string-append "Unknown printing mode - Contract for " handler-name " should prevent this case from coming up; good luck! Given: ")
-                                                 body
-                                                 context
-                                                 line))])
-     body
-     context
-     line)))
-(provide build-nekot-handler)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot handlers;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -159,35 +140,41 @@
 ;add a literal string to current line
 (define/contract (add-literal mode string context line)
   (-> mode/c string? context/c written-line/c written-lines/c)
-  (build-nekot-handler "add-literal"
-                       (λ (string context line) ;normal mode
-                         (cond [(= 0 (string-length string))
-                                (list line)]
-                               [(or (check-speculative-line-length string line context)
-                                    (>= (string-length (build-indentation context))
-                                        (string-length line)))
-                                (list (string-append line string))]
-                               [else
-                                (list (string-append (build-indentation context) string)
-                                      (finish-line line context))]))
-                       (λ (string context line) ;immediate mode
-                         (list (string-append line string)))))
+  (match mode
+    ['normal (cond [(= 0 (string-length string))
+                    (list line)]
+                   [(or (check-speculative-line-length string line context)
+                        (>= (string-length (build-indentation context))
+                            (string-length line)))
+                    (list (string-append line string))]
+                   [else
+                    (list (string-append (build-indentation context) string)
+                          (finish-line line context))])]
+    ['immediate (list (string-append line string))]
+    [_ (error "Unknown printing mode - Contract for add-literal should prevent this case from coming up; good luck! Given: "
+              mode
+              string
+              context
+              line)]))
 (provide add-literal)
 
 ;add spaces to current line
 (define/contract (add-spaces mode count context line)
   (-> mode/c natural-number/c context/c written-line/c written-lines/c)
-  (build-nekot-handler "add-spaces"
-                       (λ (count context line) ;normal mode
-                         (cond [(= 0 count)
-                                (list line)]
-                               [(check-speculative-line-length count line context)
-                                (list (string-append line (make-whitespace count)))]
-                               [else
-                                (list ""
-                                      (finish-line line context))]))
-                       (λ (count context line) ;immediate mode
-                         (list (string-append line (make-whitespace count))))))
+  (match mode
+    ['normal (cond [(= 0 count)
+                    (list line)]
+                   [(check-speculative-line-length count line context)
+                    (list (string-append line (make-whitespace count)))]
+                   [else
+                    (list ""
+                          (finish-line line context))])]
+    ['immediate (list (string-append line (make-whitespace count)))]
+    [_ (error "Unknown printing mode - Contract for add-spaces should prevent this case from coming up; good luck! Given: "
+              mode
+              count
+              context
+              line)]))
 (provide add-spaces)
 
 ;add new line
@@ -246,11 +233,15 @@
 ;change indent to length of current line
 (define/contract (change-indent-to-current mode chunk context line)
   (-> mode/c chunk/c context/c written-line/c written-lines/c)
-  (write-nekot mode
-               (chunk (reindent (- (string-length line)
-                                   (context-indent context))
-                                context))
-               line))
+  (let* ([diff (- (string-length line)
+                  (context-indent context))]
+         [new-indent (if (< 0 diff)
+                         diff
+                         0)])
+    (write-nekot mode
+                 (chunk (reindent new-indent
+                                  context))
+                 line)))
 (provide change-indent-to-current)
 
 ;error nekot...
@@ -273,7 +264,7 @@
           (-> mode/c nekot/c written-line/c written-lines/c))
   (case-lambda [(nekot)
                 (write-nekot 'normal nekot "")]
-               [(nekot mode line)
+               [(mode nekot line)
                 (let* ([name (nekot-name nekot)]
                        [context-obj (nekot-context nekot)]
                        [nekot-writer (match name
@@ -290,6 +281,7 @@
                                        ['position-indent change-indent-to-current]
                                        ;unknown nekot
                                        [_             (unknown-nekot-type name)])]
+                       ;TODO: Determine if new-line should be indented in immediate mode
                        [new-line (if (equal? line "")
                                      (build-indentation context-obj)
                                      line)])

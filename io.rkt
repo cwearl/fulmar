@@ -1,8 +1,7 @@
 #lang racket
 
 (require "fulmar-core.rkt")
-(require "chunk-core.rkt") ; for eval
-;(require "chunk-standard.rkt") ; for eval
+(require "chunk-standard.rkt") ; for eval
 
 ;input/output structures, procedures, and contracts for fulmar
 
@@ -70,5 +69,5 @@
                [chunks (read-chunks port)])
           (close-input-port port)
           chunks)))
-  (apply top-list-chunk (read-chunks port/location)))
+  (apply dfn-list-chunk (read-chunks port/location)))
 (provide read-chunk)

@@ -10,6 +10,7 @@
 
 ;fulmar-core definitions
 (provide chunk/c)
+(provide string-value/c)
 
 ;combine lengths of given values
 (define/contract (combine-lengths . values)
@@ -33,6 +34,14 @@
          ""
          values))
 (provide combine-strings)
+
+;helper for arg-list-chunk (a standard chunk)
+; (located here for testing)
+(define/contract (length-equals-one lst)
+  (-> written-lines/c boolean?)
+  (and (pair? lst)
+       (= 1 (length lst))))
+(provide length-equals-one)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot-building chunks;;;;;;;
@@ -159,22 +168,22 @@
   (λ (context)
     (let ([env (context-env context)]
           [string (apply combine-strings strings)])
-      (concat-chunk (literal-chunk (cond [; in macro environment
-                                          (macro-env? env)
-                                          (string-append "/*"
-                                                         string
-                                                         "*/")]
-                                         ; in empty, comment, comment-macro or macro-comment environment
-                                         [(or (empty-env? env)
-                                              (comment-env? env)
-                                              (comment-macro-env? env)
-                                              (macro-comment-env? env))
-                                          (literal-chunk (string-append "// "
-                                                                        string))]
-                                         [; in unknown environment
-                                          else
-                                          (error "Contract for comment-line-chunk should prevent this case from coming up; good luck! Given: " strings context)]))
-                    new-line-chunk))))
+      ((literal-chunk (cond [;in macro environment
+                             (macro-env? env)
+                             (string-append "/*"
+                                            string
+                                            "*/")]
+                            [;in empty, comment, comment-macro or macro-comment environment
+                             (or (empty-env? env)
+                                 (comment-env? env)
+                                 (comment-macro-env? env)
+                                 (macro-comment-env? env))
+                             (string-append "//"
+                                            string)]
+                            [;in unknown environment
+                             else
+                             (error "Contract for comment-line-chunk should prevent this case from coming up; good luck! Given: " strings context)]))
+       context))))
 (provide comment-line-chunk)
 
 ;macro environment chunk

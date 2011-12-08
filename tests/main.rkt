@@ -67,17 +67,25 @@
 (apply test-fail-with-gui? fulmar-core-tests)
 ;(apply run-tests-text fulmar-core-tests)
 
-;writer tests:
+;core chunk tests:
 (define/contract chunk-core-tests
   (listof test-suite?)
   (list test-combine-lengths
         test-combine-strings
-        test-empty-chunk
+        test-length-equals-one
         test-literal-chunk
         test-spaces-chunk
         test-new-line-chunk
         test-pp-directive-chunk
-        test-concat-chunk))
+        test-empty-chunk
+        test-concat-chunk
+        test-immediate-chunk
+        test-speculative-chunk
+        test-position-indent-chunk
+        test-indent-chunk
+        test-comment-env-chunk
+        test-comment-line-chunk
+        test-macro-env-chunk))
 
 (apply test-fail-with-gui? chunk-core-tests)
 ;(apply run-tests-text chunk-core-tests)
@@ -92,14 +100,15 @@
         test-finish-line
         test-check-speculative-line-length
         test-add-hash-character
-        test-add-empty
         test-add-literal
         test-add-spaces
         test-add-new-line
         test-add-pp-directive
+        test-add-empty
         test-add-concatenated
-        test-add-bot-list
-        test-add-low-list
+        test-add-immediate
+        test-add-speculative
+        test-change-indent-to-current
         test-unknown-nekot-type
         test-write-nekot))
 
