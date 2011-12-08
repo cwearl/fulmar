@@ -88,7 +88,7 @@
                  [; macro or macro-comment line
                   (or (macro-env? env)
                       (macro-comment-env? env))
-                  (string-append (make-whitespace max)
+                  (string-append (make-whitespace (- max 1))
                                  "\\")])]
           [else
            ;non-empty line

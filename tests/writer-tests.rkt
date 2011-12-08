@@ -101,8 +101,8 @@
   (test-case
    "Test finish-line (ends a line correctly) - macro environment"
    (define test-context (context 0 6 macro-env))
-   (check-equal? (finish-line "" test-context) "      \\")
-   (check-equal? (finish-line "  " test-context) "      \\")
+   (check-equal? (finish-line "" test-context) "     \\")
+   (check-equal? (finish-line "  " test-context) "     \\")
    (check-equal? (finish-line "1" test-context) "1    \\")
    (check-equal? (finish-line " 2" test-context) " 2   \\")
    (check-equal? (finish-line " 234" test-context) " 234 \\")
@@ -125,8 +125,8 @@
   (test-case
    "Test finish-line (ends a line correctly) - macro-comment environment"
    (define test-context (context 0 6 (macro-comment-env 0)))
-   (check-equal? (finish-line "/* " test-context) "      \\")
-   (check-equal? (finish-line "/*" test-context) "      \\")
+   (check-equal? (finish-line "/* " test-context) "     \\")
+   (check-equal? (finish-line "/*" test-context) "     \\")
    (check-equal? (finish-line "1" test-context) "1 */ \\")
    (check-equal? (finish-line " 2" test-context) " 2 */ \\")
    (check-equal? (finish-line " 234" test-context) " 234 */ \\")
