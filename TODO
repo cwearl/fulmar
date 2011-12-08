@@ -1,0 +1,7 @@
+;TODO: write and test normal-chunk
+;TODO: convert chunks from closure formulation to something transparent (a struct, probably)
+;TODO: convert new-line-chunk into new-lines-chunk
+;TODO: add properties back in - for user-defined indents and the like
+;TODO: finish the top-level todo list ;)
+
+
