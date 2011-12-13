@@ -287,7 +287,43 @@
    (define test-context (construct-context 6))
    (check-equal? (write-nekot 'normal (imm-class-chunk test-context) "") '("class"))
    (check-equal? (write-nekot 'normal (imm-class-chunk test-context) "1") '("1class"))
-   (check-equal? (write-nekot 'normal (imm-class-chunk test-context) "123456") '("123456class"))))
+   (check-equal? (write-nekot 'normal (imm-class-chunk test-context) "123456") '("123456class")))
+  (test-case
+   "Test public-chunk"
+   (define test-context (construct-context 7))
+   (check-equal? (write-nekot 'normal (public-chunk test-context) "") '("public"))
+   (check-equal? (write-nekot 'normal (public-chunk test-context) "1") '("1public"))
+   (check-equal? (write-nekot 'normal (public-chunk test-context) "123456") '("public" "123456")))
+  (test-case
+   "Test imm-public-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-public-chunk test-context) "") '("public"))
+   (check-equal? (write-nekot 'normal (imm-public-chunk test-context) "1") '("1public"))
+   (check-equal? (write-nekot 'normal (imm-public-chunk test-context) "123456") '("123456public")))
+  (test-case
+   "Test protected-chunk"
+   (define test-context (construct-context 10))
+   (check-equal? (write-nekot 'normal (protected-chunk test-context) "") '("protected"))
+   (check-equal? (write-nekot 'normal (protected-chunk test-context) "1") '("1protected"))
+   (check-equal? (write-nekot 'normal (protected-chunk test-context) "123456") '("protected" "123456")))
+  (test-case
+   "Test imm-protected-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-protected-chunk test-context) "") '("protected"))
+   (check-equal? (write-nekot 'normal (imm-protected-chunk test-context) "1") '("1protected"))
+   (check-equal? (write-nekot 'normal (imm-protected-chunk test-context) "123456") '("123456protected")))
+  (test-case
+   "Test private-chunk"
+   (define test-context (construct-context 8))
+   (check-equal? (write-nekot 'normal (private-chunk test-context) "") '("private"))
+   (check-equal? (write-nekot 'normal (private-chunk test-context) "1") '("1private"))
+   (check-equal? (write-nekot 'normal (private-chunk test-context) "123456") '("private" "123456")))
+  (test-case
+   "Test imm-private-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-private-chunk test-context) "") '("private"))
+   (check-equal? (write-nekot 'normal (imm-private-chunk test-context) "1") '("1private"))
+   (check-equal? (write-nekot 'normal (imm-private-chunk test-context) "123456") '("123456private"))))
 
 ;list chunks
 
