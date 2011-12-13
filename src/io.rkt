@@ -57,18 +57,11 @@
 ;read chunk
 (define/contract (read-chunk port/location)
   (-> (or/c input-port? path?) chunk/c)
-  (define (read-chunks port/location)
-    (if (input-port? port/location)
-        (let ([current (read port/location)])
-          (if (eof-object? current)
-              '()
-              (cons (eval current fulmar-chunk-namespace)
-                    (read-chunks port/location))))
-        ;(path? port/location)
-        (let* ([port (open-input port/location)]
-               [chunks (read-chunks port)])
-          (close-input-port port)
-          chunks)))
-  (smt-list-chunk blank-line-chunk
-                  (read-chunks port/location)))
+  (if (input-port? port/location)
+      (eval (read port/location) fulmar-chunk-namespace)
+      ;(path? port/location)
+      (let* ([port (open-input port/location)]
+             [chunk (read-chunk port)])
+        (close-input-port port)
+        chunk)))
 (provide read-chunk)
