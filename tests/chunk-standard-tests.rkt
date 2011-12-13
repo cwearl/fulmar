@@ -323,7 +323,19 @@
    (define test-context (construct-context 6))
    (check-equal? (write-nekot 'normal (imm-private-chunk test-context) "") '("private"))
    (check-equal? (write-nekot 'normal (imm-private-chunk test-context) "1") '("1private"))
-   (check-equal? (write-nekot 'normal (imm-private-chunk test-context) "123456") '("123456private"))))
+   (check-equal? (write-nekot 'normal (imm-private-chunk test-context) "123456") '("123456private")))
+  (test-case
+   "Test namespace-chunk"
+   (define test-context (construct-context 10))
+   (check-equal? (write-nekot 'normal (namespace-chunk test-context) "") '("namespace"))
+   (check-equal? (write-nekot 'normal (namespace-chunk test-context) "1") '("1namespace"))
+   (check-equal? (write-nekot 'normal (namespace-chunk test-context) "123456") '("namespace" "123456")))
+  (test-case
+   "Test imm-namespace-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-namespace-chunk test-context) "") '("namespace"))
+   (check-equal? (write-nekot 'normal (imm-namespace-chunk test-context) "1") '("1namespace"))
+   (check-equal? (write-nekot 'normal (imm-namespace-chunk test-context) "123456") '("123456namespace"))))
 
 ;list chunks
 
@@ -784,11 +796,37 @@
                    "             first, \\"
                    "#define name(/*test1*/ \\"))))
 
+;namespace chunks
+
+(define/provide-test-suite test-namespace-define-chunk
+  (test-case
+   "Test namespace-define-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((namespace-define-chunk (literal-chunk 'name)
+                                                       (literal-chunk 'asdf))
+                               test-context))
+                 '("namespace name { asdf; }"))
+   (check-equal? (write-nekot ((namespace-define-chunk (literal-chunk 'name)
+                                                       (literal-chunk 'asdf))
+                               (construct-context 10)))
+                 '("} //name"
+                   "   asdf;"
+                   "namespace name {"))
+   (check-equal? (write-nekot ((namespace-define-chunk (literal-chunk 'name)
+                                                       (literal-chunk 'asdf)
+                                                       (literal-chunk 'jkl))
+                               (construct-context 10)))
+                 '("} //name"
+                   "   jkl;"
+                   ""
+                   "   asdf;"
+                   "namespace name {"))))
+
 ;template chunks
 
 (define/provide-test-suite test-template-define-chunk
   (test-case
-   "Test template-defintion-chunk"
+   "Test template-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot ((template-define-chunk null
                                                       (literal-chunk 'asdf))

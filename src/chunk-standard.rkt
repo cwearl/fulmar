@@ -405,6 +405,19 @@
   (immediate-chunk private-chunk))
 (provide imm-private-chunk)
 
+;namespace chunk
+(define/contract namespace-chunk
+  chunk/c
+  (literal-chunk "namespace"))
+(provide namespace-chunk)
+
+;immediate namespace chunk
+; adds "namespace" immediately
+(define/contract imm-namespace-chunk
+  chunk/c
+  (immediate-chunk namespace-chunk))
+(provide imm-namespace-chunk)
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ;list chunks;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -646,6 +659,25 @@
                                                       new-line-chunk
                                                       (indent-chunk 3 chunk))))))
 (provide macro-define-chunk)
+
+;;;;;;;;;;;;;;;;;;;;;;
+;namespace chunks;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+;namespace define chunk
+(define/contract (namespace-define-chunk name . chunks)
+  (->* (chunk/c) #:rest chunk-list/c chunk/c)
+  (let ([chunk (concat-chunk imm-namespace-chunk
+                             imm-space-chunk
+                             (immediate-chunk name)
+                             imm-space-chunk
+                             (body-chunk chunks))])
+    (speculative-chunk chunk
+                       length-equals-one
+                       (concat-chunk chunk
+                                     space-chunk
+                                     (comment-line-chunk name)))))
+(provide namespace-define-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;template chunks;;;;;;

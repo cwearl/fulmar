@@ -142,6 +142,7 @@
         test-pp-conditional-ifndef-chunk
         test-pp-header-file-chunk
         test-macro-define-chunk
+        test-namespace-define-chunk
         test-template-define-chunk
         test-template-use-chunk
         test-function-declare-chunk
