@@ -1,3 +1,5 @@
+;TODO: change writer so that does indenting and new-lining after too many characters have been printed 
+;       - this should eliminate the need for immediate-chunk
 ;TODO: write and test normal-chunk
 ;TODO: convert chunks from closure formulation to something transparent (a struct, probably)
 ;TODO: convert new-line-chunk into new-lines-chunk
