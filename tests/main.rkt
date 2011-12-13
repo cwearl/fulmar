@@ -132,9 +132,14 @@
         test-smt-list-chunk
         test-pp-define-chunk
         test-pp-include-chunk
-        test-includes-chunk
+        test-pp-includes-chunk
+        test-pp-ifdef-chunk
         test-pp-ifndef-chunk
+        test-pp-else-chunk
         test-pp-endif-chunk
+        test-pp-conditional-chunk
+        test-pp-conditional-ifdef-chunk
+        test-pp-conditional-ifndef-chunk
         test-pp-header-file-chunk
         test-macro-define-chunk
         test-template-define-chunk

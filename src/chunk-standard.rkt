@@ -210,6 +210,19 @@
   (immediate-chunk include-chunk))
 (provide imm-include-chunk)
 
+;ifdef chunk
+(define/contract ifdef-chunk
+  chunk/c
+  (literal-chunk "ifdef"))
+(provide ifdef-chunk)
+
+;immediate ifdef chunk
+; adds "ifdef" immediately
+(define/contract imm-ifdef-chunk
+  chunk/c
+  (immediate-chunk ifdef-chunk))
+(provide imm-ifdef-chunk)
+
 ;ifndef chunk
 (define/contract ifndef-chunk
   chunk/c
@@ -222,6 +235,19 @@
   chunk/c
   (immediate-chunk ifndef-chunk))
 (provide imm-ifndef-chunk)
+
+;else chunk
+(define/contract else-chunk
+  chunk/c
+  (literal-chunk "else"))
+(provide else-chunk)
+
+;immediate else chunk
+; adds "else" immediately
+(define/contract imm-else-chunk
+  chunk/c
+  (immediate-chunk else-chunk))
+(provide imm-else-chunk)
 
 ;endif chunk
 (define/contract endif-chunk
@@ -517,12 +543,21 @@
 (provide pp-include-chunk)
 
 ;multiple includes
-(define/contract (includes-chunk . chunks)
+(define/contract (pp-includes-chunk . chunks)
   (->* () #:rest chunk-list/c chunk/c)
   (between-chunk new-line-chunk
                  (map pp-include-chunk
                       (flatten chunks))))
-(provide includes-chunk)
+(provide pp-includes-chunk)
+
+;preprocessor if-not-defined chunk
+(define/contract (pp-ifdef-chunk condition)
+  (-> chunk/c chunk/c)
+  (concat-chunk pp-directive-chunk
+                ifdef-chunk
+                space-chunk
+                condition))
+(provide pp-ifdef-chunk)
 
 ;preprocessor if-not-defined chunk
 (define/contract (pp-ifndef-chunk condition)
@@ -533,6 +568,13 @@
                 condition))
 (provide pp-ifndef-chunk)
 
+;preprocessor if-not-defined chunk
+(define/contract pp-else-chunk
+  chunk/c
+  (concat-chunk pp-directive-chunk
+                else-chunk))
+(provide pp-else-chunk)
+
 ;preprocessor endif chunk
 (define/contract (pp-endif-chunk condition)
   (-> chunk/c chunk/c)
@@ -542,24 +584,49 @@
                 (comment-line-chunk condition)))
 (provide pp-endif-chunk)
 
-;preprocessor h file wrapper chunk
-(define/contract (pp-header-file-chunk file-name includes . chunks)
-  (->* (chunk/c nullable-chunk-list/c) #:rest chunk-list/c chunk/c)
-  (concat-chunk (pp-ifndef-chunk file-name)
+;preprocessor conditional chunk
+(define/contract (pp-conditional-chunk directive condition then [else #false])
+  (->* (chunk/c chunk/c chunk/c) ((or/c chunk/c #false)) chunk/c)
+  (concat-chunk pp-directive-chunk
+                directive
+                space-chunk
+                condition
                 new-line-chunk
                 (indent-chunk 3
-                              (pp-define-chunk file-name))
-                blank-line-chunk
-                (if (empty? (flatten includes))
-                    empty-chunk
-                    (concat-chunk (indent-chunk 3
-                                                (includes-chunk includes))
-                                  blank-line-chunk))
-                (indent-chunk 3
-                              (smt-list-chunk blank-line-chunk
-                                              chunks))
-                blank-line-chunk
-                (pp-endif-chunk file-name)))
+                              then)
+                new-line-chunk
+                (if else
+                    (concat-chunk pp-else-chunk
+                                  new-line-chunk
+                                  (indent-chunk 3
+                                                else)
+                                  new-line-chunk)
+                    empty-chunk)
+                (pp-endif-chunk condition)))
+(provide pp-conditional-chunk)
+
+;preprocessor conditional ifdef chunk
+(define/contract (pp-conditional-ifdef-chunk condition then [else #false])
+  (->* (chunk/c chunk/c) ((or/c chunk/c #false)) chunk/c)
+  (pp-conditional-chunk ifdef-chunk condition then else))
+(provide pp-conditional-ifdef-chunk)
+
+;preprocessor conditional ifndef chunk
+(define/contract (pp-conditional-ifndef-chunk condition then [else #false])
+  (->* (chunk/c chunk/c) ((or/c chunk/c #false)) chunk/c)
+  (pp-conditional-chunk ifndef-chunk condition then else))
+(provide pp-conditional-ifndef-chunk)
+
+;preprocessor h file wrapper chunk
+(define/contract (pp-header-file-chunk file-name file-setup . chunks)
+  (->* (chunk/c chunk/c) #:rest chunk-list/c chunk/c)
+  (pp-conditional-ifndef-chunk file-name
+                               (concat-chunk (pp-define-chunk file-name)
+                                             blank-line-chunk
+                                             file-setup
+                                             blank-line-chunk
+                                             (smt-list-chunk blank-line-chunk
+                                                             chunks))))
 (provide pp-header-file-chunk)
 
 ;macro defintion chunk

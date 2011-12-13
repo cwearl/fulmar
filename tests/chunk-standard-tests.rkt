@@ -145,6 +145,18 @@
    (check-equal? (write-nekot 'normal (imm-include-chunk test-context) "1") '("1include"))
    (check-equal? (write-nekot 'normal (imm-include-chunk test-context) "123456") '("123456include")))
   (test-case
+   "Test ifdef-chunk"
+   (define test-context (construct-context 7))
+   (check-equal? (write-nekot 'normal (ifdef-chunk test-context) "") '("ifdef"))
+   (check-equal? (write-nekot 'normal (ifdef-chunk test-context) "1") '("1ifdef"))
+   (check-equal? (write-nekot 'normal (ifdef-chunk test-context) "123456") '("ifdef" "123456")))
+  (test-case
+   "Test imm-ifdef-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-ifdef-chunk test-context) "") '("ifdef"))
+   (check-equal? (write-nekot 'normal (imm-ifdef-chunk test-context) "1") '("1ifdef"))
+   (check-equal? (write-nekot 'normal (imm-ifdef-chunk test-context) "123456") '("123456ifdef")))
+  (test-case
    "Test ifndef-chunk"
    (define test-context (construct-context 7))
    (check-equal? (write-nekot 'normal (ifndef-chunk test-context) "") '("ifndef"))
@@ -156,6 +168,18 @@
    (check-equal? (write-nekot 'normal (imm-ifndef-chunk test-context) "") '("ifndef"))
    (check-equal? (write-nekot 'normal (imm-ifndef-chunk test-context) "1") '("1ifndef"))
    (check-equal? (write-nekot 'normal (imm-ifndef-chunk test-context) "123456") '("123456ifndef")))
+  (test-case
+   "Test else-chunk"
+   (define test-context (construct-context 7))
+   (check-equal? (write-nekot 'normal (else-chunk test-context) "") '("else"))
+   (check-equal? (write-nekot 'normal (else-chunk test-context) "1") '("1else"))
+   (check-equal? (write-nekot 'normal (else-chunk test-context) "123456") '("else" "123456")))
+  (test-case
+   "Test imm-else-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-else-chunk test-context) "") '("else"))
+   (check-equal? (write-nekot 'normal (imm-else-chunk test-context) "1") '("1else"))
+   (check-equal? (write-nekot 'normal (imm-else-chunk test-context) "123456") '("123456else")))
   (test-case
    "Test endif-chunk"
    (define test-context (construct-context 6))
@@ -475,16 +499,25 @@
    (check-equal? (write-nekot ((concat-chunk (spaces-chunk 3) (pp-include-chunk (literal-chunk 'name))) test-context)) '("#  include <name>"))
    (check-equal? (write-nekot 'normal ((pp-include-chunk (literal-chunk 'name)) test-context) "/* ") '("/*#include <name>"))))
 
-(define/provide-test-suite test-includes-chunk
+(define/provide-test-suite test-pp-includes-chunk
   (test-case
-   "Test includes-chunk"
+   "Test pp-includes-chunk"
    (define test-context (construct-context 80))
-   (check-equal? (write-nekot ((includes-chunk (literal-chunk "name")) test-context)) '("#include <name>"))
-   (check-equal? (write-nekot ((includes-chunk (literal-chunk "name")
+   (check-equal? (write-nekot ((pp-includes-chunk (literal-chunk "name")) test-context)) '("#include <name>"))
+   (check-equal? (write-nekot ((pp-includes-chunk (literal-chunk "name")
                                                (literal-chunk "name2"))
                                test-context))
                  '("#include <name2>"
                    "#include <name>"))))
+
+(define/provide-test-suite test-pp-ifdef-chunk
+  (test-case
+   "Test pp-ifdef-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((pp-ifdef-chunk (literal-chunk "condition")) test-context)) '("#ifdef condition"))
+   (check-equal? (write-nekot ((pp-ifdef-chunk (concat-chunk (literal-chunk "condition") (literal-chunk "2"))) test-context)) '("#ifdef condition2"))
+   (check-equal? (write-nekot ((concat-chunk (spaces-chunk 3) (pp-ifdef-chunk (literal-chunk "condition"))) test-context)) '("#  ifdef condition"))
+   (check-equal? (write-nekot 'normal ((pp-ifdef-chunk (literal-chunk 'condition)) test-context) "/* ") '("/*#ifdef condition"))))
 
 (define/provide-test-suite test-pp-ifndef-chunk
   (test-case
@@ -495,6 +528,14 @@
    (check-equal? (write-nekot ((concat-chunk (spaces-chunk 3) (pp-ifndef-chunk (literal-chunk "condition"))) test-context)) '("#  ifndef condition"))
    (check-equal? (write-nekot 'normal ((pp-ifndef-chunk (literal-chunk 'condition)) test-context) "/* ") '("/*#ifndef condition"))))
 
+(define/provide-test-suite test-pp-else-chunk
+  (test-case
+   "Test pp-else-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot (pp-else-chunk test-context)) '("#else"))
+   (check-equal? (write-nekot ((concat-chunk (spaces-chunk 3) pp-else-chunk) test-context)) '("#  else"))
+   (check-equal? (write-nekot 'normal (pp-else-chunk test-context) "/* ") '("/*#else"))))
+
 (define/provide-test-suite test-pp-endif-chunk
   (test-case
    "Test pp-endif-chunk"
@@ -504,57 +545,100 @@
    (check-equal? (write-nekot ((concat-chunk (spaces-chunk 3) (pp-endif-chunk (literal-chunk "condition"))) test-context)) '("#  endif //condition"))
    (check-equal? (write-nekot 'normal ((pp-endif-chunk (literal-chunk 'condition)) test-context) "/* ") '("/*#endif //condition"))))
 
+(define/provide-test-suite test-pp-conditional-chunk
+  (test-case
+   "Test pp-conditional-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((pp-conditional-chunk ifdef-chunk
+                                                     (literal-chunk "condition")
+                                                     (literal-chunk "then"))
+                               test-context))
+                 '("#endif //condition"
+                   "   then"
+                   "#ifdef condition"))
+   (check-equal? (write-nekot ((pp-conditional-chunk ifndef-chunk
+                                                     (literal-chunk "condition")
+                                                     (literal-chunk "then")
+                                                     (literal-chunk "else2"))
+                               test-context))
+                 '("#endif //condition"
+                   "   else2"
+                   "#else"
+                   "   then"
+                   "#ifndef condition"))))
+
+(define/provide-test-suite test-pp-conditional-ifdef-chunk
+  (test-case
+   "Test pp-conditional-ifdef-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((pp-conditional-ifdef-chunk (literal-chunk "condition")
+                                                           (literal-chunk "then"))
+                               test-context))
+                 '("#endif //condition"
+                   "   then"
+                   "#ifdef condition"))
+   (check-equal? (write-nekot ((pp-conditional-ifdef-chunk (literal-chunk "condition")
+                                                           (literal-chunk "then")
+                                                           (literal-chunk "else2"))
+                               test-context))
+                 '("#endif //condition"
+                   "   else2"
+                   "#else"
+                   "   then"
+                   "#ifdef condition"))))
+
+(define/provide-test-suite test-pp-conditional-ifndef-chunk
+  (test-case
+   "Test pp-conditional-ifndef-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((pp-conditional-ifndef-chunk (literal-chunk "condition")
+                                                           (literal-chunk "then"))
+                               test-context))
+                 '("#endif //condition"
+                   "   then"
+                   "#ifndef condition"))
+   (check-equal? (write-nekot ((pp-conditional-ifndef-chunk (literal-chunk "condition")
+                                                           (literal-chunk "then")
+                                                           (literal-chunk "else2"))
+                               test-context))
+                 '("#endif //condition"
+                   "   else2"
+                   "#else"
+                   "   then"
+                   "#ifndef condition"))))
+
 (define/provide-test-suite test-pp-header-file-chunk
   (test-case
    "Test pp-header-file-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot ((pp-header-file-chunk (literal-chunk "header_file")
-                                                     null
+                                                     empty-chunk
                                                      (literal-chunk "asdf")
                                                      (literal-chunk "jkl"))
                                test-context))
                  '("#endif //header_file"
-                   ""
                    "   jkl;"
                    ""
                    "   asdf;"
                    ""
-                   "#  define header_file"
-                   "#ifndef header_file"))
-   (check-equal? (write-nekot ((pp-header-file-chunk (literal-chunk "header_file")
-                                                     null
-                                                     (pp-header-file-chunk (literal-chunk "silly thing")
-                                                                           null
-                                                                           (literal-chunk "asdf")
-                                                                           (literal-chunk "jkl")))
-                               test-context))
-                 '("#endif //header_file"
                    ""
-                   "#  endif //silly thing;"
-                   ""
-                   "      jkl;"
-                   ""
-                   "      asdf;"
-                   ""
-                   "#     define silly thing"
-                   "#  ifndef silly thing"
                    ""
                    "#  define header_file"
                    "#ifndef header_file"))
    (check-equal? (write-nekot ((pp-header-file-chunk (literal-chunk "header_file")
-                                                     (list (literal-chunk "include1")
-                                                           (literal-chunk "include2"))
+                                                     (concat-chunk (pp-include-chunk (literal-chunk "iostream"))
+                                                                   new-line-chunk
+                                                                   (pp-include-chunk (literal-chunk "algorithm")))
                                                      (literal-chunk "asdf")
                                                      (literal-chunk "jkl"))
                                test-context))
                  '("#endif //header_file"
-                   ""
                    "   jkl;"
                    ""
                    "   asdf;"
                    ""
-                   "#  include <include2>"
-                   "#  include <include1>"
+                   "#  include <algorithm>"
+                   "#  include <iostream>"
                    ""
                    "#  define header_file"
                    "#ifndef header_file"))))
