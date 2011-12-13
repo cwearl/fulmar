@@ -477,7 +477,7 @@
 (define/contract (body-chunk . chunks)
   (->* () #:rest nullable-chunk-list/c chunk/c)
   (concat-chunk imm-open-crbr-chunk
-                (if (empty? chunks)
+                (if (empty? (flatten chunks))
                     empty-chunk
                     (speculative-chunk (concat-chunk space-chunk
                                                      (smt-list-chunk space-chunk
@@ -496,6 +496,16 @@
 ;preprocessor chunks;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
+;preprocessor define chunk
+; #define chunk
+(define/contract (pp-define-chunk name)
+  (-> chunk/c chunk/c)
+  (concat-chunk pp-directive-chunk
+                define-chunk
+                space-chunk
+                name))
+(provide pp-define-chunk)
+
 ;preprocessor include chunk
 ; #include<...> chunk
 (define/contract (pp-include-chunk included)
@@ -506,15 +516,13 @@
                 (template-list-chunk included)))
 (provide pp-include-chunk)
 
-;preprocessor define chunk
-; #define chunk
-(define/contract (pp-define-chunk name)
-  (-> chunk/c chunk/c)
-  (concat-chunk pp-directive-chunk
-                define-chunk
-                space-chunk
-                name))
-(provide pp-define-chunk)
+;multiple includes
+(define/contract (includes-chunk . chunks)
+  (->* () #:rest chunk-list/c chunk/c)
+  (between-chunk new-line-chunk
+                 (map pp-include-chunk
+                      (flatten chunks))))
+(provide includes-chunk)
 
 ;preprocessor if-not-defined chunk
 (define/contract (pp-ifndef-chunk condition)
@@ -535,13 +543,18 @@
 (provide pp-endif-chunk)
 
 ;preprocessor h file wrapper chunk
-(define/contract (pp-header-file-chunk file-name . chunks)
-  (->* (chunk/c) #:rest chunk-list/c chunk/c)
+(define/contract (pp-header-file-chunk file-name includes . chunks)
+  (->* (chunk/c nullable-chunk-list/c) #:rest chunk-list/c chunk/c)
   (concat-chunk (pp-ifndef-chunk file-name)
                 new-line-chunk
                 (indent-chunk 3
                               (pp-define-chunk file-name))
                 blank-line-chunk
+                (if (empty? (flatten includes))
+                    empty-chunk
+                    (concat-chunk (indent-chunk 3
+                                                (includes-chunk includes))
+                                  blank-line-chunk))
                 (indent-chunk 3
                               (smt-list-chunk blank-line-chunk
                                               chunks))
@@ -554,7 +567,7 @@
 (define/contract (macro-define-chunk name params chunk)
   (-> chunk/c nullable-chunk-list/c chunk/c chunk/c)
   (let ([macro-signature (concat-chunk (pp-define-chunk name)
-                                       (if (empty? params)
+                                       (if (empty? (flatten params))
                                            empty-chunk
                                            (paren-list-chunk params)))])
     (speculative-chunk (concat-chunk macro-signature
@@ -605,7 +618,7 @@
                                imm-inline-chunk
                                (immediate-chunk return-type)
                                (immediate-chunk name)
-                               (if (empty? params)
+                               (if (empty? (flatten params))
                                    (concat-chunk imm-open-paren-chunk
                                                  imm-void-chunk
                                                  imm-close-paren-chunk)

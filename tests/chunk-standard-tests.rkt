@@ -475,6 +475,17 @@
    (check-equal? (write-nekot ((concat-chunk (spaces-chunk 3) (pp-include-chunk (literal-chunk 'name))) test-context)) '("#  include <name>"))
    (check-equal? (write-nekot 'normal ((pp-include-chunk (literal-chunk 'name)) test-context) "/* ") '("/*#include <name>"))))
 
+(define/provide-test-suite test-includes-chunk
+  (test-case
+   "Test includes-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((includes-chunk (literal-chunk "name")) test-context)) '("#include <name>"))
+   (check-equal? (write-nekot ((includes-chunk (literal-chunk "name")
+                                               (literal-chunk "name2"))
+                               test-context))
+                 '("#include <name2>"
+                   "#include <name>"))))
+
 (define/provide-test-suite test-pp-ifndef-chunk
   (test-case
    "Test pp-ifndef-chunk"
@@ -498,6 +509,7 @@
    "Test pp-header-file-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot ((pp-header-file-chunk (literal-chunk "header_file")
+                                                     null
                                                      (literal-chunk "asdf")
                                                      (literal-chunk "jkl"))
                                test-context))
@@ -510,7 +522,9 @@
                    "#  define header_file"
                    "#ifndef header_file"))
    (check-equal? (write-nekot ((pp-header-file-chunk (literal-chunk "header_file")
+                                                     null
                                                      (pp-header-file-chunk (literal-chunk "silly thing")
+                                                                           null
                                                                            (literal-chunk "asdf")
                                                                            (literal-chunk "jkl")))
                                test-context))
@@ -524,6 +538,23 @@
                    ""
                    "#     define silly thing"
                    "#  ifndef silly thing"
+                   ""
+                   "#  define header_file"
+                   "#ifndef header_file"))
+   (check-equal? (write-nekot ((pp-header-file-chunk (literal-chunk "header_file")
+                                                     (list (literal-chunk "include1")
+                                                           (literal-chunk "include2"))
+                                                     (literal-chunk "asdf")
+                                                     (literal-chunk "jkl"))
+                               test-context))
+                 '("#endif //header_file"
+                   ""
+                   "   jkl;"
+                   ""
+                   "   asdf;"
+                   ""
+                   "#  include <include2>"
+                   "#  include <include1>"
                    ""
                    "#  define header_file"
                    "#ifndef header_file"))))
