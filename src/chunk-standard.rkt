@@ -197,6 +197,19 @@
   (immediate-chunk define-chunk))
 (provide imm-define-chunk)
 
+;include chunk
+(define/contract include-chunk
+  chunk/c
+  (literal-chunk "include"))
+(provide include-chunk)
+
+;immediate include chunk
+; adds "include" immediately
+(define/contract imm-include-chunk
+  chunk/c
+  (immediate-chunk include-chunk))
+(provide imm-include-chunk)
+
 ;ifndef chunk
 (define/contract ifndef-chunk
   chunk/c
@@ -482,6 +495,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 ;preprocessor chunks;;
 ;;;;;;;;;;;;;;;;;;;;;;
+
+;preprocessor include chunk
+; #include<...> chunk
+(define/contract (pp-include-chunk included)
+  (-> chunk/c chunk/c)
+  (concat-chunk pp-directive-chunk
+                include-chunk
+                space-chunk
+                (template-list-chunk included)))
+(provide pp-include-chunk)
 
 ;preprocessor define chunk
 ; #define chunk

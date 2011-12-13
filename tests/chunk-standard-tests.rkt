@@ -133,6 +133,18 @@
    (check-equal? (write-nekot 'normal (imm-define-chunk test-context) "1") '("1define"))
    (check-equal? (write-nekot 'normal (imm-define-chunk test-context) "123456") '("123456define")))
   (test-case
+   "Test include-chunk"
+   (define test-context (construct-context 8))
+   (check-equal? (write-nekot 'normal (include-chunk test-context) "") '("include"))
+   (check-equal? (write-nekot 'normal (include-chunk test-context) "1") '("1include"))
+   (check-equal? (write-nekot 'normal (include-chunk test-context) "123456") '("include" "123456")))
+  (test-case
+   "Test imm-include-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-include-chunk test-context) "") '("include"))
+   (check-equal? (write-nekot 'normal (imm-include-chunk test-context) "1") '("1include"))
+   (check-equal? (write-nekot 'normal (imm-include-chunk test-context) "123456") '("123456include")))
+  (test-case
    "Test ifndef-chunk"
    (define test-context (construct-context 7))
    (check-equal? (write-nekot 'normal (ifndef-chunk test-context) "") '("ifndef"))
@@ -453,6 +465,15 @@
    (check-equal? (write-nekot ((pp-define-chunk (concat-chunk (literal-chunk "name") (literal-chunk "2"))) test-context)) '("#define name2"))
    (check-equal? (write-nekot ((concat-chunk (spaces-chunk 3) (pp-define-chunk (literal-chunk 'name))) test-context)) '("#  define name"))
    (check-equal? (write-nekot 'normal ((pp-define-chunk (literal-chunk 'name)) test-context) "/* ") '("/*#define name"))))
+
+(define/provide-test-suite test-pp-include-chunk
+  (test-case
+   "Test pp-include-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((pp-include-chunk (literal-chunk "name")) test-context)) '("#include <name>"))
+   (check-equal? (write-nekot ((pp-include-chunk (concat-chunk (literal-chunk "name") (literal-chunk "2"))) test-context)) '("#include <name2>"))
+   (check-equal? (write-nekot ((concat-chunk (spaces-chunk 3) (pp-include-chunk (literal-chunk 'name))) test-context)) '("#  include <name>"))
+   (check-equal? (write-nekot 'normal ((pp-include-chunk (literal-chunk 'name)) test-context) "/* ") '("/*#include <name>"))))
 
 (define/provide-test-suite test-pp-ifndef-chunk
   (test-case

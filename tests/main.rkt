@@ -131,6 +131,7 @@
         test-body-chunk
         test-smt-list-chunk
         test-pp-define-chunk
+        test-pp-include-chunk
         test-pp-ifndef-chunk
         test-pp-endif-chunk
         test-pp-header-file-chunk
