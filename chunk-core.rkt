@@ -10,32 +10,37 @@
 
 ;fulmar-core definitions
 (provide chunk/c)
-(provide string-value/c)
+(provide chunk-list/c)
+(provide nullable-chunk-list/c)
+(provide flatten*)
 
+;TODO: increase tests to handle new contracts for combine-lengths and combine-strings (and a good number of chunks: ones that contain "*-list/c")
 ;combine lengths of given values
 (define/contract (combine-lengths . values)
-  (->* () #:rest (listof length-value/c) natural-number/c)
+  (->* () #:rest length-list/c natural-number/c)
   (foldl (λ (value total)
            (+ total
               (cond [(integer? value) value]
                     [(string? value) (string-length value)]
-                    [(symbol? value) (string-length (symbol->string value))])))
+                    [(symbol? value) (string-length (symbol->string value))]
+                    [(pair? value) (apply combine-lengths value)])))
          0
          values))
 (provide combine-lengths)
 
 ;combine strings
 (define/contract (combine-strings . values)
-  (->* () #:rest (listof string-value/c) string?)
+  (->* () #:rest string-list/c string?)
   (foldl (λ (str total)
            (string-append total
                           (cond [(string? str) str]
-                                [(symbol? str) (symbol->string str)])))
+                                [(symbol? str) (symbol->string str)]
+                                [(pair? str) (apply combine-strings str)])))
          ""
          values))
 (provide combine-strings)
 
-;helper for arg-list-chunk (a standard chunk)
+;helper for speculative-chunk
 ; (located here for testing)
 (define/contract (length-equals-one lst)
   (-> written-lines/c boolean?)
@@ -50,17 +55,17 @@
 ;literal chunk
 ; simple string
 (define/contract (literal-chunk . strings)
-  (->* () #:rest (non-empty-listof string-value/c) chunk/c)
+  (->* () #:rest string-list/c chunk/c)
   (λ (context)
-    (nekot 'literal (apply combine-strings strings) context)))
+    (nekot 'literal (combine-strings strings) context)))
 (provide literal-chunk)
 
 ;sequence of spaces chunk
 ; adds some number of spaces
 (define/contract (spaces-chunk . lengths)
-  (->* () #:rest (non-empty-listof length-value/c) chunk/c)
+  (->* () #:rest length-list/c chunk/c)
   (λ (context)
-    (nekot 'spaces (apply combine-lengths lengths) context)))
+    (nekot 'spaces (combine-lengths lengths) context)))
 (provide spaces-chunk)
 
 ;new line chunk
@@ -96,10 +101,11 @@
 ; - attempts to put as many on the same line as possible
 ; - no spaces added
 (define/contract (concat-chunk . chunks)
-  (->* () #:rest (listof chunk/c) chunk/c)
+  (->* () #:rest chunk-list/c chunk/c)
   (λ (context)
     (nekot 'concat
-           (map (λ (chunk) (chunk context)) chunks)
+           (map (λ (chunk) (chunk context))
+                (flatten chunks))
            context)))
 (provide concat-chunk)
 
@@ -145,10 +151,10 @@
 ;indent chunk
 ; increases current indent
 (define/contract (indent-chunk length chunk)
-  (-> (or/c length-value/c (listof length-value/c)) chunk/c chunk/c)
+  (-> length-list/c chunk/c chunk/c)
   (λ (context)
     (chunk (reindent (if (pair? length)
-                         (apply combine-lengths length)
+                         (combine-lengths length)
                          length)
                      context))))
 (provide indent-chunk)
@@ -163,27 +169,24 @@
 
 ;comment-line chunk
 ; single-line comment chunk
-(define/contract (comment-line-chunk . strings)
-  (->* () #:rest (non-empty-listof string-value/c) chunk/c)
-  (λ (context)
-    (let ([env (context-env context)]
-          [string (apply combine-strings strings)])
-      ((literal-chunk (cond [;in macro environment
-                             (macro-env? env)
-                             (string-append "/*"
-                                            string
-                                            "*/")]
-                            [;in empty, comment, comment-macro or macro-comment environment
-                             (or (empty-env? env)
-                                 (comment-env? env)
-                                 (comment-macro-env? env)
-                                 (macro-comment-env? env))
-                             (string-append "//"
-                                            string)]
-                            [;in unknown environment
-                             else
-                             (error "Contract for comment-line-chunk should prevent this case from coming up; good luck! Given: " strings context)]))
-       context))))
+(define/contract (comment-line-chunk . chunk-lists)
+  (->* () #:rest chunk-list/c chunk/c)
+  (let ([chunks (flatten chunk-lists)])
+    (λ (context)
+      (let ([env (context-env context)])
+        ((cond [;in macro environment
+                (macro-env? env)
+                (immediate-chunk (concat-chunk (literal-chunk "/*")
+                                               chunks
+                                               (literal-chunk "*/")))]
+               [;in empty, comment, comment-macro or macro-comment environment
+                (or (empty-env? env)
+                    (comment-env? env)
+                    (comment-macro-env? env)
+                    (macro-comment-env? env))
+                (immediate-chunk (concat-chunk (literal-chunk "//")
+                                               chunks))])
+         context)))))
 (provide comment-line-chunk)
 
 ;macro environment chunk

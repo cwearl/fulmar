@@ -5,14 +5,26 @@
 ;  - a rich code generation/macro system for C++ that uses S-expressions
 ;  - the name of two species (Northern and Southern) of seabirds of the family Procellariidae
 
+;basic helper functions
+(define/contract (flatten* . lst)
+  (->* () #:rest (listof any/c) (listof any/c))
+  (flatten lst))
+(provide flatten*)
+
 ;basic contracts
 (define (context-delayed? x) (context? x))
 ;(provide context-delayed?)
 (define indent/c natural-number/c)
 (define line-length/c exact-positive-integer?)
+(provide indent/c line-length/c)
 (define string-value/c (or/c symbol? string?))
+(define string-list/c (or/c string-value/c
+                            (non-empty-listof (recursive-contract string-list/c))))
+(provide string-value/c string-list/c)
 (define length-value/c (or/c natural-number/c string-value/c))
-(provide indent/c line-length/c string-value/c length-value/c)
+(define length-list/c (or/c length-value/c
+                            (non-empty-listof (recursive-contract length-list/c))))
+(provide length-value/c length-list/c)
 (define nekot-name/c symbol?)
 (define nekot-body/c any/c)
 (provide nekot-name/c nekot-body/c)
@@ -41,7 +53,13 @@
 
 ;chunk Contract
 (define chunk/c (-> context-delayed? nekot/c))
-(provide chunk/c)
+(define chunk-list/c (or/c chunk/c
+                           (non-empty-listof (recursive-contract chunk-list/c))))
+(define nullable-list/c (or/c null/c
+                              (non-empty-listof (recursive-contract nullable-list/c))))
+(define nullable-chunk-list/c (or/c chunk-list/c
+                                    nullable-list/c))
+(provide chunk/c chunk-list/c nullable-chunk-list/c)
 
 ;error chunk
 ; this chunk raises an error when applied - this chunk is used for testing and filing in stubs/empty parameters

@@ -22,7 +22,8 @@
    (check-eq? (combine-lengths 'asdf 3) 7)
    (check-eq? (combine-lengths 4 "jkl") 7)
    (check-eq? (combine-lengths 4 'jkl) 7)
-   (check-eq? (combine-lengths 4 3) 7)))
+   (check-eq? (combine-lengths 4 3) 7)
+   (check-eq? (combine-lengths '(4 3)) 7)))
 
 (define/provide-test-suite test-combine-strings
   (test-case
@@ -32,7 +33,8 @@
    (check-equal? (combine-strings "asdf" "jkl") "asdfjkl")
    (check-equal? (combine-strings "asdf" 'jkl) "asdfjkl")
    (check-equal? (combine-strings 'asdf "jkl") "asdfjkl")
-   (check-equal? (combine-strings 'asdf 'jkl) "asdfjkl")))
+   (check-equal? (combine-strings 'asdf 'jkl) "asdfjkl")
+   (check-equal? (combine-strings '(asdf jkl)) "asdfjkl")))
 
 (define/provide-test-suite test-length-equals-one
   (test-case
@@ -59,7 +61,8 @@
    (check-equal? ((literal-chunk "asdf" "jkl") test-context) (nekot 'literal "asdfjkl" test-context))
    (check-equal? ((literal-chunk "asdf" 'jkl) test-context) (nekot 'literal "asdfjkl" test-context))
    (check-equal? ((literal-chunk 'asdf "jkl") test-context) (nekot 'literal "asdfjkl" test-context))
-   (check-equal? ((literal-chunk 'asdf 'jkl) test-context) (nekot 'literal "asdfjkl" test-context))))
+   (check-equal? ((literal-chunk 'asdf 'jkl) test-context) (nekot 'literal "asdfjkl" test-context))
+   (check-equal? ((literal-chunk '(asdf jkl)) test-context) (nekot 'literal "asdfjkl" test-context))))
 
 (define/provide-test-suite test-spaces-chunk
   (test-case
@@ -76,7 +79,8 @@
    (check-equal? ((spaces-chunk 'asdf 3) test-context) (nekot 'spaces 7 test-context))
    (check-equal? ((spaces-chunk 4 "jkl") test-context) (nekot 'spaces 7 test-context))
    (check-equal? ((spaces-chunk 4 'jkl) test-context) (nekot 'spaces 7 test-context))
-   (check-equal? ((spaces-chunk 4 3) test-context) (nekot 'spaces 7 test-context))))
+   (check-equal? ((spaces-chunk 4 3) test-context) (nekot 'spaces 7 test-context))
+   (check-equal? ((spaces-chunk '(4 3)) test-context) (nekot 'spaces 7 test-context))))
 
 (define/provide-test-suite test-new-line-chunk
   (test-case
@@ -102,6 +106,10 @@
   (test-case
    "Test concat-chunk"
    (check-equal? ((concat-chunk (literal-chunk 'asdf) (literal-chunk "jkl")) (construct-context 80))
+                 (nekot 'concat (list (nekot 'literal "asdf" (construct-context 80))
+                                      (nekot 'literal "jkl" (construct-context 80)))
+                        (construct-context 80)))
+   (check-equal? ((concat-chunk (list (literal-chunk 'asdf) (literal-chunk "jkl"))) (construct-context 80))
                  (nekot 'concat (list (nekot 'literal "asdf" (construct-context 80))
                                       (nekot 'literal "jkl" (construct-context 80)))
                         (construct-context 80)))
@@ -212,116 +220,93 @@
    "Test comment-line-chunk - empty environment"
    (define test-context (construct-context 80))
    (define com-context (context 0 80 (comment-env 0)))
-   (check-equal? ((comment-line-chunk "asdf") test-context)
-                 (nekot 'literal "//asdf" test-context)
-                 test-context)
-   (check-equal? ((comment-line-chunk 'asdf) test-context)
-                 (nekot 'literal "//asdf" test-context)
-                 test-context)
-   (check-equal? ((comment-line-chunk 'as 'df) test-context)
-                 (nekot 'literal "//asdf" test-context)
-                 test-context)
-   (check-equal? ((comment-line-chunk "as" "df") test-context)
-                 (nekot 'literal "//asdf" test-context)
-                 test-context)
-   (check-equal? ((comment-line-chunk 'as "df") test-context)
-                 (nekot 'literal "//asdf" test-context)
-                 test-context)
-   (check-equal? ((comment-line-chunk "as" 'df) test-context)
-                 (nekot 'literal "//asdf" test-context)
-                 test-context))
+   (check-equal? ((comment-line-chunk (literal-chunk "asdf")) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "asdf" test-context))
+                               test-context)
+                        test-context))
+   (check-equal? ((comment-line-chunk (literal-chunk 'asdf)) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "asdf" test-context))
+                               test-context)
+                        test-context))
+   (check-equal? ((comment-line-chunk (literal-chunk 'as) (literal-chunk 'df)) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "as" test-context)
+                                     (nekot 'literal "df" test-context))
+                               test-context)
+                        test-context))
+   (check-equal? ((comment-line-chunk (literal-chunk "as") (literal-chunk "df")) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "as" test-context)
+                                     (nekot 'literal "df" test-context))
+                               test-context)
+                        test-context))
+   (check-equal? ((comment-line-chunk (literal-chunk 'as) (literal-chunk "df")) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "as" test-context)
+                                     (nekot 'literal "df" test-context))
+                               test-context)
+                        test-context))
+   (check-equal? ((comment-line-chunk (literal-chunk "as") (literal-chunk 'df)) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "as" test-context)
+                                     (nekot 'literal "df" test-context))
+                               test-context)
+                        test-context)))
   (test-case
    "Test comment-line-chunk - comment environment"
-   (define com-context (context 0 80 (comment-env 0)))
-   (check-equal? ((comment-line-chunk "asdf") com-context)
-                 (nekot 'literal "//asdf" com-context)
-                 com-context))
+   (define test-context (context 0 80 (comment-env 0)))
+   (check-equal? ((comment-line-chunk (literal-chunk "asdf")) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "asdf" test-context))
+                               test-context)
+                        test-context)))
   (test-case
    "Test comment-line-chunk - macro environment"
-   (define mac-context (context 0 80 macro-env))
-   (check-equal? ((comment-line-chunk "asdf") mac-context)
-                 (nekot 'literal "/*asdf*/" mac-context)
-                 mac-context))
+   (define test-context (context 0 80 macro-env))
+   (check-equal? ((comment-line-chunk (literal-chunk "asdf")) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "/*" test-context)
+                                     (nekot 'literal "asdf" test-context)
+                                     (nekot 'literal "*/" test-context))
+                               test-context)
+                        test-context)))
   (test-case
    "Test comment-line-chunk - comment macro environment"
-   (define com-mac-context (context 0 80 (comment-macro-env 0)))
-   (check-equal? ((comment-line-chunk "asdf") com-mac-context)
-                 (nekot 'literal "//asdf" com-mac-context)
-                 com-mac-context))
+   (define test-context (context 0 80 (comment-macro-env 0)))
+   (check-equal? ((comment-line-chunk (literal-chunk "asdf")) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "asdf" test-context))
+                               test-context)
+                        test-context)))
   (test-case
    "Test comment-line-chunk - macro comment environment"
-   (define mac-com-context (context 0 80 (macro-comment-env 0)))
-   (check-equal? ((comment-line-chunk "asdf") mac-com-context)
-                 (nekot 'literal "//asdf" mac-com-context)
-                 mac-com-context)))
-
-;(define/provide-test-suite test-comment-line-chunk
-;  (test-case
-;   "Test comment-line-chunk - empty environment"
-;   (define test-context (construct-context 80))
-;   (define com-context (context 0 80 (comment-env 0)))
-;   (check-equal? ((comment-line-chunk "asdf") test-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" test-context)
-;                              (nekot 'new-line null test-context))
-;                        test-context))
-;   (check-equal? ((comment-line-chunk 'asdf) test-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" test-context)
-;                              (nekot 'new-line null test-context))
-;                        test-context))
-;   (check-equal? ((comment-line-chunk 'as 'df) test-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" test-context)
-;                              (nekot 'new-line null test-context))
-;                        test-context))
-;   (check-equal? ((comment-line-chunk "as" "df") test-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" test-context)
-;                              (nekot 'new-line null test-context))
-;                        test-context))
-;   (check-equal? ((comment-line-chunk 'as "df") test-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" test-context)
-;                              (nekot 'new-line null test-context))
-;                        test-context))
-;   (check-equal? ((comment-line-chunk "as" 'df) test-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" test-context)
-;                              (nekot 'new-line null test-context))
-;                        test-context)))
-;  (test-case
-;   "Test comment-line-chunk - comment environment"
-;   (define com-context (context 0 80 (comment-env 0)))
-;   (check-equal? ((comment-line-chunk "asdf") com-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" com-context)
-;                              (nekot 'new-line null com-context))
-;                        com-context)))
-;  (test-case
-;   "Test comment-line-chunk - macro environment"
-;   (define mac-context (context 0 80 macro-env))
-;   (check-equal? ((comment-line-chunk "asdf") mac-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "/*asdf*/" mac-context)
-;                              (nekot 'new-line null mac-context))
-;                        mac-context)))
-;  (test-case
-;   "Test comment-line-chunk - comment macro environment"
-;   (define com-mac-context (context 0 80 (comment-macro-env 0)))
-;   (check-equal? ((comment-line-chunk "asdf") com-mac-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" com-mac-context)
-;                              (nekot 'new-line null com-mac-context))
-;                        com-mac-context)))
-;  (test-case
-;   "Test comment-line-chunk - macro comment environment"
-;   (define mac-com-context (context 0 80 (macro-comment-env 0)))
-;   (check-equal? ((comment-line-chunk "asdf") mac-com-context)
-;                 (nekot 'concat
-;                        (list (nekot 'literal "//asdf" mac-com-context)
-;                              (nekot 'new-line null mac-com-context))
-;                        mac-com-context))))
+   (define test-context (context 0 80 (macro-comment-env 0)))
+   (check-equal? ((comment-line-chunk (literal-chunk "asdf")) test-context)
+                 (nekot 'immediate
+                        (nekot 'concat
+                               (list (nekot 'literal "//" test-context)
+                                     (nekot 'literal "asdf" test-context))
+                               test-context)
+                        test-context))))
 
 (define/provide-test-suite test-macro-env-chunk
   (test-case

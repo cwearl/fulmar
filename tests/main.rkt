@@ -5,8 +5,8 @@
 (require rackunit/text-ui)
 (require "fulmar-core-tests.rkt")
 (require "chunk-core-tests.rkt")
-(require "chunk-standard-tests.rkt")
 (require "writer-tests.rkt")
+(require "chunk-standard-tests.rkt")
 (require "io-tests.rkt")
 
 ;sequentially check if any tests fail
@@ -52,7 +52,8 @@
 ;fulmar-core tests:
 (define/contract fulmar-core-tests
   (listof test-suite?)
-  (list test-empty-env
+  (list test-flatten*
+        test-empty-env
         test-comment-env
         test-macro-env
         test-comment-macro-env
@@ -91,23 +92,6 @@
 (apply test-fail-with-gui? chunk-core-tests)
 ;(apply run-tests-text chunk-core-tests)
 
-;standard chunk tests:
-(define/contract standard-core-tests
-  (listof test-suite?)
-  (list test-imm-list-chunk
-        test-arg-list-chunk
-        test-smt-list-chunk
-        test-dfn-list-chunk
-        test-character-chunks
-        test-pp-define-chunk
-        test-pp-ifndef-chunk
-        test-pp-endif-chunk
-        test-pp-header-file-chunk
-        test-macro-definition-chunk))
-
-(apply test-fail-with-gui? standard-core-tests)
-;(apply run-tests-text standard-core-tests)
-
 ;writer tests:
 (define/contract writer-tests
   (listof test-suite?)
@@ -132,3 +116,36 @@
 
 (apply test-fail-with-gui? writer-tests)
 ;(apply run-tests-text writer-tests)
+
+;standard chunk tests:
+(define/contract standard-core-tests
+  (listof test-suite?)
+  (list test-character-chunks
+        test-keyword-chunks
+        test-attach-list-separator
+        test-between-chunk
+        test-between/attach-chunk
+        test-arg-list-chunk
+        test-paren-list-chunk
+        test-template-list-chunk
+        test-body-chunk
+        test-smt-list-chunk
+        test-pp-define-chunk
+        test-pp-ifndef-chunk
+        test-pp-endif-chunk
+        test-pp-header-file-chunk
+        test-macro-define-chunk
+        test-template-define-chunk
+        test-template-use-chunk
+        test-function-declare-chunk
+        test-void-function-declare-chunk
+        test-function-define-chunk
+        test-void-function-define-chunk
+        test-returning-function-define-chunk
+        test-struct-declare-chunk
+        test-template-struct-declare-chunk
+        test-section-define-chunk
+        test-struct-define-chunk))
+
+(apply test-fail-with-gui? standard-core-tests)
+;(apply run-tests-text standard-core-tests)

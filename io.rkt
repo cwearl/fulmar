@@ -69,5 +69,6 @@
                [chunks (read-chunks port)])
           (close-input-port port)
           chunks)))
-  (apply dfn-list-chunk (read-chunks port/location)))
+  (smt-list-chunk blank-line-chunk
+                  (read-chunks port/location)))
 (provide read-chunk)

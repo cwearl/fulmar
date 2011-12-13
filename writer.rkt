@@ -25,14 +25,15 @@
 ;remove whitespace from the end of a line
 (define/contract (remove-whitespace line)
   (-> written-line/c written-line/c)
-  (list->string (reverse (cdr (foldl (λ (char result) (if (equal? char #\ )
-                                                           (cons (cons #\  (car result))
-                                                                 (cdr result))
-                                                           (cons '()
-                                                                 (append (cons char (car result))
-                                                                         (cdr result)))))
-                                      '(())
-                                      (string->list line))))))
+  (list->string (reverse (second (foldl (λ (char result) (if (equal? char #\ )
+                                                             (list (cons #\  (first result))
+                                                                   (second result))
+                                                             (list null
+                                                                   (flatten* char
+                                                                             (first result)
+                                                                             (second result)))))
+                                        (list null null)
+                                        (string->list line))))))
 (provide remove-whitespace)
 
 ;build indentation for new line given current context

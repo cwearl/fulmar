@@ -5,14 +5,6 @@
 ;fulmar standard chunks
 
 ;;;;;;;;;;;;;;;;;;;;;;
-;preprocessor strings;
-;;;;;;;;;;;;;;;;;;;;;;
-
-(define pp-define-string "define")
-(define pp-ifndef-string "ifndef")
-(define pp-endif-string "endif")
-
-;;;;;;;;;;;;;;;;;;;;;;
 ;core chunks;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
@@ -27,51 +19,6 @@
 (provide indent-chunk)
 (provide comment-env-chunk)
 (provide comment-line-chunk)
-
-;;;;;;;;;;;;;;;;;;;;;;
-;list chunks;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;
-
-;immediate list chunk
-; forces all chunks to go on the same line
-; - new-line-chunks are exception
-;   but they must be explicitly in the chunks
-;   not implied by the normal writer's rules
-;TODO: Determine if imm-list-chunk needed anywhere?
-(define/contract (imm-list-chunk . chunks)
-  (->* () #:rest (non-empty-listof chunk/c) chunk/c)
-  (immediate-chunk (apply concat-chunk chunks)))
-(provide imm-list-chunk)
-
-;argument list chunk
-; attempts to put chunks on a single line with a space between each chunk
-; if that fails, puts chunks on their own lines
-(define/contract (arg-list-chunk . chunks)
-  (->* () #:rest (non-empty-listof chunk/c) chunk/c)
-  (speculative-chunk (apply concat-chunk (add-between chunks (spaces-chunk 1)))
-                     (λ (lines) (= 1 (length lines)))
-                     (position-indent-chunk (apply concat-chunk (add-between chunks new-line-chunk)))))
-(provide arg-list-chunk)
-
-;statement line list of chunks
-; each chunk is expanded on its own line
-; - each chunk put on it's own line
-(define/contract (smt-list-chunk . chunks)
-  (->* () #:rest (listof chunk/c) chunk/c)
-  (apply concat-chunk
-         (add-between chunks new-line-chunk)))
-(provide smt-list-chunk)
-
-;definition list of chunks
-; each chunk is expanded on its own line with a blank line between them
-; - each chunk put on it's own line
-; - blank lines added between chunks
-(define/contract (dfn-list-chunk . chunks)
-  (->* () #:rest (listof chunk/c) chunk/c)
-  (apply concat-chunk
-         (add-between chunks (concat-chunk new-line-chunk
-                                           new-line-chunk))))
-(provide dfn-list-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;character chunks;;;;;
@@ -94,8 +41,10 @@
 ;blank lines chunk
 ; adds n blank lines
 (define/contract (blank-lines-chunk . lengths)
-  (->* () #:rest (listof exact-positive-integer?) chunk/c)
-  (apply concat-chunk (make-list (apply combine-lengths (cons 1 lengths)) new-line-chunk)))
+  (->* () #:rest (non-empty-listof exact-positive-integer?) chunk/c)
+  (concat-chunk (make-list (combine-lengths 1
+                                            lengths)
+                           new-line-chunk)))
 (provide blank-lines-chunk)
 
 ;blank line chunk
@@ -203,6 +152,333 @@
   (immediate-chunk comma-chunk))
 (provide imm-comma-chunk)
 
+;colon chunk
+; adds ":"
+(define/contract colon-chunk
+  chunk/c
+  (literal-chunk ":"))
+(provide colon-chunk)
+
+;immediate colon chunk
+; adds "," immediately
+(define/contract imm-colon-chunk
+  chunk/c
+  (immediate-chunk colon-chunk))
+(provide imm-colon-chunk)
+
+;semi-colon chunk
+; adds ";"
+(define/contract semi-colon-chunk
+  chunk/c
+  (literal-chunk ";"))
+(provide semi-colon-chunk)
+
+;immediate semi-colon chunk
+; adds ";" immediately
+(define/contract imm-semi-colon-chunk
+  chunk/c
+  (immediate-chunk semi-colon-chunk))
+(provide imm-semi-colon-chunk)
+
+;;;;;;;;;;;;;;;;;;;;;;
+;keyword chunks;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+;define chunk
+(define/contract define-chunk
+  chunk/c
+  (literal-chunk "define"))
+(provide define-chunk)
+
+;immediate define chunk
+; adds "define" immediately
+(define/contract imm-define-chunk
+  chunk/c
+  (immediate-chunk define-chunk))
+(provide imm-define-chunk)
+
+;ifndef chunk
+(define/contract ifndef-chunk
+  chunk/c
+  (literal-chunk "ifndef"))
+(provide ifndef-chunk)
+
+;immediate ifndef chunk
+; adds "ifndef" immediately
+(define/contract imm-ifndef-chunk
+  chunk/c
+  (immediate-chunk ifndef-chunk))
+(provide imm-ifndef-chunk)
+
+;endif chunk
+(define/contract endif-chunk
+  chunk/c
+  (literal-chunk "endif"))
+(provide endif-chunk)
+
+;immediate endif chunk
+; adds "endif" immediately
+(define/contract imm-endif-chunk
+  chunk/c
+  (immediate-chunk endif-chunk))
+(provide imm-endif-chunk)
+
+;template chunk
+(define/contract template-chunk
+  chunk/c
+  (literal-chunk "template"))
+(provide template-chunk)
+
+;immediate template chunk
+; adds "template" immediately
+(define/contract imm-template-chunk
+  chunk/c
+  (immediate-chunk template-chunk))
+(provide imm-template-chunk)
+
+;typename chunk
+(define/contract typename-chunk
+  chunk/c
+  (literal-chunk "typename"))
+(provide typename-chunk)
+
+;immediate typename chunk
+; adds "typename" immediately
+(define/contract imm-typename-chunk
+  chunk/c
+  (immediate-chunk typename-chunk))
+(provide imm-typename-chunk)
+
+;typedef chunk
+(define/contract typedef-chunk
+  chunk/c
+  (literal-chunk "typedef"))
+(provide typedef-chunk)
+
+;immediate typedef chunk
+; adds "typedef" immediately
+(define/contract imm-typedef-chunk
+  chunk/c
+  (immediate-chunk typedef-chunk))
+(provide imm-typedef-chunk)
+
+;void chunk
+(define/contract void-chunk
+  chunk/c
+  (literal-chunk "void"))
+(provide void-chunk)
+
+;immediate void chunk
+; adds "void" immediately
+(define/contract imm-void-chunk
+  chunk/c
+  (immediate-chunk void-chunk))
+(provide imm-void-chunk)
+
+;inline chunk
+(define/contract inline-chunk
+  chunk/c
+  (literal-chunk "inline"))
+(provide inline-chunk)
+
+;immediate inline chunk
+; adds "inline" immediately
+(define/contract imm-inline-chunk
+  chunk/c
+  (immediate-chunk inline-chunk))
+(provide imm-inline-chunk)
+
+;return chunk
+(define/contract return-chunk
+  chunk/c
+  (literal-chunk "return"))
+(provide return-chunk)
+
+;immediate return chunk
+; adds "return" immediately
+(define/contract imm-return-chunk
+  chunk/c
+  (immediate-chunk return-chunk))
+(provide imm-return-chunk)
+
+;struct chunk
+(define/contract struct-chunk
+  chunk/c
+  (literal-chunk "struct"))
+(provide struct-chunk)
+
+;immediate struct chunk
+; adds "struct" immediately
+(define/contract imm-struct-chunk
+  chunk/c
+  (immediate-chunk struct-chunk))
+(provide imm-struct-chunk)
+
+;class chunk
+(define/contract class-chunk
+  chunk/c
+  (literal-chunk "class"))
+(provide class-chunk)
+
+;immediate class chunk
+; adds "class" immediately
+(define/contract imm-class-chunk
+  chunk/c
+  (immediate-chunk class-chunk))
+(provide imm-class-chunk)
+
+;public chunk
+(define/contract public-chunk
+  chunk/c
+  (literal-chunk "public"))
+(provide public-chunk)
+
+;immediate public chunk
+; adds "public" immediately
+(define/contract imm-public-chunk
+  chunk/c
+  (immediate-chunk public-chunk))
+(provide imm-public-chunk)
+
+;protected chunk
+(define/contract protected-chunk
+  chunk/c
+  (literal-chunk "protected"))
+(provide protected-chunk)
+
+;immediate protected chunk
+; adds "protected" immediately
+(define/contract imm-protected-chunk
+  chunk/c
+  (immediate-chunk protected-chunk))
+(provide imm-protected-chunk)
+
+;private chunk
+(define/contract private-chunk
+  chunk/c
+  (literal-chunk "private"))
+(provide private-chunk)
+
+;immediate private chunk
+; adds "private" immediately
+(define/contract imm-private-chunk
+  chunk/c
+  (immediate-chunk private-chunk))
+(provide imm-private-chunk)
+
+;;;;;;;;;;;;;;;;;;;;;;
+;list chunks;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+;attach a chunk to other chunks
+; adds to-add-chunk immediately after each of the given chunks
+; except: to-add-chunk is NOT added to the final chunk
+(define/contract (attach-list-separator to-attach-chunk . chunk-lists)
+  (->* (chunk/c) #:rest chunk-list/c (listof chunk/c))
+  (let ([chunks (flatten chunk-lists)])
+    (flatten* (map (λ (chunk) (concat-chunk chunk (immediate-chunk to-attach-chunk)))
+                   (take chunks (- (length chunks) 1)))
+              (last chunks))))
+(provide attach-list-separator)
+
+;insert a chunk between other chunks
+; concatenates given chunks with add-between-chunk between given chunks
+(define/contract (between-chunk add-between-chunk . chunk-lists)
+  (->* (chunk/c) #:rest chunk-list/c chunk/c)
+  (let ([chunks (flatten chunk-lists)])
+    (concat-chunk (add-between chunks
+                               add-between-chunk))))
+(provide between-chunk)
+
+; combine between and attach functionality
+;  adds to-add-chunk after each of the given chunks
+;    and then adds add-between-chunk between new chunks
+(define/contract (between/attach-chunk to-attach-chunk add-between-chunk . chunks)
+  (->* (chunk/c chunk/c) #:rest chunk-list/c chunk/c)
+  (between-chunk add-between-chunk
+                 (attach-list-separator to-attach-chunk
+                                        chunks)))
+(provide between/attach-chunk)
+
+;argument list chunk
+; attempts to put chunks on a single line with a space between each chunk
+; if that fails, puts chunks on their own lines
+(define/contract (arg-list-chunk open-chunk attach-chunk close-chunk . chunk-lists)
+  (->* (chunk/c chunk/c chunk/c) #:rest nullable-chunk-list/c chunk/c)
+  (let ([chunks (flatten chunk-lists)])
+    (concat-chunk (immediate-chunk open-chunk)
+                  (cond [;no parameters
+                         (empty? chunks)
+                         empty-chunk]
+                        [;one parameter - no commas
+                         (= 1 (length chunks))
+                         ;TODO: Determine if single-element arg-list-chunk usage should be immediate or not
+                         (immediate-chunk (car chunks))]
+                        [;more than one parameter - commas and possibly more than one line
+                         else
+                         (speculative-chunk (between/attach-chunk attach-chunk
+                                                                  space-chunk
+                                                                  chunks)
+                                            length-equals-one
+                                            (position-indent-chunk (between/attach-chunk attach-chunk
+                                                                                         new-line-chunk
+                                                                                         chunks)))])
+                (immediate-chunk close-chunk))))
+(provide arg-list-chunk)
+
+;parenthesis argument list chunk
+(define/contract (paren-list-chunk . chunks)
+  (->* () #:rest nullable-chunk-list/c chunk/c)
+  (arg-list-chunk open-paren-chunk
+                  comma-chunk
+                  close-paren-chunk
+                  chunks))
+(provide paren-list-chunk)
+
+;template argument list chunk
+(define/contract (template-list-chunk . chunks)
+  (->* () #:rest nullable-chunk-list/c chunk/c)
+  (arg-list-chunk open-anbr-chunk
+                  comma-chunk
+                  close-anbr-chunk
+                  chunks))
+(provide template-list-chunk)
+
+;statement line list of chunks
+; each chunk is expanded on its own line
+; - each chunk put on it's own line
+(define/contract (smt-list-chunk spacing-chunk . chunks)
+  (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
+  (concat-chunk (between/attach-chunk semi-colon-chunk
+                                      spacing-chunk
+                                      chunks)
+                imm-semi-colon-chunk))
+(provide smt-list-chunk)
+
+;body chunk
+; surrounds chunks with curly brackets
+; - attempts to put chunks on a single line with a space between each chunk
+; - if that fails, puts chunks on their own lines with indented
+;   open curly bracket is immediately on current line
+;   close curly bracket is on it's own line
+(define/contract (body-chunk . chunks)
+  (->* () #:rest nullable-chunk-list/c chunk/c)
+  (concat-chunk imm-open-crbr-chunk
+                (if (empty? chunks)
+                    empty-chunk
+                    (speculative-chunk (concat-chunk space-chunk
+                                                     (smt-list-chunk space-chunk
+                                                                     chunks)
+                                                     space-chunk)
+                                       length-equals-one
+                                       (indent-chunk 3
+                                                     (concat-chunk new-line-chunk
+                                                                   (smt-list-chunk blank-line-chunk
+                                                                                   chunks)
+                                                                   new-line-chunk))))
+                  imm-close-crbr-chunk))
+(provide body-chunk)
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ;preprocessor chunks;;
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -210,103 +486,176 @@
 ;preprocessor define chunk
 ; #define chunk
 (define/contract (pp-define-chunk name)
-  (-> string-value/c chunk/c)
+  (-> chunk/c chunk/c)
   (concat-chunk pp-directive-chunk
-                (literal-chunk pp-define-string)
+                define-chunk
                 space-chunk
-                (literal-chunk name)))
+                name))
 (provide pp-define-chunk)
 
 ;preprocessor if-not-defined chunk
 (define/contract (pp-ifndef-chunk condition)
-  (-> string-value/c chunk/c)
+  (-> chunk/c chunk/c)
   (concat-chunk pp-directive-chunk
-                (literal-chunk pp-ifndef-string)
+                ifndef-chunk
                 space-chunk
-                (literal-chunk condition)))
+                condition))
 (provide pp-ifndef-chunk)
 
 ;preprocessor endif chunk
 (define/contract (pp-endif-chunk condition)
-  (-> string-value/c chunk/c)
+  (-> chunk/c chunk/c)
   (concat-chunk pp-directive-chunk
-                (literal-chunk pp-endif-string)
+                endif-chunk
                 space-chunk
                 (comment-line-chunk condition)))
 (provide pp-endif-chunk)
 
 ;preprocessor h file wrapper chunk
-(define/contract (pp-header-file-chunk unique-string . chunks)
-  (->* (string-value/c) #:rest (listof chunk/c) chunk/c)
-  (concat-chunk (pp-ifndef-chunk unique-string)
+(define/contract (pp-header-file-chunk file-name . chunks)
+  (->* (chunk/c) #:rest chunk-list/c chunk/c)
+  (concat-chunk (pp-ifndef-chunk file-name)
                 new-line-chunk
-                (indent-chunk 3 (pp-define-chunk unique-string))
+                (indent-chunk 3
+                              (pp-define-chunk file-name))
                 blank-line-chunk
-                (indent-chunk 3 (apply dfn-list-chunk chunks))
+                (indent-chunk 3
+                              (smt-list-chunk blank-line-chunk
+                                              chunks))
                 blank-line-chunk
-                (pp-endif-chunk unique-string)))
+                (pp-endif-chunk file-name)))
 (provide pp-header-file-chunk)
 
-;;;;;;;;;;;;;;;;;;;;;;
-;macro chunks;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;
-
-;macro argument contract
-(define macro-arg/c (or/c string-value/c
-                          (list/c string-value/c string-value/c)))
-;(provide macro-arg/c)
-
-;marco argument chunk
-(define/contract (macro-arg-chunk param)
-  (-> macro-arg/c chunk/c)
-  (if (or (string? param)
-          (symbol? param))
-      (literal-chunk param)
-      (concat-chunk (comment-line-chunk (car param))
-                    new-line-chunk
-                    (literal-chunk (cadr param)))))
-;(provide macro-arg-chunk)
-
-;macro argument list chunk
-; chunks that build argument list for a macro defintion
-(define/contract (macro-arg-list-chunk . params)
-  (->* () #:rest (listof macro-arg/c) chunk/c)
-  (cond [;no parameters
-         (empty? params)
-         empty-chunk]
-        [;one parameter - no commas
-         (= 1 (length params))
-         (apply concat-chunk (list imm-open-paren-chunk
-                                   (macro-arg-chunk (car params))
-                                   imm-close-paren-chunk))]
-        [;more than one parameter - commas!
-         else
-         (concat-chunk imm-open-paren-chunk
-                       (apply arg-list-chunk (append (map (λ (arg) (concat-chunk (macro-arg-chunk arg) imm-comma-chunk))
-                                                          (take params (- (length params) 1)))
-                                                     (list (concat-chunk (macro-arg-chunk (last params)) imm-close-paren-chunk)))))]))
-;(provide macro-arg-list-chunk)
-
-;macro header chunk
-; sets up define for a macro-definition
-(define/contract (macro-header-chunk name params)
-  (-> string-value/c (listof macro-arg/c) chunk/c)
-  (concat-chunk (pp-define-chunk name)
-                (apply macro-arg-list-chunk params)))
-;(provide macro-header-chunk)
-
-;TODO: Determine if chunks that build macro-defintion-chunk should be provided and/or tested directly
 ;macro defintion chunk
 ; a macro definition
-(define/contract (macro-definition-chunk name params chunk)
-  (-> string-value/c (listof macro-arg/c) chunk/c chunk/c)
-  ;(-> string? (listof macro-arg/c) (listof chunk/c) chunk/c)
-  (speculative-chunk (concat-chunk (macro-header-chunk name params)
-                                   space-chunk
-                                   chunk)
-                     length-equals-one
-                     (macro-env-chunk (concat-chunk (macro-header-chunk name params)
-                                                    new-line-chunk
-                                                    (indent-chunk 3 chunk)))))
-(provide macro-definition-chunk)
+(define/contract (macro-define-chunk name params chunk)
+  (-> chunk/c nullable-chunk-list/c chunk/c chunk/c)
+  (let ([macro-signature (concat-chunk (pp-define-chunk name)
+                                       (if (empty? params)
+                                           empty-chunk
+                                           (paren-list-chunk params)))])
+    (speculative-chunk (concat-chunk macro-signature
+                                     space-chunk
+                                     chunk)
+                       length-equals-one
+                       (macro-env-chunk (concat-chunk macro-signature
+                                                      new-line-chunk
+                                                      (indent-chunk 3 chunk))))))
+(provide macro-define-chunk)
 
+;;;;;;;;;;;;;;;;;;;;;;
+;template chunks;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+;make given chunk a template with given template parameters
+(define/contract (template-define-chunk params chunk)
+  (-> nullable-chunk-list/c chunk/c chunk/c)
+  (concat-chunk template-chunk
+                (template-list-chunk params)
+                new-line-chunk
+                chunk))
+(provide template-define-chunk)
+
+;make a use of a template
+(define/contract (template-use-chunk name args)
+  (-> chunk/c nullable-chunk-list/c chunk/c)
+  (concat-chunk name
+                (template-list-chunk args)))
+(provide template-use-chunk)
+
+;;;;;;;;;;;;;;;;;;;;;;
+;function chunks;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+;function declaration
+(define/contract function-declare-chunk
+  (case-> (-> chunk/c chunk/c chunk/c nullable-chunk-list/c chunk/c)
+          (-> chunk/c chunk/c nullable-chunk-list/c chunk/c))
+  (case-lambda [(name return-type return-type-qualifiers params)
+                (function-declare-chunk name
+                                        (concat-chunk return-type
+                                                      space-chunk
+                                                      return-type-qualifiers)
+                                        params)]
+               [(name return-type params)
+                (between-chunk imm-space-chunk
+                               imm-inline-chunk
+                               (immediate-chunk return-type)
+                               (immediate-chunk name)
+                               (if (empty? params)
+                                   (concat-chunk imm-open-paren-chunk
+                                                 imm-void-chunk
+                                                 imm-close-paren-chunk)
+                                   (paren-list-chunk params)))]))
+(provide function-declare-chunk)
+
+;void function declaration
+(define/contract (void-function-declare-chunk name params)
+  (-> chunk/c nullable-chunk-list/c chunk/c)
+  (function-declare-chunk name void-chunk params))
+(provide void-function-declare-chunk)
+
+;function defintion
+(define/contract (function-define-chunk signature body)
+  (-> chunk/c nullable-chunk-list/c chunk/c)
+  (concat-chunk signature
+                imm-space-chunk
+                (if (empty? (flatten body))
+                    (body-chunk)
+                    (body-chunk body))))
+(provide function-define-chunk)
+
+;void function defintion
+(define/contract (void-function-define-chunk name params body)
+  (-> chunk/c nullable-chunk-list/c nullable-chunk-list/c chunk/c)
+  (function-define-chunk (void-function-declare-chunk name
+                                                      params)
+                         body))
+(provide void-function-define-chunk)
+
+;returning function defintion
+(define/contract (returning-function-define-chunk signature body return-expr)
+  (-> chunk/c nullable-chunk-list/c chunk/c chunk/c)
+  (function-define-chunk signature
+                         (flatten* body
+                                   (concat-chunk return-chunk
+                                                 space-chunk
+                                                 return-expr))))
+(provide returning-function-define-chunk)
+
+;;;;;;;;;;;;;;;;;;;;;;
+;class/struct chunks;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+;struct declaration
+(define/contract (struct-declare-chunk name)
+  (-> chunk/c chunk/c)
+  (concat-chunk struct-chunk
+                space-chunk
+                name))
+(provide struct-declare-chunk)
+
+;template struct declaration
+(define/contract (template-struct-declare-chunk name params args)
+  (-> chunk/c nullable-chunk-list/c nullable-chunk-list/c chunk/c)
+  (template-define-chunk params
+                         (concat-chunk (struct-declare-chunk name)
+                                       (template-list-chunk args))))
+(provide template-struct-declare-chunk)
+
+;struct section
+(define/contract (section-define-chunk type . chunks)
+  (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
+  (concat-chunk type
+                colon-chunk
+                new-line-chunk
+                (indent-chunk 1 (smt-list-chunk new-line-chunk chunks))))
+(provide section-define-chunk)
+
+;struct definition
+(define/contract (struct-define-chunk signature body)
+  (-> chunk/c (listof chunk/c) chunk/c)
+  (concat-chunk signature
+                imm-space-chunk
+                (body-chunk body)))
+(provide struct-define-chunk)
