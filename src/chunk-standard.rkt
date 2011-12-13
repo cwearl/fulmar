@@ -626,7 +626,8 @@
                                              file-setup
                                              blank-line-chunk
                                              (smt-list-chunk blank-line-chunk
-                                                             chunks))))
+                                                             chunks)
+                                             new-line-chunk)))
 (provide pp-header-file-chunk)
 
 ;macro defintion chunk

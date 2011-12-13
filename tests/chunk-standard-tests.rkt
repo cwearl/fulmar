@@ -617,6 +617,7 @@
                                                      (literal-chunk "jkl"))
                                test-context))
                  '("#endif //header_file"
+                   ""
                    "   jkl;"
                    ""
                    "   asdf;"
@@ -633,6 +634,7 @@
                                                      (literal-chunk "jkl"))
                                test-context))
                  '("#endif //header_file"
+                   ""
                    "   jkl;"
                    ""
                    "   asdf;"
