@@ -143,6 +143,7 @@
         test-pp-header-file-chunk
         test-macro-define-chunk
         test-namespace-define-chunk
+        test-described-smts-chunk
         test-template-define-chunk
         test-template-use-chunk
         test-function-declare-chunk

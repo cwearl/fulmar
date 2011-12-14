@@ -661,7 +661,7 @@
 (provide macro-define-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
-;namespace chunks;;;;;
+;general chunks;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
 ;namespace define chunk
@@ -678,6 +678,16 @@
                                      space-chunk
                                      (comment-line-chunk name)))))
 (provide namespace-define-chunk)
+
+;described statements chunk
+(define/contract (described-smts-chunk comment . chunks)
+  (->* (chunk/c) #:rest chunk-list/c chunk/c)
+  (concat-chunk (comment-env-chunk comment)
+                new-line-chunk
+                (between/attach-chunk semi-colon-chunk
+                                      new-line-chunk
+                                      chunks)))
+(provide described-smts-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;template chunks;;;;;;

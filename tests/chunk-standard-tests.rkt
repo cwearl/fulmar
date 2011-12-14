@@ -796,7 +796,7 @@
                    "             first, \\"
                    "#define name(/*test1*/ \\"))))
 
-;namespace chunks
+;general chunks
 
 (define/provide-test-suite test-namespace-define-chunk
   (test-case
@@ -821,6 +821,32 @@
                    ""
                    "   asdf;"
                    "namespace name {"))))
+
+(define/provide-test-suite test-described-smts-chunk
+  (test-case
+   "Test described-smts-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((described-smts-chunk (literal-chunk 'name)
+                                                     (literal-chunk 'asdf))
+                               test-context))
+                 '("asdf"
+                   "/* name*/"))
+   (check-equal? (write-nekot ((described-smts-chunk (literal-chunk 'name)
+                                                     (literal-chunk 'asdf)
+                                                     (literal-chunk 'jkl))
+                               test-context))
+                 '("jkl"
+                   "asdf;"
+                   "/* name*/"))
+   (check-equal? (write-nekot ((described-smts-chunk (literal-chunk 'name)
+                                                     (literal-chunk 'asdf)
+                                                     (literal-chunk 'jkl)
+                                                     (literal-chunk "1234"))
+                               test-context))
+                 '("1234"
+                   "jkl;"
+                   "asdf;"
+                   "/* name*/"))))
 
 ;template chunks
 
