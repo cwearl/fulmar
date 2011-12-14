@@ -786,7 +786,9 @@
   (-> chunk/c nullable-chunk-list/c nullable-chunk-list/c chunk/c)
   (template-define-chunk params
                          (concat-chunk (struct-declare-chunk name)
-                                       (template-list-chunk args))))
+                                       (if (empty? (flatten args))
+                                           empty-chunk
+                                           (template-list-chunk args)))))
 (provide template-struct-declare-chunk)
 
 ;struct section
@@ -799,9 +801,23 @@
 (provide section-define-chunk)
 
 ;struct definition
-(define/contract (struct-define-chunk signature body)
-  (-> chunk/c (listof chunk/c) chunk/c)
+(define/contract (struct-define-chunk signature . body)
+  (->* (chunk/c) #:rest chunk-list/c chunk/c)
   (concat-chunk signature
                 imm-space-chunk
                 (body-chunk body)))
 (provide struct-define-chunk)
+
+;;;;;;;;;;;;;;;;;;;;;;
+;statement chunks;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+;typedef statement chunk
+(define/contract (typedef-smt-chunk lhs rhs)
+  (-> chunk/c chunk/c chunk/c)
+  (concat-chunk lhs
+                space-chunk
+                typedef-chunk
+                space-chunk
+                rhs))
+(provide typedef-smt-chunk)

@@ -1161,3 +1161,13 @@
                    "   first;"
                    "signature {"))))
 
+;statement chunks
+
+(define/provide-test-suite test-typedef-smt-chunk
+  (test-case
+   "Test typedef-smt-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((typedef-smt-chunk (literal-chunk 'lhs)
+                                                  (literal-chunk 'rhs))
+                               test-context))
+                 '("lhs typedef rhs"))))

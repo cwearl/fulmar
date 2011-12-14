@@ -154,7 +154,8 @@
         test-struct-declare-chunk
         test-template-struct-declare-chunk
         test-section-define-chunk
-        test-struct-define-chunk))
+        test-struct-define-chunk
+        test-typedef-smt-chunk))
 
 (apply test-fail-with-gui? standard-core-tests)
 ;(apply run-tests-text standard-core-tests)
