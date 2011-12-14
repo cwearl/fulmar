@@ -224,7 +224,7 @@
 
 (define/provide-test-suite test-add-literal
   (test-case
-   "Test add-literal (writes literal nekot) - empty line - no indent - normal mode "
+   "Test add-literal (writes literal nekot) - empty line - no indent - normal mode"
    (define test-context (context 0 6 #false))
    (check-equal? (add-literal 'normal "" test-context "") '(""))
    (check-equal? (add-literal 'normal "abc" test-context "") '("abc"))
@@ -233,10 +233,10 @@
   (test-case
    "Test add-literal (writes literal nekot) - empty line - no indent - immediate mode"
    (define test-context (context 0 6 #false))
-   (check-equal? (add-literal 'immediate"" test-context "") '(""))
-   (check-equal? (add-literal 'immediate"abc" test-context "") '("abc"))
-   (check-equal? (add-literal 'immediate"abcd" test-context "") '("abcd"))
-   (check-equal? (add-literal 'immediate"abcdefg" test-context "") '("abcdefg")))
+   (check-equal? (add-literal 'immediate "" test-context "") '(""))
+   (check-equal? (add-literal 'immediate "abc" test-context "") '("abc"))
+   (check-equal? (add-literal 'immediate "abcd" test-context "") '("abcd"))
+   (check-equal? (add-literal 'immediate "abcdefg" test-context "") '("abcdefg")))
   (test-case
    "Test add-literal (writes literal nekot) - half line - no indent - normal mode"
    (define test-context (context 0 6 #false))
