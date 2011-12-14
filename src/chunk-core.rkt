@@ -161,10 +161,20 @@
 
 ;comment block chunk
 ; puts chunks in a comment block environment
-(define/contract (comment-env-chunk chunk)
-  (-> chunk/c chunk/c)
+(define/contract (comment-env-chunk chunk [char #\ ])
+  (->* (chunk/c) (char?) chunk/c)
   (λ (context)
-    (chunk (enter-comment-env context))))
+    (let ([env (context-env context)])
+      (nekot 'concat
+             (if (or (comment-env? env)
+                     (comment-macro-env? env)
+                     (macro-comment-env? env))
+                 (list ((literal-chunk "//" (string char)) context)
+                       (chunk (enter-comment-env context)))
+                 (list ((literal-chunk "/*" (string char)) context)
+                       (chunk (enter-comment-env context))
+                       ((literal-chunk "*/") context)))
+             context))))
 (provide comment-env-chunk)
 
 ;comment-line chunk
