@@ -173,7 +173,7 @@
                        (chunk (enter-comment-env context)))
                  (list ((literal-chunk "/*" (string char)) context)
                        (chunk (enter-comment-env context))
-                       ((literal-chunk "*/") context)))
+                       ((literal-chunk " */") context)))
              context))))
 (provide comment-env-chunk)
 

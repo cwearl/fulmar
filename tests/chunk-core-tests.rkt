@@ -237,25 +237,25 @@
    (define test-context (construct-context 20))
    (define com-context (context 0 80 (comment-env 0)))
    (check-equal? (write-nekot ((comment-env-chunk (literal-chunk 'asdf) #\*) test-context))
-                 '("/**asdf*/"))
+                 '("/**asdf */"))
    (check-equal? (write-nekot ((comment-env-chunk (literal-chunk 'asdf) #\ ) test-context))
-                 '("/* asdf*/"))
+                 '("/* asdf */"))
    (check-equal? (write-nekot ((comment-env-chunk (literal-chunk 'asdf)) test-context))
-                 '("/* asdf*/"))
+                 '("/* asdf */"))
    (check-equal? (write-nekot ((comment-env-chunk (literal-chunk 'asdf)) com-context))
                  '("/* // asdf"))
    (check-equal? (write-nekot ((comment-env-chunk (indent-chunk 2 (comment-env-chunk (literal-chunk 'asdf)))) test-context))
-                 '("/* // asdf*/"))
+                 '("/* // asdf */"))
    (check-equal? (write-nekot ((comment-env-chunk (concat-chunk new-line-chunk
                                                                 (indent-chunk 2 (comment-env-chunk (literal-chunk 'asdf)))))
                                                   test-context))
-                 '("/*   // asdf*/"
+                 '("/*   // asdf */"
                    ""))
    (check-equal? (write-nekot ((comment-env-chunk (concat-chunk (literal-chunk 'asdf)
                                                                 new-line-chunk
                                                                 (literal-chunk 'jkl)))
                                                   test-context))
-                 '("/* jkl*/"
+                 '("/* jkl */"
                    "/* asdf           */"))))
 
 (define/provide-test-suite test-comment-line-chunk

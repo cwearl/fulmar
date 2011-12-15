@@ -830,14 +830,14 @@
                                                      (literal-chunk 'asdf))
                                test-context))
                  '("asdf"
-                   "/* name*/"))
+                   "/* name */"))
    (check-equal? (write-nekot ((described-smts-chunk (literal-chunk 'name)
                                                      (literal-chunk 'asdf)
                                                      (literal-chunk 'jkl))
                                test-context))
                  '("jkl"
                    "asdf;"
-                   "/* name*/"))
+                   "/* name */"))
    (check-equal? (write-nekot ((described-smts-chunk (literal-chunk 'name)
                                                      (literal-chunk 'asdf)
                                                      (literal-chunk 'jkl)
@@ -846,7 +846,7 @@
                  '("1234"
                    "jkl;"
                    "asdf;"
-                   "/* name*/"))))
+                   "/* name */"))))
 
 ;template chunks
 
