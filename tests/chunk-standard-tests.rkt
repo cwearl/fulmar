@@ -1106,7 +1106,7 @@
                                                               null
                                                               null)
                                test-context))
-                 '("struct name<>"
+                 '("struct name"
                    "template<>"))
    (check-equal? (write-nekot ((template-struct-declare-chunk (literal-chunk 'name)
                                                               (list (literal-chunk 'first))
@@ -1147,19 +1147,47 @@
    "Test struct-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot ((struct-define-chunk (literal-chunk 'signature)
-                                                    (list (literal-chunk 'first)
-                                                          (literal-chunk 'second)))
+                                                    (literal-chunk 'first)
+                                                    (literal-chunk 'second))
                                test-context))
                  '("signature { first; second; }"))
    (check-equal? (write-nekot ((struct-define-chunk (literal-chunk 'signature)
-                                                    (list (literal-chunk 'first)
-                                                          (literal-chunk 'second)))
+                                                    (literal-chunk 'first)
+                                                    (literal-chunk 'second))
                                (construct-context 8)))
                  '("}"
                    "   second;"
                    ""
                    "   first;"
                    "signature {"))))
+
+(define/provide-test-suite test-template-struct-define-chunk
+  (test-case
+   "Test template-struct-define-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((template-struct-define-chunk (literal-chunk 'name)
+                                                             (list (literal-chunk 'first)
+                                                                   (literal-chunk 'second))
+                                                             null
+                                                             (literal-chunk 'first)
+                                                             (literal-chunk 'second))
+                               test-context))
+                 '("struct name { first; second; }"
+                   "template<first, second>"))
+   (check-equal? (write-nekot ((template-struct-define-chunk (literal-chunk 'name)
+                                                             (list (literal-chunk 'first)
+                                                                   (literal-chunk 'second))
+                                                             null
+                                                             (literal-chunk 'first)
+                                                             (literal-chunk 'second))
+                               (construct-context 12)))
+                 '("}"
+                   "   second;"
+                   ""
+                   "   first;"
+                   "struct name {"
+                   "         second>"
+                   "template<first,"))))
 
 ;statement chunks
 
