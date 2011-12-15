@@ -699,14 +699,17 @@
   (concat-chunk template-chunk
                 (template-list-chunk params)
                 new-line-chunk
-                chunk))
+                (indent-chunk 1
+                              chunk)))
 (provide template-define-chunk)
 
 ;make a use of a template
-(define/contract (template-use-chunk name args)
-  (-> chunk/c nullable-chunk-list/c chunk/c)
+(define/contract (template-use-chunk name . args)
+  (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
   (concat-chunk name
-                (template-list-chunk args)))
+                (if (empty? (flatten args))
+                    empty-chunk
+                    (template-list-chunk args))))
 (provide template-use-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -785,10 +788,8 @@
 (define/contract (template-struct-declare-chunk name params args)
   (-> chunk/c nullable-chunk-list/c nullable-chunk-list/c chunk/c)
   (template-define-chunk params
-                         (concat-chunk (struct-declare-chunk name)
-                                       (if (empty? (flatten args))
-                                           empty-chunk
-                                           (template-list-chunk args)))))
+                         (template-use-chunk (struct-declare-chunk name)
+                                             args)))
 (provide template-struct-declare-chunk)
 
 ;struct section

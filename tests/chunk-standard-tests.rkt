@@ -857,23 +857,29 @@
    (check-equal? (write-nekot ((template-define-chunk null
                                                       (literal-chunk 'asdf))
                                test-context))
-                 '("asdf" "template<>"))
+                 '(" asdf"
+                   "template<>"))
    (check-equal? (write-nekot ((template-define-chunk (list (literal-chunk 'first))
                                                       (literal-chunk 'asdf))
                                test-context))
-                 '("asdf" "template<first>"))
+                 '(" asdf"
+                   "template<first>"))
    (check-equal? (write-nekot ((template-define-chunk (list (literal-chunk 'first)
                                                             (literal-chunk 'second))
                                                       (literal-chunk 'asdf))
                                test-context))
-                 '("asdf" "template<first, second>"))
+                 '(" asdf"
+                   "template<first, second>"))
    (check-equal? (write-nekot ((template-define-chunk (list (concat-chunk (comment-line-chunk (literal-chunk "test"))
                                                                           new-line-chunk
                                                                           (literal-chunk 'first))
                                                             (literal-chunk 'second))
                                                       (literal-chunk 'asdf))
                                test-context))
-                 '("asdf" "         second>" "         first," "template<//test"))))
+                 '(" asdf"
+                   "         second>"
+                   "         first,"
+                   "template<//test"))))
 
 (define/provide-test-suite test-template-use-chunk
   (test-case
@@ -882,7 +888,7 @@
    (check-equal? (write-nekot ((template-use-chunk (literal-chunk 'name)
                                                    null)
                                test-context))
-                 '("name<>"))
+                 '("name"))
    (check-equal? (write-nekot ((template-use-chunk (literal-chunk 'name)
                                                    (list (literal-chunk 'first)))
                                test-context))
@@ -896,7 +902,8 @@
                                                    (list (literal-chunk 'first)
                                                          (literal-chunk 'second)))
                                (construct-context 6)))
-                 '("     second>" "name<first,"))))
+                 '("     second>"
+                   "name<first,"))))
 
 ;function chunks
 
@@ -1105,13 +1112,13 @@
                                                               null
                                                               null)
                                test-context))
-                 '("struct name"
+                 '(" struct name"
                    "template<>"))
    (check-equal? (write-nekot ((template-struct-declare-chunk (literal-chunk 'name)
                                                               (list (literal-chunk 'first))
                                                               (list (literal-chunk 'first)))
                                test-context))
-                 '("struct name<first>"
+                 '(" struct name<first>"
                    "template<first>"))
    (check-equal? (write-nekot ((template-struct-declare-chunk (literal-chunk 'name)
                                                               (list (literal-chunk 'first)
@@ -1119,14 +1126,14 @@
                                                               (list (literal-chunk 'first)
                                                                     (literal-chunk 'second)))
                                test-context))
-                 '("struct name<first, second>"
+                 '(" struct name<first, second>"
                    "template<first, second>"))
    (check-equal? (write-nekot ((template-struct-declare-chunk (literal-chunk 'name)
                                                               (list (literal-chunk 'first))
                                                               (list (literal-chunk 'first)
                                                                     (literal-chunk 'second)))
                                test-context))
-                 '("struct name<first, second>"
+                 '(" struct name<first, second>"
                    "template<first>"))))
 
 (define/provide-test-suite test-section-define-chunk
@@ -1171,7 +1178,7 @@
                                                              (literal-chunk 'first)
                                                              (literal-chunk 'second))
                                test-context))
-                 '("struct name { first; second; }"
+                 '(" struct name { first; second; }"
                    "template<first, second>"))
    (check-equal? (write-nekot ((template-struct-define-chunk (literal-chunk 'name)
                                                              (list (literal-chunk 'first)
@@ -1184,7 +1191,7 @@
                    "   second;"
                    ""
                    "   first;"
-                   "struct name {"
+                   " struct name {"
                    "         second>"
                    "template<first,"))))
 
