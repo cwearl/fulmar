@@ -986,22 +986,21 @@
   (test-case
    "Test function-define-chunk"
    (define test-context (construct-context 80))
-   (check-equal? (write-nekot ((function-define-chunk (literal-chunk 'signature)
-                                                      null)
+   (check-equal? (write-nekot ((function-define-chunk (literal-chunk 'signature))
                                test-context))
                  '("signature {}"))
    (check-equal? (write-nekot ((function-define-chunk (literal-chunk 'signature)
-                                                      (list (literal-chunk 'first)))
+                                                      (literal-chunk 'first))
                                test-context))
                  '("signature { first; }"))
    (check-equal? (write-nekot ((function-define-chunk (literal-chunk 'signature)
-                                                      (list (literal-chunk 'first)
-                                                            (literal-chunk 'second)))
+                                                      (literal-chunk 'first)
+                                                      (literal-chunk 'second))
                                test-context))
                  '("signature { first; second; }"))
    (check-equal? (write-nekot ((function-define-chunk (literal-chunk 'signature)
-                                                      (list (literal-chunk 'first)
-                                                            (literal-chunk 'second)))
+                                                      (literal-chunk 'first)
+                                                      (literal-chunk 'second))
                                (construct-context 20)))
                  '("}"
                    "   second;"

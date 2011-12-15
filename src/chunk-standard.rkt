@@ -742,8 +742,8 @@
 (provide void-function-declare-chunk)
 
 ;function defintion
-(define/contract (function-define-chunk signature body)
-  (-> chunk/c nullable-chunk-list/c chunk/c)
+(define/contract (function-define-chunk signature . body)
+  (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
   (concat-chunk signature
                 imm-space-chunk
                 (if (empty? (flatten body))
