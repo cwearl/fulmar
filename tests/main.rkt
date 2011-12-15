@@ -128,6 +128,7 @@
         test-arg-list-chunk
         test-paren-list-chunk
         test-template-list-chunk
+        test-constructor-assignment-list-chunk
         test-body-chunk
         test-smt-list-chunk
         test-pp-define-chunk
@@ -151,6 +152,8 @@
         test-function-define-chunk
         test-void-function-define-chunk
         test-returning-function-define-chunk
+        test-constructor-assignment-chunk
+        test-constructor-chunk
         test-struct-declare-chunk
         test-template-struct-declare-chunk
         test-section-define-chunk

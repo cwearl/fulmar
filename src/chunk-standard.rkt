@@ -507,6 +507,26 @@
                 imm-semi-colon-chunk))
 (provide smt-list-chunk)
 
+;constructor assignment list chunk
+; each assignment is separated by a comma
+; - first line is indented 2 spaces and begun with a colon
+(define/contract (constructor-assignment-list-chunk . assignment-lists)
+  (->* () #:rest nullable-chunk-list/c chunk/c)
+  (let* ([assigns (flatten assignment-lists)]
+         [build (λ (spacing-chunk)
+                  (indent-chunk 2
+                                (concat-chunk colon-chunk
+                                              imm-space-chunk
+                                              (position-indent-chunk (between/attach-chunk comma-chunk
+                                                                                           spacing-chunk
+                                                                                           assigns)))))])
+    (if (empty? assigns)
+        empty-chunk
+        (speculative-chunk (build space-chunk)
+                           length-equals-one
+                           (build new-line-chunk)))))
+(provide constructor-assignment-list-chunk)
+
 ;body chunk
 ; surrounds chunks with curly brackets
 ; - attempts to put chunks on a single line with a space between each chunk
@@ -771,6 +791,29 @@
                                                  space-chunk
                                                  return-expr))))
 (provide returning-function-define-chunk)
+
+;constructor assignment
+(define/contract (constructor-assignment-chunk var val)
+  (-> chunk/c chunk/c chunk/c)
+  (concat-chunk var
+                imm-open-paren-chunk
+                val
+                imm-close-paren-chunk))
+(provide constructor-assignment-chunk)
+
+;constructor defintion
+(define/contract (constructor-chunk name params assigns . body)
+  (->* (chunk/c nullable-chunk-list/c nullable-chunk-list/c) #:rest nullable-chunk-list/c chunk/c)
+  (concat-chunk name
+                (paren-list-chunk params)
+                (if (empty? (flatten assigns))
+                    (concat-chunk imm-space-chunk
+                                  (body-chunk body))
+                    (concat-chunk new-line-chunk
+                                  (constructor-assignment-list-chunk assigns)
+                                  new-line-chunk
+                                  (body-chunk body)))))
+(provide constructor-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;class/struct chunks;;

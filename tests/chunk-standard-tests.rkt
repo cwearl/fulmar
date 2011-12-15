@@ -511,6 +511,27 @@
                                test-context))
                  '(";" "asdf;" "    ;"))))
 
+(define/provide-test-suite test-constructor-assignment-list-chunk
+  (test-case
+   "Test constructor-assignment-list-chunk"
+   (define test-context (construct-context 80))
+   (define test-context-2 (construct-context 6))
+   (check-equal? (write-nekot ((constructor-assignment-list-chunk)
+                               test-context))
+                 '(""))
+   (check-equal? (write-nekot ((constructor-assignment-list-chunk (literal-chunk "asdf"))
+                               test-context))
+                 '("  : asdf"))
+   (check-equal? (write-nekot ((constructor-assignment-list-chunk (literal-chunk "asdf")
+                                                                  (literal-chunk "jkl"))
+                               test-context))
+                 '("  : asdf, jkl"))
+   (check-equal? (write-nekot ((constructor-assignment-list-chunk (literal-chunk "asdf")
+                                                                  (literal-chunk "jkl"))
+                               test-context-2))
+                 '("    jkl"
+                   "  : asdf,"))))
+
 (define/provide-test-suite test-body-chunk
   (test-case
    "Test body-chunk"
@@ -1093,6 +1114,44 @@
                    "   first;"
                    "                         second) {"
                    "inline return-type name (first,"))))
+
+(define/provide-test-suite test-constructor-assignment-chunk
+  (test-case
+   "Test constructor-assignment-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((constructor-assignment-chunk (literal-chunk 'first)
+                                                             (literal-chunk 'second))
+                               test-context))
+                 '("first(second)"))))
+
+(define/provide-test-suite test-constructor-chunk
+  (test-case
+   "Test constructor-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((constructor-chunk (literal-chunk 'name)
+                                                  null
+                                                  null)
+                               test-context))
+                 '("name() {}"))
+   (check-equal? (write-nekot ((constructor-chunk (literal-chunk 'name)
+                                                  (list (literal-chunk 'first))
+                                                  (list (literal-chunk 'assign))
+                                                  (literal-chunk 'asdf))
+                               test-context))
+                 '("{ asdf; }"
+                   "  : assign"
+                   "name(first)"))
+   (check-equal? (write-nekot ((constructor-chunk (literal-chunk 'name)
+                                                  (list (literal-chunk 'first)
+                                                        (literal-chunk 'second))
+                                                  (list (literal-chunk 'assign1)
+                                                        (literal-chunk 'assign2))
+                                                  (literal-chunk 'asdf)
+                                                  (literal-chunk 'jkl))
+                               test-context))
+                 '("{ asdf; jkl; }"
+                   "  : assign1, assign2"
+                   "name(first, second)"))))
 
 ;class/struct chunks
 
