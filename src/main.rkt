@@ -10,6 +10,14 @@
 (define cmdln-input-location (make-parameter #false))
 (define cmdln-output-location (make-parameter #false))
 
+(define/contract (string->integer str)
+  (-> string? exact-positive-integer?)
+  (foldl (λ (i t) (+ (* t 10) i))
+         0
+         (map (λ (c) (- (char->integer c)
+                        (char->integer #\0)))
+              (string->list str))))
+
 (command-line #:program "fulmar"
               #:once-each
               [("-i" "--in") input
@@ -20,7 +28,7 @@
                               (cmdln-output-location output)]
               [("-l" "--line-length") length
                                       "Specify the length of a line (soft limit)"
-                                      (cmdln-line-length length)]
+                                      (cmdln-line-length (string->integer length))]
               #:args non-flag-args (if (or (and (<= 1 (length non-flag-args))
                                                 (cmdln-input-location))
                                            (and (<= 2 (length non-flag-args))
