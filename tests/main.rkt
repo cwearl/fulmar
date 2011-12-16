@@ -148,6 +148,7 @@
         test-template-define-chunk
         test-template-use-chunk
         test-function-declare-chunk
+        test-static-function-declare-chunk
         test-void-function-declare-chunk
         test-function-define-chunk
         test-void-function-define-chunk

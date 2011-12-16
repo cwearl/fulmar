@@ -253,6 +253,18 @@
    (check-equal? (write-nekot 'normal (imm-inline-chunk test-context) "1") '("1inline"))
    (check-equal? (write-nekot 'normal (imm-inline-chunk test-context) "123456") '("123456inline")))
   (test-case
+   "Test static-chunk"
+   (define test-context (construct-context 7))
+   (check-equal? (write-nekot 'normal (static-chunk test-context) "") '("static"))
+   (check-equal? (write-nekot 'normal (static-chunk test-context) "1") '("1static"))
+   (check-equal? (write-nekot 'normal (static-chunk test-context) "123456") '("static" "123456")))
+  (test-case
+   "Test imm-static-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-static-chunk test-context) "") '("static"))
+   (check-equal? (write-nekot 'normal (imm-static-chunk test-context) "1") '("1static"))
+   (check-equal? (write-nekot 'normal (imm-static-chunk test-context) "123456") '("123456static")))
+  (test-case
    "Test return-chunk"
    (define test-context (construct-context 7))
    (check-equal? (write-nekot 'normal (return-chunk test-context) "") '("return"))
@@ -985,6 +997,64 @@
                                (construct-context 20)))
                  '("                         second)"
                    "inline return-type name (first,"))))
+
+(define/provide-test-suite test-static-function-declare-chunk
+  (test-case
+   "Test static-function-declare-chunk - with return type qualifier"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((static-function-declare-chunk (literal-chunk 'name)
+                                                              (literal-chunk 'return-type)
+                                                              (literal-chunk 'qualifier)
+                                                              null)
+                               test-context))
+                 '("static inline return-type qualifier name (void)"))
+   (check-equal? (write-nekot ((static-function-declare-chunk (literal-chunk 'name)
+                                                              (literal-chunk 'return-type)
+                                                              (literal-chunk 'qualifier)
+                                                              (list (literal-chunk 'first)))
+                               test-context))
+                 '("static inline return-type qualifier name (first)"))
+   (check-equal? (write-nekot ((static-function-declare-chunk (literal-chunk 'name)
+                                                              (literal-chunk 'return-type)
+                                                              (literal-chunk 'qualifier)
+                                                              (list (literal-chunk 'first)
+                                                                    (literal-chunk 'second)))
+                               test-context))
+                 '("static inline return-type qualifier name (first, second)"))
+   (check-equal? (write-nekot ((static-function-declare-chunk (literal-chunk 'name)
+                                                              (literal-chunk 'return-type)
+                                                              (literal-chunk 'qualifier)
+                                                              (list (literal-chunk 'first)
+                                                                    (literal-chunk 'second)))
+                               (construct-context 20)))
+                 '("                                          second)"
+                   "static inline return-type qualifier name (first,")))
+  (test-case
+   "Test static-function-declare-chunk - without return type qualifier"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((static-function-declare-chunk (literal-chunk 'name)
+                                                       (literal-chunk 'return-type)
+                                                       null)
+                               test-context))
+                 '("static inline return-type name (void)"))
+   (check-equal? (write-nekot ((static-function-declare-chunk (literal-chunk 'name)
+                                                       (literal-chunk 'return-type)
+                                                       (list (literal-chunk 'first)))
+                               test-context))
+                 '("static inline return-type name (first)"))
+   (check-equal? (write-nekot ((static-function-declare-chunk (literal-chunk 'name)
+                                                       (literal-chunk 'return-type)
+                                                       (list (literal-chunk 'first)
+                                                             (literal-chunk 'second)))
+                               test-context))
+                 '("static inline return-type name (first, second)"))
+   (check-equal? (write-nekot ((static-function-declare-chunk (literal-chunk 'name)
+                                                       (literal-chunk 'return-type)
+                                                       (list (literal-chunk 'first)
+                                                             (literal-chunk 'second)))
+                               (construct-context 20)))
+                 '("                                second)"
+                   "static inline return-type name (first,"))))
 
 (define/provide-test-suite test-void-function-declare-chunk
   (test-case

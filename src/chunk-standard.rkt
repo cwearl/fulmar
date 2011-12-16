@@ -327,6 +327,18 @@
   (immediate-chunk inline-chunk))
 (provide imm-inline-chunk)
 
+(define/contract static-chunk
+  chunk/c
+  (literal-chunk "static"))
+(provide static-chunk)
+
+;immediate static chunk
+; adds "static" immediately
+(define/contract imm-static-chunk
+  chunk/c
+  (immediate-chunk static-chunk))
+(provide imm-static-chunk)
+
 ;return chunk
 (define/contract return-chunk
   chunk/c
@@ -757,6 +769,25 @@
                                                  imm-close-paren-chunk)
                                    (paren-list-chunk params)))]))
 (provide function-declare-chunk)
+
+;static function declaration
+(define/contract static-function-declare-chunk
+  (case-> (-> chunk/c chunk/c chunk/c nullable-chunk-list/c chunk/c)
+          (-> chunk/c chunk/c nullable-chunk-list/c chunk/c))
+  (let ([build (λ (declaration)
+                 (concat-chunk imm-static-chunk
+                               imm-space-chunk
+                               declaration))])
+    (case-lambda [(name return-type return-type-qualifiers params)
+                  (build (function-declare-chunk name
+                                                 return-type
+                                                 return-type-qualifiers
+                                                 params))]
+                 [(name return-type params)
+                  (build (function-declare-chunk name
+                                                 return-type
+                                                 params))])))
+(provide static-function-declare-chunk)
 
 ;void function declaration
 (define/contract (void-function-declare-chunk name params)
