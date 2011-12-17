@@ -893,6 +893,17 @@
                    "asdf;"
                    "/* name */"))))
 
+(define/provide-test-suite test-constize-chunk
+  (test-case
+   "Test constize-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((constize-chunk (literal-chunk 'asdf))
+                               test-context))
+                 '("asdf const"))
+   (check-equal? (write-nekot ((constize-chunk (literal-chunk 'asdf))
+                               (construct-context 4)))
+                 '("asdf const"))))
+
 ;template chunks
 
 (define/provide-test-suite test-template-define-chunk

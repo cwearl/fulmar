@@ -145,6 +145,7 @@
         test-macro-define-chunk
         test-namespace-define-chunk
         test-described-smts-chunk
+        test-constize-chunk
         test-template-define-chunk
         test-template-use-chunk
         test-function-declare-chunk

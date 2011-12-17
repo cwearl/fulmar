@@ -735,6 +735,14 @@
                                       chunks)))
 (provide described-smts-chunk)
 
+;make constant
+(define/contract (constize-chunk chunk)
+  (-> chunk/c chunk/c)
+  (concat-chunk chunk
+                imm-space-chunk
+                imm-const-chunk))
+(provide constize-chunk)
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ;template chunks;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
