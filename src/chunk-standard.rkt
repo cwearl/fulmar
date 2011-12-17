@@ -8,6 +8,7 @@
 ;core chunks;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
+(provide flatten*)
 (provide literal-chunk)
 (provide spaces-chunk)
 (provide new-line-chunk)
