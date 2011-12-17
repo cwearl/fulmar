@@ -55,10 +55,9 @@
 (define chunk/c (-> context-delayed? nekot/c))
 (define chunk-list/c (or/c chunk/c
                            (non-empty-listof (recursive-contract chunk-list/c))))
-(define nullable-list/c (or/c null/c
-                              (non-empty-listof (recursive-contract nullable-list/c))))
-(define nullable-chunk-list/c (or/c chunk-list/c
-                                    nullable-list/c))
+(define nullable-chunk-list/c (or/c chunk/c
+                                    null/c
+                                    (non-empty-listof (recursive-contract nullable-chunk-list/c))))
 (provide chunk/c chunk-list/c nullable-chunk-list/c)
 
 ;error chunk
