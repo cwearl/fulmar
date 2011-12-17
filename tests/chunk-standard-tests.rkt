@@ -277,6 +277,18 @@
    (check-equal? (write-nekot 'normal (imm-return-chunk test-context) "1") '("1return"))
    (check-equal? (write-nekot 'normal (imm-return-chunk test-context) "123456") '("123456return")))
   (test-case
+   "Test const-chunk"
+   (define test-context (construct-context 7))
+   (check-equal? (write-nekot 'normal (const-chunk test-context) "") '("const"))
+   (check-equal? (write-nekot 'normal (const-chunk test-context) "1") '("1const"))
+   (check-equal? (write-nekot 'normal (const-chunk test-context) "123456") '("const" "123456")))
+  (test-case
+   "Test imm-const-chunk"
+   (define test-context (construct-context 6))
+   (check-equal? (write-nekot 'normal (imm-const-chunk test-context) "") '("const"))
+   (check-equal? (write-nekot 'normal (imm-const-chunk test-context) "1") '("1const"))
+   (check-equal? (write-nekot 'normal (imm-const-chunk test-context) "123456") '("123456const")))
+  (test-case
    "Test struct-chunk"
    (define test-context (construct-context 7))
    (check-equal? (write-nekot 'normal (struct-chunk test-context) "") '("struct"))

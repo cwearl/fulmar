@@ -352,6 +352,19 @@
   (immediate-chunk return-chunk))
 (provide imm-return-chunk)
 
+;const chunk
+(define/contract const-chunk
+  chunk/c
+  (literal-chunk "const"))
+(provide const-chunk)
+
+;immediate const chunk
+; adds "const" immediately
+(define/contract imm-const-chunk
+  chunk/c
+  (immediate-chunk const-chunk))
+(provide imm-const-chunk)
+
 ;struct chunk
 (define/contract struct-chunk
   chunk/c
