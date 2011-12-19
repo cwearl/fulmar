@@ -466,27 +466,31 @@
 ; adds to-add-chunk immediately after each of the given chunks
 ; except: to-add-chunk is NOT added to the final chunk
 (define/contract (attach-list-separator to-attach-chunk . chunk-lists)
-  (->* (chunk/c) #:rest chunk-list/c (listof chunk/c))
+  (->* (chunk/c) #:rest nullable-chunk-list/c nullable-chunk-list/c)
   (let ([chunks (flatten chunk-lists)])
-    (flatten* (map (λ (chunk) (concat-chunk chunk (immediate-chunk to-attach-chunk)))
-                   (take chunks (- (length chunks) 1)))
-              (last chunks))))
+    (if (empty? chunks)
+        null
+        (flatten* (map (λ (chunk) (concat-chunk chunk (immediate-chunk to-attach-chunk)))
+                       (take chunks (- (length chunks) 1)))
+                  (last chunks)))))
 (provide attach-list-separator)
 
 ;insert a chunk between other chunks
 ; concatenates given chunks with add-between-chunk between given chunks
 (define/contract (between-chunk add-between-chunk . chunk-lists)
-  (->* (chunk/c) #:rest chunk-list/c chunk/c)
+  (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
   (let ([chunks (flatten chunk-lists)])
-    (concat-chunk (add-between chunks
-                               add-between-chunk))))
+    (if (empty? chunks)
+        empty-chunk
+        (concat-chunk (add-between chunks
+                                   add-between-chunk)))))
 (provide between-chunk)
 
 ; combine between and attach functionality
 ;  adds to-add-chunk after each of the given chunks
 ;    and then adds add-between-chunk between new chunks
 (define/contract (between/attach-chunk to-attach-chunk add-between-chunk . chunks)
-  (->* (chunk/c chunk/c) #:rest chunk-list/c chunk/c)
+  (->* (chunk/c chunk/c) #:rest nullable-chunk-list/c chunk/c)
   (between-chunk add-between-chunk
                  (attach-list-separator to-attach-chunk
                                         chunks)))

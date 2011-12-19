@@ -367,6 +367,8 @@
   (test-case
    "Test attach-list-separator"
    (define test-context (construct-context 80))
+   (check-equal? (attach-list-separator comma-chunk)
+                 null)
    (check-equal? (write-nekot ((concat-chunk (attach-list-separator comma-chunk
                                                                     (literal-chunk "asdf")
                                                                     (literal-chunk "jkl")))
@@ -394,6 +396,9 @@
   (test-case
    "Test between-chunk"
    (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((between-chunk space-chunk)
+                               test-context))
+                 '(""))
    (check-equal? (write-nekot ((between-chunk space-chunk
                                               (literal-chunk "asdf")
                                               (literal-chunk "jkl"))
@@ -421,6 +426,10 @@
   (test-case
    "Test between/attach-chunk"
    (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((between/attach-chunk comma-chunk
+                                                     space-chunk)
+                               test-context))
+                 '(""))
    (check-equal? (write-nekot ((between/attach-chunk comma-chunk
                                                      space-chunk
                                                      (literal-chunk "asdf")
