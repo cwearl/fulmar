@@ -131,6 +131,7 @@
         test-constructor-assignment-list-chunk
         test-body-chunk
         test-smt-list-chunk
+        test-top-smt-list-chunk
         test-pp-define-chunk
         test-pp-include-chunk
         test-pp-includes-chunk

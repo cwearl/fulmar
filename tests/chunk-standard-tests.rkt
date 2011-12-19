@@ -536,8 +536,25 @@
                                                space-chunk
                                                (literal-chunk "jkl"))
                                test-context))
-                 '("jkl;" "" " ;" "" "asdf;"))
+                 '("jkl" "" " ;" "" "asdf;"))
    (check-equal? (write-nekot ((smt-list-chunk new-line-chunk
+                                               (spaces-chunk 4)
+                                               (literal-chunk "asdf")
+                                               empty-chunk)
+                               test-context))
+                 '("" "asdf;" "    ;"))))
+
+(define/provide-test-suite test-top-smt-list-chunk
+  (test-case
+   "Test top-smt-list-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((top-smt-list-chunk blank-line-chunk
+                                               (literal-chunk "asdf")
+                                               space-chunk
+                                               (literal-chunk "jkl"))
+                               test-context))
+                 '("jkl;" "" " ;" "" "asdf;"))
+   (check-equal? (write-nekot ((top-smt-list-chunk new-line-chunk
                                                (spaces-chunk 4)
                                                (literal-chunk "asdf")
                                                empty-chunk)
@@ -579,7 +596,14 @@
                                            space-chunk
                                            (literal-chunk "jkl"))
                                test-context-2))
-                 '("}" "   jkl;" "" "    ;" "" "   asdf;" "{"))))
+                 '("}"
+                   "   jkl;"
+                   ""
+                   "    ;"
+                   ""
+                   "   asdf;"
+                   ""
+                   "{"))))
 
 ;preprocessor chunks
 
@@ -865,6 +889,7 @@
                                (construct-context 10)))
                  '("} //name"
                    "   asdf;"
+                   ""
                    "namespace name {"))
    (check-equal? (write-nekot ((namespace-define-chunk (literal-chunk 'name)
                                                        (literal-chunk 'asdf)
@@ -874,6 +899,7 @@
                    "   jkl;"
                    ""
                    "   asdf;"
+                   ""
                    "namespace name {"))))
 
 (define/provide-test-suite test-described-smts-chunk
@@ -1136,6 +1162,7 @@
                    "   second;"
                    ""
                    "   first;"
+                   ""
                    "signature {"))))
 
 (define/provide-test-suite test-void-function-define-chunk
@@ -1169,6 +1196,7 @@
                    "   second;"
                    ""
                    "   first;"
+                   ""
                    "                  second) {"
                    "inline void name (first,"))))
 
@@ -1214,6 +1242,7 @@
                    "   second;"
                    ""
                    "   first;"
+                   ""
                    "                         second) {"
                    "inline return-type name (first,"))))
 
@@ -1305,7 +1334,7 @@
                                                      (literal-chunk 'first)
                                                      (literal-chunk 'second))
                                test-context))
-                 '(" second;"
+                 '(" second"
                    " first;"
                    "name:"))))
 
@@ -1326,6 +1355,7 @@
                    "   second;"
                    ""
                    "   first;"
+                   ""
                    "signature {"))))
 
 (define/provide-test-suite test-template-struct-define-chunk
@@ -1352,6 +1382,7 @@
                    "   second;"
                    ""
                    "   first;"
+                   ""
                    " struct name {"
                    "         second>"
                    "template<first,"))))

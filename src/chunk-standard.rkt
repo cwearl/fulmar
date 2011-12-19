@@ -545,11 +545,22 @@
 ; - each chunk put on it's own line
 (define/contract (smt-list-chunk spacing-chunk . chunks)
   (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
-  (concat-chunk (between/attach-chunk semi-colon-chunk
-                                      spacing-chunk
-                                      chunks)
-                imm-semi-colon-chunk))
+  (between/attach-chunk semi-colon-chunk
+                        spacing-chunk
+                        chunks))
 (provide smt-list-chunk)
+
+;statement line list of chunks with last semi-colon
+; each chunk is expanded on its own line
+; - each chunk put on it's own line
+(define/contract (top-smt-list-chunk spacing-chunk . chunks)
+  (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
+  (if (empty? (flatten chunks))
+      empty-chunk
+      (concat-chunk (smt-list-chunk spacing-chunk
+                                    chunks)
+                    imm-semi-colon-chunk)))
+(provide top-smt-list-chunk)
 
 ;constructor assignment list chunk
 ; each assignment is separated by a comma
@@ -583,14 +594,14 @@
                 (if (empty? (flatten chunks))
                     empty-chunk
                     (speculative-chunk (concat-chunk space-chunk
-                                                     (smt-list-chunk space-chunk
-                                                                     chunks)
+                                                     (top-smt-list-chunk space-chunk
+                                                                         chunks)
                                                      space-chunk)
                                        length-equals-one
                                        (indent-chunk 3
-                                                     (concat-chunk new-line-chunk
-                                                                   (smt-list-chunk blank-line-chunk
-                                                                                   chunks)
+                                                     (concat-chunk blank-line-chunk
+                                                                   (top-smt-list-chunk blank-line-chunk
+                                                                                       chunks)
                                                                    new-line-chunk))))
                   imm-close-crbr-chunk))
 (provide body-chunk)
@@ -702,8 +713,8 @@
                                              blank-line-chunk
                                              file-setup
                                              blank-line-chunk
-                                             (smt-list-chunk blank-line-chunk
-                                                             chunks)
+                                             (top-smt-list-chunk blank-line-chunk
+                                                                 chunks)
                                              new-line-chunk)))
 (provide pp-header-file-chunk)
 

@@ -2,7 +2,8 @@
 ;       - this should eliminate the need for immediate-chunk
 ;TODO: write and test normal-chunk
 ;TODO: convert chunks from closure formulation to something transparent (a struct, probably)
-;TODO: convert new-line-chunk into new-lines-chunk
+;TODO: add new-lines-chunk and base new-line-chunk off of it
+;TODO: add grouping concat based chunks for decently managing new-lines within class/struct definitions
 ;TODO: add properties back in - for user-defined indents and the like
 ;TODO: fix bug in FieldExpression.fm in constructor assignment list indent - no other repeatable test (yet)
 ;TODO: finish the top-level todo list ;)
