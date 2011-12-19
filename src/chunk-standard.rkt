@@ -855,8 +855,8 @@
   (function-define-chunk signature
                          (flatten* body
                                    (concat-chunk return-chunk
-                                                 space-chunk
-                                                 return-expr))))
+                                                 imm-space-chunk
+                                                 (position-indent-chunk return-expr)))))
 (provide returning-function-define-chunk)
 
 ;constructor assignment
