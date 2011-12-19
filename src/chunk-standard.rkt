@@ -925,3 +925,10 @@
                 space-chunk
                 rhs))
 (provide typedef-smt-chunk)
+
+;function call
+(define/contract (function-call-chunk fcn . args)
+  (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
+  (concat-chunk fcn
+                (paren-list-chunk args)))
+(provide function-call-chunk)

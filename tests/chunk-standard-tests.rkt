@@ -1357,3 +1357,26 @@
                                                   (literal-chunk 'rhs))
                                test-context))
                  '("lhs typedef rhs"))))
+
+(define/provide-test-suite test-function-call-chunk
+  (test-case
+   "Test function-call-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((function-call-chunk (literal-chunk 'name))
+                               test-context))
+                 '("name()"))
+   (check-equal? (write-nekot ((function-call-chunk (literal-chunk 'name)
+                                                    (literal-chunk 'first))
+                               test-context))
+                 '("name(first)"))
+   (check-equal? (write-nekot ((function-call-chunk (literal-chunk 'name)
+                                                    (literal-chunk 'first)
+                                                    (literal-chunk 'second))
+                               test-context))
+                 '("name(first, second)"))
+   (check-equal? (write-nekot ((function-call-chunk (literal-chunk 'name)
+                                                    (literal-chunk 'first)
+                                                    (literal-chunk 'second))
+                               (construct-context 4)))
+                 '("     second)"
+                   "name(first,"))))
