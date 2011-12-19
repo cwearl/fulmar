@@ -209,27 +209,102 @@
   (test-case
    "Test indent-chunk"
    (define test-context (construct-context 80))
-   (define test-context-2 (context 2 80 #false))
-   (define test-context-3 (context 3 80 #false))
-   (define test-context-4 (context 5 80 #false))
-   (check-equal? ((indent-chunk 0 empty-chunk) test-context)
-                 (nekot 'empty null test-context))
-   (check-equal? ((indent-chunk 2 empty-chunk) test-context)
-                 (nekot 'empty null test-context-2))
-   (check-equal? ((indent-chunk 3 empty-chunk) test-context)
-                 (nekot 'empty null test-context-3))
-   (check-equal? ((indent-chunk 5 empty-chunk) test-context)
-                 (nekot 'empty null test-context-4))
-   (check-equal? ((indent-chunk (list 0 1 0 1) empty-chunk) test-context)
-                 (nekot 'empty null test-context-2))
-   (check-equal? ((indent-chunk (list 1 2) empty-chunk) test-context)
-                 (nekot 'empty null test-context-3))
-   (check-equal? ((indent-chunk (list 2 1 2) empty-chunk) test-context)
-                 (nekot 'empty null test-context-4))
-   (check-equal? ((indent-chunk 2 (indent-chunk 1 empty-chunk)) test-context)
-                 (nekot 'empty null test-context-3))
-   (check-equal? ((indent-chunk 3 (indent-chunk 2 empty-chunk)) test-context)
-                 (nekot 'empty null test-context-4))))
+   (check-equal? (write-nekot ((indent-chunk 0 (concat-chunk (literal-chunk 'asdf)
+                                                             new-line-chunk
+                                                             (literal-chunk 'jkl)))
+                               test-context))
+                 '("jkl"
+                   "asdf"))
+   (check-equal? (write-nekot ((indent-chunk 2 (concat-chunk (literal-chunk 'asdf)
+                                                             new-line-chunk
+                                                             (literal-chunk 'jkl)))
+                               test-context))
+                 '("  jkl"
+                   "  asdf"))
+   (check-equal? (write-nekot ((indent-chunk 3 (concat-chunk (literal-chunk 'asdf)
+                                                             new-line-chunk
+                                                             (literal-chunk 'jkl)))
+                               test-context))
+                 '("   jkl"
+                   "   asdf"))
+   (check-equal? (write-nekot ((indent-chunk 5 (concat-chunk (literal-chunk 'asdf)
+                                                             new-line-chunk
+                                                             (literal-chunk 'jkl)))
+                               test-context))
+                 '("     jkl"
+                   "     asdf"))
+   (check-equal? (write-nekot ((indent-chunk (list 0 1 0 1) (concat-chunk (literal-chunk 'asdf)
+                                                                          new-line-chunk
+                                                                          (literal-chunk 'jkl)))
+                               test-context))
+                 '("  jkl"
+                   "  asdf"))
+   (check-equal? (write-nekot ((indent-chunk (list 1 2) (concat-chunk (literal-chunk 'asdf)
+                                                                      new-line-chunk
+                                                                      (literal-chunk 'jkl)))
+                               test-context))
+                 '("   jkl"
+                   "   asdf"))
+   (check-equal? (write-nekot ((indent-chunk (list 2 1 2) (concat-chunk (literal-chunk 'asdf)
+                                                                        new-line-chunk
+                                                                        (literal-chunk 'jkl)))
+                               test-context))
+                 '("     jkl"
+                   "     asdf"))
+   (check-equal? (write-nekot ((indent-chunk 2 (indent-chunk 1 (concat-chunk (literal-chunk 'asdf)
+                                                                             new-line-chunk
+                                                                             (literal-chunk 'jkl))))
+                               test-context))
+                 '("   jkl"
+                   "   asdf"))
+   (check-equal? (write-nekot ((indent-chunk 3 (indent-chunk 2 (concat-chunk (literal-chunk 'asdf)
+                                                                             new-line-chunk
+                                                                             (literal-chunk 'jkl))))
+                               test-context))
+                 '("     jkl"
+                   "     asdf")))
+  (test-case
+   "Test indent-chunk - interaction with position-indent-chunk tests"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((indent-chunk 3 (position-indent-chunk (concat-chunk (literal-chunk 'asdf)
+                                                                                    new-line-chunk
+                                                                                    (literal-chunk 'jkl))))
+                               test-context))
+                 '("   jkl"
+                   "   asdf"))
+   (check-equal? (write-nekot ((indent-chunk 3 (concat-chunk (literal-chunk 'asdf)
+                                                             (position-indent-chunk (concat-chunk new-line-chunk
+                                                                                                  (literal-chunk 'jkl)))))
+                               test-context))
+                 '("       jkl"
+                   "   asdf"))
+   (check-equal? (write-nekot ((indent-chunk 3 (concat-chunk (literal-chunk 'asdf)
+                                                             (position-indent-chunk (concat-chunk new-line-chunk
+                                                                                                  (literal-chunk 'jkl)
+                                                                                                  new-line-chunk
+                                                                                                  (literal-chunk "123")))))
+                               test-context))
+                 '("       123"
+                   "       jkl"
+                   "   asdf"))
+   (check-equal? (write-nekot ((indent-chunk 3 (concat-chunk (literal-chunk 'asdf)
+                                                             (position-indent-chunk (concat-chunk new-line-chunk
+                                                                                                  (literal-chunk 'jkl)
+                                                                                                  new-line-chunk
+                                                                                                  (indent-chunk 1 (literal-chunk "123"))))))
+                               test-context))
+                 '("        123"
+                   "       jkl"
+                   "   asdf"))
+   (check-equal? (write-nekot ((indent-chunk 3 (concat-chunk (literal-chunk 'asdf)
+                                                             (position-indent-chunk (concat-chunk new-line-chunk
+                                                                                                  (indent-chunk 1 (literal-chunk 'jkl))
+                                                                                                  new-line-chunk
+                                                                                                  (literal-chunk "123")))))
+                               test-context))
+                 '("       123"
+                   "        jkl"
+                   "   asdf"))))
 
 (define/provide-test-suite test-comment-env-chunk
   (test-case
