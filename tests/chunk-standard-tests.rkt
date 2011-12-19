@@ -1380,3 +1380,30 @@
                                (construct-context 4)))
                  '("     second)"
                    "name(first,"))))
+
+(define/provide-test-suite test-member-function-call-chunk
+  (test-case
+   "Test member-function-call-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot ((member-function-call-chunk (literal-chunk 'obj)
+                                                           (literal-chunk 'name))
+                               test-context))
+                 '("obj.name()"))
+   (check-equal? (write-nekot ((member-function-call-chunk (literal-chunk 'obj)
+                                                           (literal-chunk 'name)
+                                                           (literal-chunk 'first))
+                               test-context))
+                 '("obj.name(first)"))
+   (check-equal? (write-nekot ((member-function-call-chunk (literal-chunk 'obj)
+                                                           (literal-chunk 'name)
+                                                           (literal-chunk 'first)
+                                                           (literal-chunk 'second))
+                               test-context))
+                 '("obj.name(first, second)"))
+   (check-equal? (write-nekot ((member-function-call-chunk (literal-chunk 'object)
+                                                           (literal-chunk 'name)
+                                                           (literal-chunk 'first)
+                                                           (literal-chunk 'second))
+                               (construct-context 4)))
+                 '("            second)"
+                   "object.name(first,"))))

@@ -153,6 +153,20 @@
   (immediate-chunk comma-chunk))
 (provide imm-comma-chunk)
 
+;period chunk
+; adds "."
+(define/contract period-chunk
+  chunk/c
+  (literal-chunk "."))
+(provide period-chunk)
+
+;immediate period chunk
+; adds "," immediately
+(define/contract imm-period-chunk
+  chunk/c
+  (immediate-chunk period-chunk))
+(provide imm-period-chunk)
+
 ;colon chunk
 ; adds ":"
 (define/contract colon-chunk
@@ -932,3 +946,11 @@
   (concat-chunk fcn
                 (paren-list-chunk args)))
 (provide function-call-chunk)
+
+;member function call
+(define/contract (member-function-call-chunk obj fcn . args)
+  (->* (chunk/c chunk/c) #:rest nullable-chunk-list/c chunk/c)
+  (concat-chunk obj
+                imm-period-chunk
+                (position-indent-chunk (function-call-chunk fcn args))))
+(provide member-function-call-chunk)
