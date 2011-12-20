@@ -4,6 +4,7 @@
 ;TODO: add new-lines-chunk and base new-line-chunk off of it
 ;TODO: change function-declare-chunk so that the number of parameters doesn't matter - combine return type with return type qualifications
 ;TODO: add grouping concat based chunks for decently managing new-lines within class/struct definitions
+;TODO: make the indenting for template definitions/specializations consistent: currently there is a difference between templated functions and templated structures (mainly because there is not a standard form for functions)
 ;TODO: add properties back in - for user-defined indents and the like
 ;TODO: fix bug in FieldExpression.fm in constructor assignment list indent - no other repeatable test (yet)
 ;TODO: clean up eval in io.rkt to use racket/base and standard-chunks.rkt only - for speed?
