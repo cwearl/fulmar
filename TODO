@@ -1,8 +1,8 @@
 ;TODO: convert chunks from closure formulation to something transparent (a struct, probably)
-;TODO: change writer so that does indenting and new-lining after too many characters have been printed 
-;       - this should eliminate the need for immediate-chunk
+;TODO: change writer so that does indenting and new-lining after too many characters have been printed - this should eliminate the need for immediate-chunk
 ;TODO: write and test normal-chunk - not needed?
 ;TODO: add new-lines-chunk and base new-line-chunk off of it
+;TODO: change function-declare-chunk so that the number of parameters doesn't matter - combine return type with return type qualifications
 ;TODO: add grouping concat based chunks for decently managing new-lines within class/struct definitions
 ;TODO: add properties back in - for user-defined indents and the like
 ;TODO: fix bug in FieldExpression.fm in constructor assignment list indent - no other repeatable test (yet)
