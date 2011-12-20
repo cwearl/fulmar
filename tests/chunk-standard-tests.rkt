@@ -592,6 +592,11 @@
                                            (literal-chunk "jkl"))
                                test-context))
                  '("{ asdf;  ; jkl; }"))
+   (check-equal? (write-nekot ((body-chunk (literal-chunk "123456"))
+                               test-context-2))
+                 '("}"
+                   "   123456;"
+                   "{"))
    (check-equal? (write-nekot ((body-chunk (literal-chunk "asdf")
                                            space-chunk
                                            (literal-chunk "jkl"))
@@ -889,7 +894,6 @@
                                (construct-context 10)))
                  '("} //name"
                    "   asdf;"
-                   ""
                    "namespace name {"))
    (check-equal? (write-nekot ((namespace-define-chunk (literal-chunk 'name)
                                                        (literal-chunk 'asdf)

@@ -590,20 +590,24 @@
 ;   close curly bracket is on it's own line
 (define/contract (body-chunk . chunks)
   (->* () #:rest nullable-chunk-list/c chunk/c)
-  (concat-chunk imm-open-crbr-chunk
-                (if (empty? (flatten chunks))
-                    empty-chunk
-                    (speculative-chunk (concat-chunk space-chunk
-                                                     (top-smt-list-chunk space-chunk
-                                                                         chunks)
-                                                     space-chunk)
-                                       length-equals-one
-                                       (indent-chunk 3
-                                                     (concat-chunk blank-line-chunk
-                                                                   (top-smt-list-chunk blank-line-chunk
-                                                                                       chunks)
-                                                                   new-line-chunk))))
-                  imm-close-crbr-chunk))
+  (let ([build (λ (spacing-chunk)
+                 (top-smt-list-chunk spacing-chunk
+                                     chunks))])
+    (concat-chunk imm-open-crbr-chunk ; open body
+                  (if (empty? (flatten chunks)) ; if nothing in body
+                      empty-chunk ; have no body
+                      (speculative-chunk (concat-chunk space-chunk          ; if body can fit on a single line, put it there
+                                                       (build space-chunk)
+                                                       space-chunk)
+                                         length-equals-one
+                                         (indent-chunk 3                    ; if not, increase indent
+                                                       (concat-chunk new-line-chunk ; and start a new line
+                                                                     (speculative-chunk (build blank-line-chunk)  ; if inner body fits on a single line, put it there
+                                                                                        length-equals-one
+                                                                                        (concat-chunk new-line-chunk ; if not, put a blank line between start of body and start of inner body
+                                                                                                      (build blank-line-chunk)))
+                                                                     new-line-chunk)))) ; start a new line after inner body has been printed
+                  imm-close-crbr-chunk))) ; close body
 (provide body-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
