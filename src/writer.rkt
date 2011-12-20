@@ -55,7 +55,7 @@
 
 ;finish line
 (define/contract (finish-line given-line context)
-  (-> written-line/c context/c string?)
+  (-> written-line/c context/c written-line/c)
   (let* ([line (remove-whitespace given-line)]
          [length (string-length line)]
          [max (context-line-length context)]
@@ -91,14 +91,19 @@
                       (macro-comment-env? env))
                   (string-append (make-whitespace (- max 1))
                                  "\\")])]
+          [;comment environment
+           (comment-env? env)
+           (string-append line
+                          (if (equal? #\  (last (string->list line)))
+                              "*/"
+                              " */"))]
           [else
            ;non-empty line
            (string-append line
                           (if (< (+ length env-spaces) max)
                               (make-whitespace (- max length env-spaces))
                               " ")
-                          (cond [(comment-env? env) "*/"]
-                                [(macro-env? env) "\\"]
+                          (cond [(macro-env? env) "\\"]
                                 [(comment-macro-env? env) "\\ */"]
                                 [(macro-comment-env? env) "*/ \\"]))])))
 (provide finish-line)

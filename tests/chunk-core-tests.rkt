@@ -331,7 +331,7 @@
                                                                 (literal-chunk 'jkl)))
                                                   test-context))
                  '("/* jkl */"
-                   "/* asdf           */"))))
+                   "/* asdf */"))))
 
 (define/provide-test-suite test-comment-line-chunk
   (test-case
