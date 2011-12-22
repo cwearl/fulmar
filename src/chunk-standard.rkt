@@ -508,8 +508,7 @@
                          empty-chunk]
                         [;one parameter - no commas
                          (= 1 (length chunks))
-                         ;TODO: Determine if single-element arg-list-chunk usage should be immediate or not
-                         (immediate-chunk (car chunks))]
+                         (position-indent-chunk (first chunks))]
                         [;more than one parameter - commas and possibly more than one line
                          else
                          (speculative-chunk (between/attach-chunk attach-chunk
@@ -810,19 +809,21 @@
   (case-lambda [(name return-type return-type-qualifiers params)
                 (function-declare-chunk name
                                         (concat-chunk return-type
-                                                      space-chunk
-                                                      return-type-qualifiers)
+                                                      imm-space-chunk
+                                                      (immediate-chunk return-type-qualifiers))
                                         params)]
                [(name return-type params)
-                (between-chunk imm-space-chunk
-                               imm-inline-chunk
-                               (immediate-chunk return-type)
-                               (immediate-chunk name)
-                               (if (empty? (flatten params))
-                                   (concat-chunk imm-open-paren-chunk
-                                                 imm-void-chunk
-                                                 imm-close-paren-chunk)
-                                   (paren-list-chunk params)))]))
+                (concat-chunk imm-inline-chunk
+                              space-chunk
+                              return-type
+                              space-chunk
+                              name
+                              imm-space-chunk
+                              (if (empty? (flatten params))
+                                  (concat-chunk imm-open-paren-chunk
+                                                imm-void-chunk
+                                                imm-close-paren-chunk)
+                                  (paren-list-chunk params)))]))
 (provide function-declare-chunk)
 
 ;static function declaration

@@ -481,6 +481,20 @@
    (check-equal? (write-nekot ((arg-list-chunk (literal-chunk "(")
                                                (literal-chunk ",")
                                                (literal-chunk ")")
+                                               (literal-chunk "asdf"))
+                               test-context))
+                 '("(asdf)"))
+   (check-equal? (write-nekot ((arg-list-chunk (literal-chunk "(")
+                                               (literal-chunk ",")
+                                               (literal-chunk ")")
+                                               (concat-chunk (literal-chunk "asdf")
+                                                             (literal-chunk "jkl")))
+                               test-context))
+                 '(" jkl)"
+                   "(asdf"))
+   (check-equal? (write-nekot ((arg-list-chunk (literal-chunk "(")
+                                               (literal-chunk ",")
+                                               (literal-chunk ")")
                                                (literal-chunk "asdf")
                                                empty-chunk
                                                (literal-chunk "jkl"))
@@ -493,7 +507,8 @@
                                                empty-chunk
                                                (literal-chunk "jkl"))
                                test-context-2))
-                 '("(asdf, , jkl)"))))
+                 '("(asdf, , jkl)"))
+   ))
 
 (define/provide-test-suite test-paren-list-chunk
   (test-case
@@ -1030,9 +1045,11 @@
                                                        (literal-chunk 'qualifier)
                                                        (list (literal-chunk 'first)
                                                              (literal-chunk 'second)))
-                               (construct-context 20)))
-                 '("                                   second)"
-                   "inline return-type qualifier name (first,")))
+                               (construct-context 8)))
+                 '("      second)"
+                   "name (first,"
+                   "return-type qualifier"
+                   "inline")))
   (test-case
    "Test function-declare-chunk - without return type qualifier"
    (define test-context (construct-context 80))
@@ -1056,9 +1073,11 @@
                                                        (literal-chunk 'return-type)
                                                        (list (literal-chunk 'first)
                                                              (literal-chunk 'second)))
-                               (construct-context 20)))
-                 '("                         second)"
-                   "inline return-type name (first,"))))
+                               (construct-context 8)))
+                 '("      second)"
+                   "name (first,"
+                   "return-type"
+                   "inline"))))
 
 (define/provide-test-suite test-static-function-declare-chunk
   (test-case
@@ -1088,9 +1107,11 @@
                                                               (literal-chunk 'qualifier)
                                                               (list (literal-chunk 'first)
                                                                     (literal-chunk 'second)))
-                               (construct-context 20)))
-                 '("                                          second)"
-                   "static inline return-type qualifier name (first,")))
+                               (construct-context 8)))
+                 '("      second)"
+                   "name (first,"
+                   "return-type qualifier"
+                   "static inline")))
   (test-case
    "Test static-function-declare-chunk - without return type qualifier"
    (define test-context (construct-context 80))
@@ -1115,8 +1136,9 @@
                                                        (list (literal-chunk 'first)
                                                              (literal-chunk 'second)))
                                (construct-context 20)))
-                 '("                                second)"
-                   "static inline return-type name (first,"))))
+                 '("                  second)"
+                   "return-type name (first,"
+                   "static inline"))))
 
 (define/provide-test-suite test-void-function-declare-chunk
   (test-case
@@ -1127,17 +1149,17 @@
                                test-context))
                  '("inline void name (void)"))
    (check-equal? (write-nekot ((void-function-declare-chunk (literal-chunk 'name)
-                                                       (list (literal-chunk 'first)))
+                                                            (list (literal-chunk 'first)))
                                test-context))
                  '("inline void name (first)"))
    (check-equal? (write-nekot ((void-function-declare-chunk (literal-chunk 'name)
                                                             (list (literal-chunk 'first)
-                                                             (literal-chunk 'second)))
+                                                                  (literal-chunk 'second)))
                                test-context))
                  '("inline void name (first, second)"))
    (check-equal? (write-nekot ((void-function-declare-chunk (literal-chunk 'name)
                                                             (list (literal-chunk 'first)
-                                                             (literal-chunk 'second)))
+                                                                  (literal-chunk 'second)))
                                (construct-context 20)))
                  '("                  second)"
                    "inline void name (first,"))))
@@ -1201,8 +1223,9 @@
                    ""
                    "   first;"
                    ""
-                   "                  second) {"
-                   "inline void name (first,"))))
+                   "           second) {"
+                   "void name (first,"
+                   "inline"))))
 
 (define/provide-test-suite test-returning-function-define-chunk
   (test-case
@@ -1239,7 +1262,7 @@
                                                                 (list (literal-chunk 'first)
                                                                       (literal-chunk 'second))
                                                                 (literal-chunk "expr"))
-                               (construct-context 15)))
+                               (construct-context 20)))
                  '("}"
                    "   return expr;"
                    ""
@@ -1247,8 +1270,27 @@
                    ""
                    "   first;"
                    ""
-                   "                         second) {"
-                   "inline return-type name (first,"))))
+                   "name (first, second) {"
+                   "inline return-type"))
+   (check-equal? (write-nekot ((returning-function-define-chunk (function-declare-chunk (literal-chunk 'name)
+                                                                                        (literal-chunk 'return-type)
+                                                                                        (list (literal-chunk 'first)
+                                                                                              (literal-chunk 'second)))
+                                                                (list (literal-chunk 'first)
+                                                                      (literal-chunk 'second))
+                                                                (literal-chunk "expr"))
+                               (construct-context 10)))
+                 '("}"
+                   "   return expr;"
+                   ""
+                   "   second;"
+                   ""
+                   "   first;"
+                   ""
+                   "      second) {"
+                   "name (first,"
+                   "return-type"
+                   "inline"))))
 
 (define/provide-test-suite test-constructor-assignment-chunk
   (test-case
