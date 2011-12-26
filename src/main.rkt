@@ -6,10 +6,17 @@
 
 ; main for fulmar
 
-(define cmdln-properties (make-parameter initial-properties))
 (define cmdln-line-length (make-parameter 80))
 (define cmdln-input-location (make-parameter #false))
 (define cmdln-output-location (make-parameter #false))
+
+(define/contract (string->integer str)
+  (-> string? exact-positive-integer?)
+  (foldl (λ (i t) (+ (* t 10) i))
+         0
+         (map (λ (c) (- (char->integer c)
+                        (char->integer #\0)))
+              (string->list str))))
 
 (command-line #:program "fulmar"
               #:once-each
@@ -21,11 +28,7 @@
                               (cmdln-output-location output)]
               [("-l" "--line-length") length
                                       "Specify the length of a line (soft limit)"
-                                      (cmdln-line-length length)]
-              #:multi
-              [("-p" "--property") name value
-                                   "Specify property with given name and value"
-                                   (cmdln-properties (property-update (cmdln-properties) name value))]
+                                      (cmdln-line-length (string->integer length))]
               #:args non-flag-args (if (or (and (<= 1 (length non-flag-args))
                                                 (cmdln-input-location))
                                            (and (<= 2 (length non-flag-args))
@@ -43,6 +46,4 @@
                                               [output (if output-string
                                                           (path->complete-path (string->path output-string))
                                                           (current-output-port))])
-                                         (print-file! (write-file ((read-chunk input) (construct-context (cmdln-properties)
-                                                                                                         (cmdln-line-length))))
-                                                      output))))
+                                         (print-file! (write-nekot ((read-chunk input) (construct-context (cmdln-line-length)))) output))))

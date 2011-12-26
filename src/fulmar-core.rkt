@@ -5,27 +5,32 @@
 ;  - a rich code generation/macro system for C++ that uses S-expressions
 ;  - the name of two species (Northern and Southern) of seabirds of the family Procellariidae
 
+;basic helper functions
+(define/contract (flatten* . lst)
+  (->* () #:rest (listof any/c) (listof any/c))
+  (flatten lst))
+(provide flatten*)
+
 ;basic contracts
 (define (context-delayed? x) (context? x))
 ;(provide context-delayed?)
 (define indent/c natural-number/c)
 (define line-length/c exact-positive-integer?)
 (provide indent/c line-length/c)
+(define string-value/c (or/c symbol? string?))
+(define string-list/c (or/c string-value/c
+                            (non-empty-listof (recursive-contract string-list/c))))
+(provide string-value/c string-list/c)
+(define length-value/c (or/c natural-number/c string-value/c))
+(define length-list/c (or/c length-value/c
+                            (non-empty-listof (recursive-contract length-list/c))))
+(provide length-value/c length-list/c)
 (define nekot-name/c symbol?)
 (define nekot-body/c any/c)
 (provide nekot-name/c nekot-body/c)
-(define property-name/c symbol?)
-(define optional-property-name/c (or/c property-name/c #false))
-(define property-value/c any/c)
-(define optional-property-value/c (or/c property-value/c #false))
-(define property-hash/c (hash/c property-name/c property-value/c #:immutable #true #:flat? #true))
-(define optional-property-hash/c (or/c property-hash/c #false))
-(provide property-name/c  optional-property-name/c
-         property-value/c optional-property-value/c
-         property-hash/c  optional-property-hash/c)
-(define description/c (or/c 'comment 'macro 'comment-macro 'macro-comment))
-(define optional-description/c (or/c description/c #false))
-(provide description/c optional-description/c)
+(define environment-description/c (or/c 'comment 'macro 'comment-macro 'macro-comment))
+(define optional-environment-description/c (or/c environment-description/c #false))
+(provide environment-description/c optional-environment-description/c)
 (define position/c natural-number/c)
 (define optional-position/c (or/c position/c #false))
 (provide position/c optional-position/c)
@@ -34,6 +39,9 @@
 (define written-line/c string?)
 (define written-lines/c (non-empty-listof written-line/c))
 (provide written-line/c written-lines/c)
+(define mode/c (or/c 'normal 'immediate))
+(define null/c (one-of/c null))
+(provide mode/c null/c)
 
 ;nekot Structure (reverse token - token spelled backwards)
 (struct nekot (name body context) #:transparent)
@@ -45,7 +53,12 @@
 
 ;chunk Contract
 (define chunk/c (-> context-delayed? nekot/c))
-(provide chunk/c)
+(define chunk-list/c (or/c chunk/c
+                           (non-empty-listof (recursive-contract chunk-list/c))))
+(define nullable-chunk-list/c (or/c chunk/c
+                                    null/c
+                                    (non-empty-listof (recursive-contract nullable-chunk-list/c))))
+(provide chunk/c chunk-list/c nullable-chunk-list/c)
 
 ;error chunk
 ; this chunk raises an error when applied - this chunk is used for testing and filing in stubs/empty parameters
@@ -56,36 +69,11 @@
     (apply error error_content)))
 (provide error-chunk)
 
-;property initializer
-(define/contract initial-properties
-  property-hash/c
-  (hash))
-(provide initial-properties)
-
-;property accessors
-(define/contract (has-property? name properties)
-  (-> property-name/c property-hash/c boolean?)
-  (hash-has-key? properties name))
-(define/contract (property-lookup name properties)
-  (-> property-name/c property-hash/c property-value/c)
-  (hash-ref properties name (λ () (error "Could not find property in property hash; given: " name properties))))
-(provide has-property? property-lookup)
-
-;property mutator (pure - returns new property hash)
-; returns updated property hash if no clash in property names
-;         error if there is a clash
-(define/contract (property-update name value properties)
-  (-> property-name/c property-value/c property-hash/c property-hash/c)
-  (if (has-property? name properties)
-      (error "Could not add property to property hash; it already exists; given: " name value properties)
-      (hash-set properties name value)))
-(provide property-update)
-
 ;environment Structure
 (struct environment (description initial-position) #:transparent)
-(define environment/c (struct/c environment description/c optional-position/c))
+(define environment/c (struct/c environment environment-description/c optional-position/c))
 (define optional-environment/c (or/c environment/c #false))
-(provide/contract (struct environment ([description description/c]
+(provide/contract (struct environment ([description environment-description/c]
                                        [initial-position optional-position/c])))
 (provide environment/c optional-environment/c)
 
@@ -123,11 +111,11 @@
 (define/contract (comment-macro-env indent)
   (-> indent/c comment-macro-env/c)
   (environment 'comment-macro indent))
-(provide comment-macro-env/c comment-macro-env comment-macro-env?)
 (define/contract (comment-macro-env? env)
   (-> any/c boolean?)
   (and (environment/c env)
        (eq? (environment-description env) 'comment-macro)))
+(provide comment-macro-env/c comment-macro-env comment-macro-env?)
 
 ;macro definition with embedded comment block environment
 (define macro-comment-env/c (struct/c environment 'macro-comment position/c))
@@ -165,21 +153,19 @@
 (provide user-env/c possible-env/c combine-env)
 
 ;context Structure
-(struct context (indent line-length env properties) #:transparent)
-(define context/c (struct/c context indent/c line-length/c optional-environment/c property-hash/c))
+(struct context (indent line-length env) #:transparent)
+(define context/c (struct/c context indent/c line-length/c optional-environment/c))
 (provide/contract (struct context ([indent indent/c]
                                    [line-length line-length/c]
-                                   [env optional-environment/c]
-                                   [properties property-hash/c])))
+                                   [env optional-environment/c])))
 (provide context/c)
 
 ;construct context
-(define/contract (construct-context properties line-length)
-  (-> property-hash/c line-length/c context/c)
+(define/contract (construct-context line-length)
+  (-> line-length/c context/c)
   (context 0
            line-length
-           empty-env
-           properties))
+           empty-env))
 (provide construct-context)
 
 ;new environment context
@@ -190,7 +176,7 @@
 
 ;context accessors
 (define/contract (context-description context)
-  (-> context/c optional-description/c)
+  (-> context/c optional-environment-description/c)
   (let ([env (context-env context)])
     (if env
         (environment-description env)
