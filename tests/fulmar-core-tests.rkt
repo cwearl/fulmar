@@ -127,6 +127,13 @@
    (check-equal? (reindent 4 test-context) (context 4 80 empty-env))
    (check-equal? (reindent 2 (reindent 5 test-context)) (context 7 80 empty-env))))
 
+(define/provide-test-suite test-reset-indent
+  (test-case
+   "Test reset-indent"
+   (define test-context (construct-context 80))
+   (check-equal? (reset-indent 4 test-context) (context 4 80 empty-env))
+   (check-equal? (reset-indent 2 (reindent 5 test-context)) (context 2 80 empty-env))))
+
 (define/provide-test-suite test-enter-comment
   (test-case
    "Test enter-comment-env"
@@ -142,7 +149,6 @@
 (define/provide-test-suite test-enter-macro
   (test-case
    "Test enter-macro-env"
-   (define chunk (error-chunk "Testing - tried to apply a chunk you shouldn't have."))
    (define test-context-1 (construct-context 80))
    (define test-context-2 (context 0 80 macro-env))
    (define test-context-3 (context 4 80 (comment-env 4)))

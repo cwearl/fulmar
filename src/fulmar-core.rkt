@@ -12,8 +12,6 @@
 (provide flatten*)
 
 ;basic contracts
-(define (context-delayed? x) (context? x))
-;(provide context-delayed?)
 (define indent/c natural-number/c)
 (define line-length/c exact-positive-integer?)
 (provide indent/c line-length/c)
@@ -25,6 +23,9 @@
 (define length-list/c (or/c length-value/c
                             (non-empty-listof (recursive-contract length-list/c))))
 (provide length-value/c length-list/c)
+(define sc-name/c symbol?)
+(define sc-body/c any/c)
+(provide sc-name/c sc-body/c)
 (define nekot-name/c symbol?)
 (define nekot-body/c any/c)
 (provide nekot-name/c nekot-body/c)
@@ -42,32 +43,6 @@
 (define mode/c (or/c 'normal 'immediate))
 (define null/c (one-of/c null))
 (provide mode/c null/c)
-
-;nekot Structure (reverse token - token spelled backwards)
-(struct nekot (name body context) #:transparent)
-(define nekot/c (struct/c nekot nekot-name/c nekot-body/c context-delayed?))
-(provide/contract (struct nekot ([name nekot-name/c]
-                                 [body nekot-body/c]
-                                 [context context-delayed?])))
-(provide nekot/c)
-
-;chunk Contract
-(define chunk/c (-> context-delayed? nekot/c))
-(define chunk-list/c (or/c chunk/c
-                           (non-empty-listof (recursive-contract chunk-list/c))))
-(define nullable-chunk-list/c (or/c chunk/c
-                                    null/c
-                                    (non-empty-listof (recursive-contract nullable-chunk-list/c))))
-(provide chunk/c chunk-list/c nullable-chunk-list/c)
-
-;error chunk
-; this chunk raises an error when applied - this chunk is used for testing and filing in stubs/empty parameters
-;   hence, it is in basic definitions section
-(define/contract (error-chunk . error_content)
-  (->* () #:rest any/c chunk/c)
-  (λ (context)
-    (apply error error_content)))
-(provide error-chunk)
 
 ;environment Structure
 (struct environment (description initial-position) #:transparent)
@@ -188,12 +163,18 @@
 (provide context-description
          context-initial-position)
 
-;new indent level context
+;increase indent level context
 (define/contract (reindent new-indent obj)
   (-> indent/c context/c context/c)
   (struct-copy context obj [indent (+ new-indent
                                       (context-indent obj))]))
 (provide reindent)
+
+;reset indent level context
+(define/contract (reset-indent new-indent obj)
+  (-> indent/c context/c context/c)
+  (struct-copy context obj [indent new-indent]))
+(provide reset-indent)
 
 ;new comment block
 (define/contract (enter-comment-env context)
@@ -208,3 +189,32 @@
   (enter-env macro-env
              context))
 (provide enter-macro-env)
+
+;nekot Structure (reverse token - token spelled backwards)
+(struct nekot (name body context) #:transparent)
+(define nekot/c (struct/c nekot nekot-name/c nekot-body/c context/c))
+(provide/contract (struct nekot ([name nekot-name/c]
+                                 [body nekot-body/c]
+                                 [context context/c])))
+(provide nekot/c)
+
+;chunk Contract
+(struct s-chunk (name body) #:transparent)
+(define s-chunk/c (struct/c s-chunk sc-name/c sc-body/c))
+(define chunk/c (or/c (-> context/c nekot/c) s-chunk/c string-value/c natural-number/c))
+(define chunk-list/c (or/c chunk/c
+                           (non-empty-listof (recursive-contract chunk-list/c))))
+(define nullable-chunk-list/c (or/c chunk/c
+                                    null/c
+                                    (non-empty-listof (recursive-contract nullable-chunk-list/c))))
+(provide/contract (struct s-chunk ([name sc-name/c]
+                                   [body sc-body/c])))
+(provide s-chunk/c chunk/c chunk-list/c nullable-chunk-list/c)
+
+;error chunk
+; this chunk raises an error when applied - this chunk is used for testing and filing in stubs/empty parameters
+;   hence, it is in basic definitions section
+(define/contract (error-chunk . error_content)
+  (->* () #:rest any/c s-chunk/c)
+  (apply error error_content))
+(provide error-chunk)

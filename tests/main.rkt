@@ -63,6 +63,7 @@
         test-enter-env
         test-context-accessors
         test-reindent
+        test-reset-indent
         test-enter-comment
         test-enter-macro))
 
