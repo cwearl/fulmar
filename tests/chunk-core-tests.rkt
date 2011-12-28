@@ -16,6 +16,10 @@
    (check-eq? (combine-lengths 'asdf) 4)
    (check-eq? (combine-lengths 4) 4)
    (check-eq? (combine-lengths "asdf" "jkl") 7)
+   (check-eq? (combine-lengths '("asdf" "jkl")) 7)
+   (check-eq? (combine-lengths '(("asdf") "jkl")) 7)
+   (check-eq? (combine-lengths '("asdf" ("jkl"))) 7)
+   (check-eq? (combine-lengths '(("asdf") ("jkl"))) 7)
    (check-eq? (combine-lengths "asdf" 'jkl) 7)
    (check-eq? (combine-lengths "asdf" 3) 7)
    (check-eq? (combine-lengths 'asdf "jkl") 7)
@@ -32,6 +36,10 @@
    (check-equal? (combine-strings "asdf") "asdf")
    (check-equal? (combine-strings 'asdf) "asdf")
    (check-equal? (combine-strings "asdf" "jkl") "asdfjkl")
+   (check-equal? (combine-strings '("asdf" "jkl")) "asdfjkl")
+   (check-equal? (combine-strings '(("asdf") "jkl")) "asdfjkl")
+   (check-equal? (combine-strings '("asdf" ("jkl"))) "asdfjkl")
+   (check-equal? (combine-strings '(("asdf") ("jkl"))) "asdfjkl")
    (check-equal? (combine-strings "asdf" 'jkl) "asdfjkl")
    (check-equal? (combine-strings 'asdf "jkl") "asdfjkl")
    (check-equal? (combine-strings 'asdf 'jkl) "asdfjkl")
@@ -332,44 +340,6 @@
                                                   test-context))
                  '("/* jkl */"
                    "/* asdf */"))))
-
-(define/provide-test-suite test-comment-line-chunk
-  (test-case
-   "Test comment-line-chunk - empty environment"
-   (define test-context (construct-context 80))
-   (define com-context (context 0 80 (comment-env 0)))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk "asdf")) test-context))
-                 '("//asdf"))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk 'asdf)) test-context))
-                 '("//asdf"))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk 'as) (literal-chunk 'df)) test-context))
-                 '("//asdf"))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk "as") (literal-chunk "df")) test-context))
-                 '("//asdf"))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk 'as) (literal-chunk "df")) test-context))
-                 '("//asdf"))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk "as") (literal-chunk 'df)) test-context))
-                 '("//asdf")))
-  (test-case
-   "Test comment-line-chunk - comment environment"
-   (define test-context (context 0 80 (comment-env 0)))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk "asdf")) test-context))
-                 '("/* //asdf")))
-  (test-case
-   "Test comment-line-chunk - macro environment"
-   (define test-context (context 0 80 macro-env))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk "asdf")) test-context))
-                 '("/*asdf*/")))
-  (test-case
-   "Test comment-line-chunk - comment macro environment"
-   (define test-context (context 0 80 (comment-macro-env 0)))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk "asdf")) test-context))
-                 '("/* //asdf")))
-  (test-case
-   "Test comment-line-chunk - macro comment environment"
-   (define test-context (context 0 80 (macro-comment-env 0)))
-   (check-equal? (write-nekot ((comment-line-chunk (literal-chunk "asdf")) test-context))
-                 '("/* //asdf"))))
 
 (define/provide-test-suite test-macro-env-chunk
   (test-case

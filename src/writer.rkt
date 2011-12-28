@@ -245,8 +245,8 @@
                          diff
                          0)])
     (write-nekot mode
-                 (chunk (reindent new-indent
-                                  context))
+                 (chunk-transform chunk (reindent new-indent
+                                                  context))
                  line)))
 (provide change-indent-to-current)
 

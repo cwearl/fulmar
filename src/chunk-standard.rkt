@@ -19,7 +19,6 @@
 (provide position-indent-chunk)
 (provide indent-chunk)
 (provide comment-env-chunk)
-(provide comment-line-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;character chunks;;;;;
@@ -672,7 +671,7 @@
   (concat-chunk pp-directive-chunk
                 endif-chunk
                 space-chunk
-                (comment-line-chunk condition)))
+                (comment-env-chunk condition)))
 (provide pp-endif-chunk)
 
 ;preprocessor conditional chunk
@@ -754,7 +753,7 @@
                        length-equals-one
                        (concat-chunk chunk
                                      space-chunk
-                                     (comment-line-chunk name)))))
+                                     (comment-env-chunk name)))))
 (provide namespace-define-chunk)
 
 ;described statements chunk

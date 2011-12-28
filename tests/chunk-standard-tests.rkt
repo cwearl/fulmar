@@ -840,7 +840,7 @@
                    "             second) \\"
                    "#define name(first, \\"))
    (check-equal? (write-nekot ((macro-define-chunk (literal-chunk 'name)
-                                                   (list (concat-chunk (comment-line-chunk (literal-chunk "test1"))
+                                                   (list (concat-chunk (comment-env-chunk (literal-chunk "test1"))
                                                                        new-line-chunk
                                                                        (literal-chunk 'first))
                                                          (literal-chunk 'second))
@@ -858,7 +858,7 @@
                    "#define name(/*test1*/ \\"))
    (check-equal? (write-nekot ((macro-define-chunk (literal-chunk 'name)
                                                    (list (literal-chunk 'first)
-                                                         (concat-chunk (comment-line-chunk (literal-chunk "test2"))
+                                                         (concat-chunk (comment-env-chunk (literal-chunk "test2"))
                                                                        new-line-chunk
                                                                        (literal-chunk 'second)))
                                                    (concat-chunk (literal-chunk 'asdf)
@@ -874,10 +874,10 @@
                    "             /*test2*/ \\"
                    "#define name(first, \\"))
    (check-equal? (write-nekot ((macro-define-chunk (literal-chunk 'name)
-                                                   (list (concat-chunk (comment-line-chunk (literal-chunk "test1"))
+                                                   (list (concat-chunk (comment-env-chunk (literal-chunk "test1"))
                                                                        new-line-chunk
                                                                        (literal-chunk 'first))
-                                                         (concat-chunk (comment-line-chunk (literal-chunk "test2"))
+                                                         (concat-chunk (comment-env-chunk (literal-chunk "test2"))
                                                                        new-line-chunk
                                                                        (literal-chunk 'second)))
                                                    (concat-chunk (literal-chunk 'asdf)
@@ -980,7 +980,7 @@
                                test-context))
                  '(" asdf"
                    "template<first, second>"))
-   (check-equal? (write-nekot ((template-define-chunk (list (concat-chunk (comment-line-chunk (literal-chunk "test"))
+   (check-equal? (write-nekot ((template-define-chunk (list (concat-chunk (comment-env-chunk (literal-chunk "test"))
                                                                           new-line-chunk
                                                                           (literal-chunk 'first))
                                                             (literal-chunk 'second))

@@ -70,29 +70,6 @@
 (apply test-fail-with-gui? fulmar-core-tests)
 ;(apply run-tests-text fulmar-core-tests)
 
-;core chunk tests:
-(define/contract chunk-core-tests
-  (listof test-suite?)
-  (list test-combine-lengths
-        test-combine-strings
-        test-length-equals-one
-        test-literal-chunk
-        test-spaces-chunk
-        test-new-line-chunk
-        test-pp-directive-chunk
-        test-empty-chunk
-        test-concat-chunk
-        test-immediate-chunk
-        test-speculative-chunk
-        test-position-indent-chunk
-        test-indent-chunk
-        test-comment-env-chunk
-        test-comment-line-chunk
-        test-macro-env-chunk))
-
-(apply test-fail-with-gui? chunk-core-tests)
-;(apply run-tests-text chunk-core-tests)
-
 ;writer tests:
 (define/contract writer-tests
   (listof test-suite?)
@@ -117,6 +94,28 @@
 
 (apply test-fail-with-gui? writer-tests)
 ;(apply run-tests-text writer-tests)
+
+;core chunk tests:
+(define/contract chunk-core-tests
+  (listof test-suite?)
+  (list test-combine-lengths
+        test-combine-strings
+        test-length-equals-one
+        test-literal-chunk
+        test-spaces-chunk
+        test-new-line-chunk
+        test-pp-directive-chunk
+        test-empty-chunk
+        test-concat-chunk
+        test-immediate-chunk
+        test-speculative-chunk
+        test-position-indent-chunk
+        test-indent-chunk
+        test-comment-env-chunk
+        test-macro-env-chunk))
+
+(apply test-fail-with-gui? chunk-core-tests)
+;(apply run-tests-text chunk-core-tests)
 
 ;standard chunk tests:
 (define/contract standard-core-tests

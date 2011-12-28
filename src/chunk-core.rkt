@@ -48,6 +48,49 @@
        (= 1 (length lst))))
 (provide length-equals-one)
 
+;chunk transformer
+; transforms chunks into nekots
+(define/contract (chunk-transform chunk context)
+  (-> chunk/c context/c nekot/c)
+  (cond [(procedure? chunk) (chunk context)]
+        [(s-chunk? chunk) (let ([name (s-chunk-name chunk)]
+                                [body (s-chunk-body chunk)])
+                            (nekot name
+                                   (match name
+                                     ['new-line       null]
+                                     ['pp-directive   null]
+                                     ['empty          null]
+                                     ['concat         (map (λ (chunk)
+                                                           (chunk-transform chunk
+                                                                            context))
+                                                         body)]
+                                     ['immediate      (chunk-transform body)]
+                                     ['speculative    (list (chunk-transform (first body)
+                                                                           context)
+                                                          (second body)
+                                                          (chunk-transform (third body)
+                                                                           context))]
+                                     ['position-indent (chunk-transform body
+                                                                        context)]
+                                     ['modify-context  (chunk-transform (first body)
+                                                                        ((second body) context))]
+                                     ['comment         (list (chunk-transform (first body)
+                                                                              context)
+                                                             (second body))]
+                                     [_ (error "Unknown type of s-chunk; given: " chunk)])
+                                   context))]
+        [(string? chunk) (nekot 'literal
+                                chunk
+                                context)]
+        [(symbol? chunk) (nekot 'literal
+                                (symbol->string chunk)
+                                context)]
+        [(exact-nonnegative-integer? chunk) (nekot 'spaces
+                                                   chunk
+                                                   context)]
+        [else (error "Unknown chunk subtype; given: " chunk)]))
+(provide chunk-transform)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot-building chunks;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,45 +99,43 @@
 ; simple string
 (define/contract (literal-chunk . strings)
   (->* () #:rest string-list/c chunk/c)
-  (λ (context)
-    (nekot 'literal (combine-strings strings) context)))
+  (combine-strings strings))
 (provide literal-chunk)
 
 ;sequence of spaces chunk
 ; adds some number of spaces
 (define/contract (spaces-chunk . lengths)
   (->* () #:rest length-list/c chunk/c)
-  (λ (context)
-    (nekot 'spaces (combine-lengths lengths) context)))
+  (combine-lengths lengths))
 (provide spaces-chunk)
 
 ;new line chunk
 ; adds a new line
 (define/contract new-line-chunk
   chunk/c
-  (λ (context)
-    (nekot 'new-line null context)))
+  (s-chunk 'new-line
+           null))
 (provide new-line-chunk)
 
 ;preprocessor directive chunk
 ; correctly adds # to line
 (define/contract pp-directive-chunk
   chunk/c
-  (λ (context)
-    (nekot 'pp-directive null context)))
+  (s-chunk 'pp-directive
+           null))
 (provide pp-directive-chunk)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;meta-nekot-building chunks;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;empty (no-op) chunk
 ; only real uses of this chunk are for testing and filing in stubs/empty parameters
 (define/contract empty-chunk
   chunk/c
-  (λ (context)
-    (nekot 'empty null context)))
+  (s-chunk 'empty
+           null))
 (provide empty-chunk)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;meta-nekot-building chunks;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;concatenation chunk
 ; sets up a general concatenation chunks
@@ -102,21 +143,16 @@
 ; - no spaces added
 (define/contract (concat-chunk . chunks)
   (->* () #:rest chunk-list/c chunk/c)
-  (λ (context)
-    (nekot 'concat
-           (map (λ (chunk) (chunk context))
-                (flatten chunks))
-           context)))
+  (s-chunk 'concat
+           (flatten chunks)))
 (provide concat-chunk)
 
 ;immediate chunk
 ; bypasses usual writing rules and writes chunk immediately after preceeding chunk
 (define/contract (immediate-chunk chunk)
   (-> chunk/c chunk/c)
-  (λ (context)
-    (nekot 'immediate
-           (chunk context)
-           context)))
+  (s-chunk 'immediate
+           chunk))
 (provide immediate-chunk)
 
 ;speculative chunk
@@ -126,23 +162,37 @@
 ; otherwise,            use results of second chunk
 (define/contract (speculative-chunk attempt success? backup)
   (-> chunk/c (-> written-lines/c boolean?) chunk/c chunk/c)
-  (λ (context)
-    (nekot 'speculative
-           (list (attempt context)
+  (s-chunk 'speculative
+           (list attempt
                  success?
-                 (backup context))
-           context)))
+                 backup)))
 (provide speculative-chunk)
 
 ;position indent chunk
 ; sets indent to current position of line
 (define/contract (position-indent-chunk chunk)
   (-> chunk/c chunk/c)
-  (λ (context)
-    (nekot 'position-indent
-           chunk
-           context)))
+  (s-chunk 'position-indent
+           chunk))
 (provide position-indent-chunk)
+
+;modify context chunk
+; changes context for given chunk
+(define/contract (modify-context-chunk chunk modify)
+  (-> chunk/c (-> context/c context/c) chunk/c)
+  (s-chunk 'modify-context
+           (list chunk
+                 modify)))
+(provide modify-context-chunk)
+
+;comment block chunk
+; puts chunks in a comment block environment
+(define/contract (comment-env-chunk chunk [char #\ ])
+  (->* (chunk/c) (char?) chunk/c)
+  (s-chunk 'comment
+           (list chunk
+                 char)))
+(provide comment-env-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;context-aware chunks;;;;;;;;
@@ -152,57 +202,16 @@
 ; increases current indent
 (define/contract (indent-chunk length chunk)
   (-> length-list/c chunk/c chunk/c)
-  (λ (context)
-    (chunk (reindent (if (pair? length)
-                         (combine-lengths length)
-                         length)
-                     context))))
+  (modify-context-chunk chunk
+                        (λ (context)
+                          (reindent (combine-lengths length)
+                                    context))))
 (provide indent-chunk)
-
-;comment block chunk
-; puts chunks in a comment block environment
-(define/contract (comment-env-chunk chunk [char #\ ])
-  (->* (chunk/c) (char?) chunk/c)
-  (λ (context)
-    (let ([env (context-env context)])
-      (nekot 'concat
-             (if (or (comment-env? env)
-                     (comment-macro-env? env)
-                     (macro-comment-env? env))
-                 (list ((literal-chunk "//" (string char)) context)
-                       (chunk (enter-comment-env context)))
-                 (list ((literal-chunk "/*" (string char)) context)
-                       (chunk (enter-comment-env context))
-                       ((literal-chunk " */") context)))
-             context))))
-(provide comment-env-chunk)
-
-;comment-line chunk
-; single-line comment chunk
-(define/contract (comment-line-chunk . chunk-lists)
-  (->* () #:rest chunk-list/c chunk/c)
-  (let ([chunks (flatten chunk-lists)])
-    (λ (context)
-      (let ([env (context-env context)])
-        ((cond [;in macro environment
-                (macro-env? env)
-                (immediate-chunk (concat-chunk (literal-chunk "/*")
-                                               chunks
-                                               (literal-chunk "*/")))]
-               [;in empty, comment, comment-macro or macro-comment environment
-                (or (empty-env? env)
-                    (comment-env? env)
-                    (comment-macro-env? env)
-                    (macro-comment-env? env))
-                (immediate-chunk (concat-chunk (literal-chunk "//")
-                                               chunks))])
-         context)))))
-(provide comment-line-chunk)
 
 ;macro environment chunk
 ; puts chunks in a macro environment
 (define/contract (macro-env-chunk chunk)
   (-> chunk/c chunk/c)
-  (λ (context)
-    (chunk (enter-macro-env context))))
+  (modify-context-chunk chunk
+                        enter-macro-env))
 (provide macro-env-chunk)
