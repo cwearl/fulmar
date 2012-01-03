@@ -1,3 +1,5 @@
+;TODO: add version number information to fulmar - quick sanity check that versions (fulmar's version and file's syntax version) are compatible
+;TODO: fix constructor-assignment-chunk to accept multiple values as arguments...
 ;TODO: convert chunks from closure formulation to something transparent (a struct, probably)
 ;TODO: change writer so that does indenting and new-lining after too many characters have been printed - this should eliminate the need for immediate-chunk
 ;TODO: write and test normal-chunk - not needed?
