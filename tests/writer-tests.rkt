@@ -2,7 +2,7 @@
 
 (require rackunit)
 (require "../src/fulmar-core.rkt")
-(require "../src/chunk-core.rkt")
+(require "../src/core-chunk.rkt")
 (require "../src/writer.rkt")
 
 ;unit tests for writer.rkt

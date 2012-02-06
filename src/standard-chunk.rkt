@@ -1,6 +1,6 @@
 #lang racket
 
-(require "chunk-core.rkt")
+(require "core-chunk.rkt")
 
 ;fulmar standard chunks
 

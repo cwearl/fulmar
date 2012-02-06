@@ -2,11 +2,11 @@
 
 (require rackunit)
 (require "../src/fulmar-core.rkt")
-(require "../src/chunk-core.rkt")
-(require "../src/chunk-standard.rkt")
+(require "../src/core-chunk.rkt")
+(require "../src/standard-chunk.rkt")
 (require "../src/writer.rkt")
 
-;unit tests for chunk-standard.rkt
+;unit tests for standard-chunk.rkt
 
 ;character chunks
 

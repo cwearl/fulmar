@@ -1,7 +1,7 @@
 #lang racket
 
 (require "fulmar-core.rkt")
-(require "chunk-standard.rkt") ; for eval
+(require "standard-chunk.rkt") ; for eval
 
 ;input/output structures, procedures, and contracts for fulmar
 

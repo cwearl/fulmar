@@ -4,9 +4,9 @@
 (require rackunit/gui)
 (require rackunit/text-ui)
 (require "fulmar-core-tests.rkt")
-(require "chunk-core-tests.rkt")
+(require "core-chunk-tests.rkt")
 (require "writer-tests.rkt")
-(require "chunk-standard-tests.rkt")
+(require "standard-chunk-tests.rkt")
 (require "io-tests.rkt")
 
 ;sequentially check if any tests fail
@@ -96,7 +96,7 @@
 ;(apply run-tests-text writer-tests)
 
 ;core chunk tests:
-(define/contract chunk-core-tests
+(define/contract core-chunk-tests
   (listof test-suite?)
   (list test-combine-lengths
         test-combine-strings
@@ -114,8 +114,8 @@
         test-comment-env-chunk
         test-macro-env-chunk))
 
-(apply test-fail-with-gui? chunk-core-tests)
-;(apply run-tests-text chunk-core-tests)
+(apply test-fail-with-gui? core-chunk-tests)
+;(apply run-tests-text core-chunk-tests)
 
 ;standard chunk tests:
 (define/contract standard-core-tests

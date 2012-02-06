@@ -10,6 +10,7 @@
 (define cmdln-input-location (make-parameter #false))
 (define cmdln-output-location (make-parameter #false))
 
+;TODO: add checks to line length argument in case string is not a number (currently converts any input string into integer silently)
 (define/contract (string->integer str)
   (-> string? exact-positive-integer?)
   (foldl (λ (i t) (+ (* t 10) i))

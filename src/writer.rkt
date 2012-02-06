@@ -1,7 +1,7 @@
 #lang racket
 
 (require "fulmar-core.rkt")
-(require "chunk-core.rkt")
+(require "core-chunk.rkt")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;helper functions;;;;;;
