@@ -101,6 +101,7 @@
   (list test-combine-lengths
         test-combine-strings
         test-length-equals-one
+        test-chunk-transform
         test-literal-chunk
         test-spaces-chunk
         test-new-line-chunk
@@ -110,6 +111,7 @@
         test-immediate-chunk
         test-speculative-chunk
         test-position-indent-chunk
+        test-modify-context-chunk
         test-indent-chunk
         test-comment-env-chunk
         test-macro-env-chunk))
