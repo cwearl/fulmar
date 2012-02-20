@@ -44,6 +44,19 @@
 (define null/c (one-of/c null))
 (provide mode/c null/c)
 
+;chunk Contract
+(struct s-chunk (name body) #:transparent)
+(define s-chunk/c (struct/c s-chunk sc-name/c sc-body/c))
+(define chunk/c (or/c s-chunk/c string-value/c natural-number/c))
+(define chunk-list/c (or/c chunk/c
+                           (non-empty-listof (recursive-contract chunk-list/c))))
+(define nullable-chunk-list/c (or/c chunk/c
+                                    null/c
+                                    (non-empty-listof (recursive-contract nullable-chunk-list/c))))
+(provide/contract (struct s-chunk ([name sc-name/c]
+                                   [body sc-body/c])))
+(provide s-chunk/c chunk/c chunk-list/c nullable-chunk-list/c)
+
 ;environment Structure
 (struct environment (description initial-position) #:transparent)
 (define environment/c (struct/c environment environment-description/c optional-position/c))
@@ -197,24 +210,3 @@
                                  [body nekot-body/c]
                                  [context context/c])))
 (provide nekot/c)
-
-;chunk Contract
-(struct s-chunk (name body) #:transparent)
-(define s-chunk/c (struct/c s-chunk sc-name/c sc-body/c))
-(define chunk/c (or/c (-> context/c nekot/c) s-chunk/c string-value/c natural-number/c))
-(define chunk-list/c (or/c chunk/c
-                           (non-empty-listof (recursive-contract chunk-list/c))))
-(define nullable-chunk-list/c (or/c chunk/c
-                                    null/c
-                                    (non-empty-listof (recursive-contract nullable-chunk-list/c))))
-(provide/contract (struct s-chunk ([name sc-name/c]
-                                   [body sc-body/c])))
-(provide s-chunk/c chunk/c chunk-list/c nullable-chunk-list/c)
-
-;error chunk
-; this chunk raises an error when applied - this chunk is used for testing and filing in stubs/empty parameters
-;   hence, it is in basic definitions section
-(define/contract (error-chunk . error_content)
-  (->* () #:rest any/c s-chunk/c)
-  (apply error error_content))
-(provide error-chunk)

@@ -52,8 +52,7 @@
 ; transforms chunks into nekots
 (define/contract (chunk-transform chunk context)
   (-> chunk/c context/c nekot/c)
-  (cond [(procedure? chunk) (chunk context)]
-        [(string? chunk) (nekot 'literal
+  (cond [(string? chunk) (nekot 'literal
                                 chunk
                                 context)]
         [(symbol? chunk) (nekot 'literal
