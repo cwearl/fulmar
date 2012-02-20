@@ -53,32 +53,6 @@
 (define/contract (chunk-transform chunk context)
   (-> chunk/c context/c nekot/c)
   (cond [(procedure? chunk) (chunk context)]
-        [(s-chunk? chunk) (let ([name (s-chunk-name chunk)]
-                                [body (s-chunk-body chunk)])
-                            (nekot name
-                                   (match name
-                                     ['new-line       null]
-                                     ['pp-directive   null]
-                                     ['empty          null]
-                                     ['concat         (map (λ (chunk)
-                                                           (chunk-transform chunk
-                                                                            context))
-                                                           body)]
-                                     ['immediate      (chunk-transform body)]
-                                     ['speculative    (list (chunk-transform (first body)
-                                                                             context)
-                                                            (second body)
-                                                            (chunk-transform (third body)
-                                                                             context))]
-                                     ['position-indent (chunk-transform body
-                                                                        context)]
-                                     ['modify-context  (chunk-transform (first body)
-                                                                        ((second body) context))]
-                                     ['comment         (list (chunk-transform (first body)
-                                                                              context)
-                                                             (second body))]
-                                     [_ (error "Unknown type of s-chunk; given: " chunk)])
-                                   context))]
         [(string? chunk) (nekot 'literal
                                 chunk
                                 context)]
@@ -88,6 +62,54 @@
         [(exact-nonnegative-integer? chunk) (nekot 'spaces
                                                    chunk
                                                    context)]
+        [(s-chunk? chunk) (let ([name (s-chunk-name chunk)]
+                                [body (s-chunk-body chunk)])
+                            (match name
+                              ['new-line       (nekot 'new-line
+                                                      null
+                                                      context)]
+                              ['pp-directive   (nekot 'pp-directive
+                                                      null
+                                                      context)]
+                              ['empty          (nekot 'empty
+                                                      null
+                                                      context)]
+                              ['concat         (nekot 'concat
+                                                      (map (λ (chunk)
+                                                             (chunk-transform chunk
+                                                                              context))
+                                                           body)
+                                                      context)]
+                              ['immediate      (nekot 'immediate
+                                                      (chunk-transform body context)
+                                                      context)]
+                              ['speculative    (nekot 'speculative
+                                                      (list (chunk-transform (first body)
+                                                                             context)
+                                                            (second body)
+                                                            (chunk-transform (third body)
+                                                                             context))
+                                                      context)]
+                              ['position-indent (nekot 'position-indent
+                                                       body
+                                                       context)]
+                              ['modify-context  (chunk-transform (first body)
+                                                                 ((second body) context))]
+                              ['comment-env   (chunk-transform (let ([env (context-env context)])
+                                                                   (concat-chunk (if (or (comment-env? env)
+                                                                                         (comment-macro-env? env)
+                                                                                         (macro-comment-env? env))
+                                                                                     (list "//"
+                                                                                           (string (second body))
+                                                                                           (modify-context-chunk (first body)
+                                                                                                                 enter-comment-env))
+                                                                                     (list "/*"
+                                                                                           (string (second body))
+                                                                                           (modify-context-chunk (first body)
+                                                                                                                 enter-comment-env)
+                                                                                           " */"))))
+                                                                 context)]
+                              [_ (error "Unknown type of s-chunk; given: " chunk)]))]
         [else (error "Unknown chunk subtype; given: " chunk)]))
 (provide chunk-transform)
 
@@ -185,15 +207,6 @@
                  modify)))
 (provide modify-context-chunk)
 
-;comment block chunk
-; puts chunks in a comment block environment
-(define/contract (comment-env-chunk chunk [char #\ ])
-  (->* (chunk/c) (char?) chunk/c)
-  (s-chunk 'comment
-           (list chunk
-                 char)))
-(provide comment-env-chunk)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;context-aware chunks;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -207,6 +220,15 @@
                           (reindent (combine-lengths length)
                                     context))))
 (provide indent-chunk)
+
+;comment env chunk
+; puts chunks in a comment env environment
+(define/contract (comment-env-chunk chunk [char #\ ])
+  (->* (chunk/c) (char?) chunk/c)
+  (s-chunk 'comment-env
+           (list chunk
+                 char)))
+(provide comment-env-chunk)
 
 ;macro environment chunk
 ; puts chunks in a macro environment

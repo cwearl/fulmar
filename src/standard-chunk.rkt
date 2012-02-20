@@ -58,7 +58,7 @@
 ; adds "("
 (define/contract open-paren-chunk
   chunk/c
-  (literal-chunk "("))
+  "(")
 (provide open-paren-chunk)
 
 ;immediate open parenthesis chunk
@@ -72,7 +72,7 @@
 ; adds ")"
 (define/contract close-paren-chunk
   chunk/c
-  (literal-chunk ")"))
+  ")")
 (provide close-paren-chunk)
 
 ;immediate close parenthesis chunk
@@ -86,7 +86,7 @@
 ; adds "{"
 (define/contract open-crbr-chunk
   chunk/c
-  (literal-chunk "{"))
+  "{")
 (provide open-crbr-chunk)
 
 ;immediate open curly bracket chunk
@@ -100,7 +100,7 @@
 ; adds "}"
 (define/contract close-crbr-chunk
   chunk/c
-  (literal-chunk "}"))
+  "}")
 (provide close-crbr-chunk)
 
 ;immediate close curly bracket chunk
@@ -114,7 +114,7 @@
 ; adds "<"
 (define/contract open-anbr-chunk
   chunk/c
-  (literal-chunk "<"))
+  "<")
 (provide open-anbr-chunk)
 
 ;immediate open angle-bracket chunk
@@ -128,7 +128,7 @@
 ; adds ">"
 (define/contract close-anbr-chunk
   chunk/c
-  (literal-chunk ">"))
+  ">")
 (provide close-anbr-chunk)
 
 ;immediate close angle-bracket chunk
@@ -142,7 +142,7 @@
 ; adds ","
 (define/contract comma-chunk
   chunk/c
-  (literal-chunk ","))
+  ",")
 (provide comma-chunk)
 
 ;immediate comma chunk
@@ -156,7 +156,7 @@
 ; adds "."
 (define/contract period-chunk
   chunk/c
-  (literal-chunk "."))
+  ".")
 (provide period-chunk)
 
 ;immediate period chunk
@@ -170,7 +170,7 @@
 ; adds ":"
 (define/contract colon-chunk
   chunk/c
-  (literal-chunk ":"))
+  ":")
 (provide colon-chunk)
 
 ;immediate colon chunk
@@ -184,7 +184,7 @@
 ; adds ";"
 (define/contract semi-colon-chunk
   chunk/c
-  (literal-chunk ";"))
+  ";")
 (provide semi-colon-chunk)
 
 ;immediate semi-colon chunk
@@ -201,7 +201,7 @@
 ;define chunk
 (define/contract define-chunk
   chunk/c
-  (literal-chunk "define"))
+  'define)
 (provide define-chunk)
 
 ;immediate define chunk
@@ -214,7 +214,7 @@
 ;include chunk
 (define/contract include-chunk
   chunk/c
-  (literal-chunk "include"))
+  'include)
 (provide include-chunk)
 
 ;immediate include chunk
@@ -227,7 +227,7 @@
 ;ifdef chunk
 (define/contract ifdef-chunk
   chunk/c
-  (literal-chunk "ifdef"))
+  'ifdef)
 (provide ifdef-chunk)
 
 ;immediate ifdef chunk
@@ -240,7 +240,7 @@
 ;ifndef chunk
 (define/contract ifndef-chunk
   chunk/c
-  (literal-chunk "ifndef"))
+  'ifndef)
 (provide ifndef-chunk)
 
 ;immediate ifndef chunk
@@ -253,7 +253,7 @@
 ;else chunk
 (define/contract else-chunk
   chunk/c
-  (literal-chunk "else"))
+  'else)
 (provide else-chunk)
 
 ;immediate else chunk
@@ -266,7 +266,7 @@
 ;endif chunk
 (define/contract endif-chunk
   chunk/c
-  (literal-chunk "endif"))
+  'endif)
 (provide endif-chunk)
 
 ;immediate endif chunk
@@ -279,7 +279,7 @@
 ;template chunk
 (define/contract template-chunk
   chunk/c
-  (literal-chunk "template"))
+  'template)
 (provide template-chunk)
 
 ;immediate template chunk
@@ -292,7 +292,7 @@
 ;typename chunk
 (define/contract typename-chunk
   chunk/c
-  (literal-chunk "typename"))
+  'typename)
 (provide typename-chunk)
 
 ;immediate typename chunk
@@ -305,7 +305,7 @@
 ;typedef chunk
 (define/contract typedef-chunk
   chunk/c
-  (literal-chunk "typedef"))
+  'typedef)
 (provide typedef-chunk)
 
 ;immediate typedef chunk
@@ -318,7 +318,7 @@
 ;void chunk
 (define/contract void-chunk
   chunk/c
-  (literal-chunk "void"))
+  'void)
 (provide void-chunk)
 
 ;immediate void chunk
@@ -331,7 +331,7 @@
 ;inline chunk
 (define/contract inline-chunk
   chunk/c
-  (literal-chunk "inline"))
+  'inline)
 (provide inline-chunk)
 
 ;immediate inline chunk
@@ -343,7 +343,7 @@
 
 (define/contract static-chunk
   chunk/c
-  (literal-chunk "static"))
+  'static)
 (provide static-chunk)
 
 ;immediate static chunk
@@ -356,7 +356,7 @@
 ;return chunk
 (define/contract return-chunk
   chunk/c
-  (literal-chunk "return"))
+  'return)
 (provide return-chunk)
 
 ;immediate return chunk
@@ -369,7 +369,7 @@
 ;const chunk
 (define/contract const-chunk
   chunk/c
-  (literal-chunk "const"))
+  'const)
 (provide const-chunk)
 
 ;immediate const chunk
@@ -382,7 +382,7 @@
 ;struct chunk
 (define/contract struct-chunk
   chunk/c
-  (literal-chunk "struct"))
+  'struct)
 (provide struct-chunk)
 
 ;immediate struct chunk
@@ -395,7 +395,7 @@
 ;class chunk
 (define/contract class-chunk
   chunk/c
-  (literal-chunk "class"))
+  'class)
 (provide class-chunk)
 
 ;immediate class chunk
@@ -408,7 +408,7 @@
 ;public chunk
 (define/contract public-chunk
   chunk/c
-  (literal-chunk "public"))
+  'public)
 (provide public-chunk)
 
 ;immediate public chunk
@@ -421,7 +421,7 @@
 ;protected chunk
 (define/contract protected-chunk
   chunk/c
-  (literal-chunk "protected"))
+  'protected)
 (provide protected-chunk)
 
 ;immediate protected chunk
@@ -434,7 +434,7 @@
 ;private chunk
 (define/contract private-chunk
   chunk/c
-  (literal-chunk "private"))
+  'private)
 (provide private-chunk)
 
 ;immediate private chunk
@@ -447,7 +447,7 @@
 ;namespace chunk
 (define/contract namespace-chunk
   chunk/c
-  (literal-chunk "namespace"))
+  'namespace)
 (provide namespace-chunk)
 
 ;immediate namespace chunk
