@@ -2,5 +2,5 @@
 
 (define/contract version-number
   symbol?
-  '0.5.0)
+  '0.7.5)
 (provide version-number)
