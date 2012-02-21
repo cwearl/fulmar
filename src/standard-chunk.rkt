@@ -802,46 +802,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 
 ;function declaration
-(define/contract function-declare-chunk
-  (case-> (-> chunk/c chunk/c chunk/c nullable-chunk-list/c chunk/c)
-          (-> chunk/c chunk/c nullable-chunk-list/c chunk/c))
-  (case-lambda [(name return-type return-type-qualifiers params)
-                (function-declare-chunk name
-                                        (concat-chunk return-type
-                                                      imm-space-chunk
-                                                      (immediate-chunk return-type-qualifiers))
-                                        params)]
-               [(name return-type params)
-                (concat-chunk imm-inline-chunk
-                              space-chunk
-                              return-type
-                              space-chunk
-                              name
-                              imm-space-chunk
-                              (if (empty? (flatten params))
-                                  (concat-chunk imm-open-paren-chunk
-                                                imm-void-chunk
-                                                imm-close-paren-chunk)
-                                  (paren-list-chunk params)))]))
+(define/contract (function-declare-chunk name return-type . params)
+  (->* (chunk/c chunk/c) #:rest nullable-chunk-list/c chunk/c)
+  (concat-chunk imm-inline-chunk
+                space-chunk
+                return-type
+                space-chunk
+                name
+                imm-space-chunk
+                (if (empty? (flatten params))
+                    (concat-chunk imm-open-paren-chunk
+                                  imm-void-chunk
+                                  imm-close-paren-chunk)
+                    (paren-list-chunk params))))
 (provide function-declare-chunk)
 
 ;static function declaration
-(define/contract static-function-declare-chunk
-  (case-> (-> chunk/c chunk/c chunk/c nullable-chunk-list/c chunk/c)
-          (-> chunk/c chunk/c nullable-chunk-list/c chunk/c))
-  (let ([build (λ (declaration)
-                 (concat-chunk imm-static-chunk
-                               imm-space-chunk
-                               declaration))])
-    (case-lambda [(name return-type return-type-qualifiers params)
-                  (build (function-declare-chunk name
-                                                 return-type
-                                                 return-type-qualifiers
-                                                 params))]
-                 [(name return-type params)
-                  (build (function-declare-chunk name
-                                                 return-type
-                                                 params))])))
+(define/contract (static-function-declare-chunk name return-type . params)
+  (->* (chunk/c chunk/c) #:rest nullable-chunk-list/c chunk/c)
+  (concat-chunk imm-static-chunk
+                imm-space-chunk
+                (function-declare-chunk name
+                                        return-type
+                                        params)))
 (provide static-function-declare-chunk)
 
 ;void function declaration
@@ -861,8 +844,8 @@
 (provide function-define-chunk)
 
 ;void function defintion
-(define/contract (void-function-define-chunk name params body)
-  (-> chunk/c nullable-chunk-list/c nullable-chunk-list/c chunk/c)
+(define/contract (void-function-define-chunk name params . body)
+  (->* (chunk/c nullable-chunk-list/c) #:rest nullable-chunk-list/c chunk/c)
   (function-define-chunk (void-function-declare-chunk name
                                                       params)
                          body))

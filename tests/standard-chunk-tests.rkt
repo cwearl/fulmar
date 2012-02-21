@@ -1563,39 +1563,7 @@
 
 (define/provide-test-suite test-function-declare-chunk
   (test-case
-   "Test function-declare-chunk - with return type qualifier"
-   (define test-context (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
-                                                       'return-type
-                                                       'qualifier
-                                                       null)
-                               test-context))
-                 '("inline return-type qualifier name (void)"))
-   (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
-                                                       'return-type
-                                                       'qualifier
-                                                       (list 'first))
-                               test-context))
-                 '("inline return-type qualifier name (first)"))
-   (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
-                                                       'return-type
-                                                       'qualifier
-                                                       (list 'first
-                                                             'second))
-                               test-context))
-                 '("inline return-type qualifier name (first, second)"))
-   (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
-                                                       'return-type
-                                                       'qualifier
-                                                       (list 'first
-                                                             'second))
-                               (construct-context 8)))
-                 '("      second)"
-                   "name (first,"
-                   "return-type qualifier"
-                   "inline")))
-  (test-case
-   "Test function-declare-chunk - without return type qualifier"
+   "Test function-declare-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
                                                        'return-type
@@ -1625,39 +1593,7 @@
 
 (define/provide-test-suite test-static-function-declare-chunk
   (test-case
-   "Test static-function-declare-chunk - with return type qualifier"
-   (define test-context (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
-                                                              'return-type
-                                                              'qualifier
-                                                              null)
-                               test-context))
-                 '("static inline return-type qualifier name (void)"))
-   (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
-                                                              'return-type
-                                                              'qualifier
-                                                              (list 'first))
-                               test-context))
-                 '("static inline return-type qualifier name (first)"))
-   (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
-                                                              'return-type
-                                                              'qualifier
-                                                              (list 'first
-                                                                    'second))
-                               test-context))
-                 '("static inline return-type qualifier name (first, second)"))
-   (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
-                                                              'return-type
-                                                              'qualifier
-                                                              (list 'first
-                                                                    'second))
-                               (construct-context 8)))
-                 '("      second)"
-                   "name (first,"
-                   "return-type qualifier"
-                   "static inline")))
-  (test-case
-   "Test static-function-declare-chunk - without return type qualifier"
+   "Test static-function-declare-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
                                                        'return-type

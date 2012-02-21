@@ -1,7 +1,5 @@
 ;TODO: for v0.75
 
-;TODO: change function-declare-chunk so that the number of parameters doesn't matter - combine return type with return type qualifications
-
 
 ;TODO: for v1.0
 
