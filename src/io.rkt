@@ -46,6 +46,18 @@
   (if (not (file-exists? location))
       (error "Could not open file at: " location)
       (open-input-file location)))
+;(provide open-input)
+
+;parse file containing singleton
+(define/contract (read-singleton port/location)
+  (-> (or/c input-port? path?) any/c)
+  (if (input-port? port/location)
+      (read port/location)
+      (let* ([port (open-input port/location)]
+             [singleton (read-singleton port)])
+        (close-input-port port)
+        singleton)))
+;(provide read-singleton)
 
 ;TODO: change this namespace (and/or namespace-anchor) to only include standard chunks
 ;defintions needed for eval in read-chunks
@@ -57,11 +69,6 @@
 ;read chunk
 (define/contract (read-chunk port/location)
   (-> (or/c input-port? path?) chunk/c)
-  (if (input-port? port/location)
-      (eval (read port/location) fulmar-chunk-namespace)
-      ;(path? port/location)
-      (let* ([port (open-input port/location)]
-             [chunk (read-chunk port)])
-        (close-input-port port)
-        chunk)))
+  (eval (read-singleton port/location)
+        fulmar-chunk-namespace))
 (provide read-chunk)
