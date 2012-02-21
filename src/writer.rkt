@@ -1,7 +1,7 @@
 #lang racket
 
 (require "fulmar-core.rkt")
-(require "chunk-core.rkt")
+(require "core-chunk.rkt")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;helper functions;;;;;;
@@ -245,8 +245,8 @@
                          diff
                          0)])
     (write-nekot mode
-                 (chunk (reindent new-indent
-                                  context))
+                 (chunk-transform chunk (reindent new-indent
+                                                  context))
                  line)))
 (provide change-indent-to-current)
 

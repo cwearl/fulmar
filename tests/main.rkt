@@ -4,9 +4,9 @@
 (require rackunit/gui)
 (require rackunit/text-ui)
 (require "fulmar-core-tests.rkt")
-(require "chunk-core-tests.rkt")
+(require "core-chunk-tests.rkt")
 (require "writer-tests.rkt")
-(require "chunk-standard-tests.rkt")
+(require "standard-chunk-tests.rkt")
 (require "io-tests.rkt")
 
 ;sequentially check if any tests fail
@@ -63,34 +63,12 @@
         test-enter-env
         test-context-accessors
         test-reindent
+        test-reset-indent
         test-enter-comment
         test-enter-macro))
 
 (apply test-fail-with-gui? fulmar-core-tests)
 ;(apply run-tests-text fulmar-core-tests)
-
-;core chunk tests:
-(define/contract chunk-core-tests
-  (listof test-suite?)
-  (list test-combine-lengths
-        test-combine-strings
-        test-length-equals-one
-        test-literal-chunk
-        test-spaces-chunk
-        test-new-line-chunk
-        test-pp-directive-chunk
-        test-empty-chunk
-        test-concat-chunk
-        test-immediate-chunk
-        test-speculative-chunk
-        test-position-indent-chunk
-        test-indent-chunk
-        test-comment-env-chunk
-        test-comment-line-chunk
-        test-macro-env-chunk))
-
-(apply test-fail-with-gui? chunk-core-tests)
-;(apply run-tests-text chunk-core-tests)
 
 ;writer tests:
 (define/contract writer-tests
@@ -116,6 +94,30 @@
 
 (apply test-fail-with-gui? writer-tests)
 ;(apply run-tests-text writer-tests)
+
+;core chunk tests:
+(define/contract core-chunk-tests
+  (listof test-suite?)
+  (list test-combine-lengths
+        test-combine-strings
+        test-length-equals-one
+        test-chunk-transform
+        test-literal-chunk
+        test-spaces-chunk
+        test-new-line-chunk
+        test-pp-directive-chunk
+        test-empty-chunk
+        test-concat-chunk
+        test-immediate-chunk
+        test-speculative-chunk
+        test-position-indent-chunk
+        test-modify-context-chunk
+        test-indent-chunk
+        test-comment-env-chunk
+        test-macro-env-chunk))
+
+(apply test-fail-with-gui? core-chunk-tests)
+;(apply run-tests-text core-chunk-tests)
 
 ;standard chunk tests:
 (define/contract standard-core-tests

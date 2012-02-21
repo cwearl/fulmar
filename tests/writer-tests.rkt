@@ -2,7 +2,7 @@
 
 (require rackunit)
 (require "../src/fulmar-core.rkt")
-(require "../src/chunk-core.rkt")
+(require "../src/core-chunk.rkt")
 (require "../src/writer.rkt")
 
 ;unit tests for writer.rkt
@@ -705,19 +705,19 @@
    (define test-context (context 0 6 #false))
    (check-equal? (change-indent-to-current 'normal
                                            (concat-chunk new-line-chunk
-                                                         (literal-chunk "asdf"))
+                                                         'asdf)
                                            test-context
                                            "")
                  '("asdf" ""))
    (check-equal? (change-indent-to-current 'normal
                                            (concat-chunk new-line-chunk
-                                                         (literal-chunk "asdf"))
+                                                         'asdf)
                                            test-context
                                            "jkl")
                  '("   asdf" "jkl"))
    (check-equal? (change-indent-to-current 'normal
                                            (concat-chunk new-line-chunk
-                                                         (literal-chunk "asdf"))
+                                                         'asdf)
                                            (context 5 6 #false)
                                            "jkl")
                  '("     asdf" "jkl")))
@@ -726,19 +726,19 @@
    (define test-context (context 0 6 #false))
    (check-equal? (change-indent-to-current 'immediate
                                            (concat-chunk new-line-chunk
-                                                         (literal-chunk "asdf"))
+                                                         'asdf)
                                            test-context
                                            "")
                  '("asdf" ""))
    (check-equal? (change-indent-to-current 'immediate
                                            (concat-chunk new-line-chunk
-                                                         (literal-chunk "asdf"))
+                                                         'asdf)
                                            test-context
                                            "jkl")
                  '("   asdf" "jkl"))
    (check-equal? (change-indent-to-current 'immediate
                                            (concat-chunk new-line-chunk
-                                                         (literal-chunk "asdf"))
+                                                         'asdf)
                                            (context 5 6 #false)
                                            "jkl")
                  '("     asdf" "jkl"))))
