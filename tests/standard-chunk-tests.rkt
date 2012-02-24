@@ -915,26 +915,26 @@
    (check-equal? (attach-list-separator comma-chunk)
                  null)
    (check-equal? (write-nekot (chunk-transform (concat-chunk (attach-list-separator comma-chunk
-                                                                    'asdf
-                                                                    'jkl))
-                               test-context))
+                                                                                    'asdf
+                                                                                    'jkl))
+                                               test-context))
                  '("asdf,jkl"))
    (check-equal? (write-nekot (chunk-transform (concat-chunk (attach-list-separator comma-chunk
-                                                                   'asdf))
-                               test-context))
+                                                                                    'asdf))
+                                               test-context))
                  '("asdf"))
    (check-equal? (write-nekot (chunk-transform (concat-chunk (attach-list-separator comma-chunk
-                                                                    'asdf
-                                                                    'jkl
-                                                                    "12345"))
-                               test-context))
+                                                                                    'asdf
+                                                                                    'jkl
+                                                                                    "12345"))
+                                               test-context))
                  '("asdf,jkl,12345"))
    (check-equal? (write-nekot (chunk-transform (concat-chunk (attach-list-separator comma-chunk
-                                                                    'asdf
-                                                                    "123"
-                                                                    "12345"
-                                                                    "1"))
-                               (construct-context 4)))
+                                                                                    'asdf
+                                                                                    "123"
+                                                                                    "12345"
+                                                                                    "1"))
+                                               (construct-context 4)))
                  '("1" "12345," "123," "asdf,"))))
 
 (define/provide-test-suite test-between-chunk
@@ -942,29 +942,29 @@
    "Test between-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (between-chunk space-chunk)
-                               test-context))
+                                               test-context))
                  '(""))
    (check-equal? (write-nekot (chunk-transform (between-chunk space-chunk
-                                              'asdf
-                                              'jkl)
-                               test-context))
+                                                              'asdf
+                                                              'jkl)
+                                               test-context))
                  '("asdf jkl"))
    (check-equal? (write-nekot (chunk-transform (between-chunk space-chunk
-                                              'asdf)
-                              test-context))
+                                                              'asdf)
+                                               test-context))
                  '("asdf"))
    (check-equal? (write-nekot (chunk-transform (between-chunk space-chunk
-                                              'asdf
-                                              'jkl
-                                              "12345")
-                              test-context))
+                                                              'asdf
+                                                              'jkl
+                                                              "12345")
+                                               test-context))
                  '("asdf jkl 12345"))
    (check-equal? (write-nekot (chunk-transform (between-chunk new-line-chunk
-                                              'asdf
-                                              "123"
-                                              "12345"
-                                              "1")
-                               test-context))
+                                                              'asdf
+                                                              "123"
+                                                              "12345"
+                                                              "1")
+                                               test-context))
                  '("1" "12345" "123" "asdf"))))
 
 (define/provide-test-suite test-between/attach-chunk
@@ -972,50 +972,50 @@
    "Test between/attach-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (between/attach-chunk comma-chunk
-                                                     space-chunk)
-                               test-context))
+                                                                     space-chunk)
+                                               test-context))
                  '(""))
    (check-equal? (write-nekot (chunk-transform (between/attach-chunk comma-chunk
-                                                     space-chunk
-                                                     'asdf
-                                                     'jkl)
-                               test-context))
+                                                                     space-chunk
+                                                                     'asdf
+                                                                     'jkl)
+                                               test-context))
                  '("asdf, jkl"))
    (check-equal? (write-nekot (chunk-transform (between/attach-chunk comma-chunk
-                                                     space-chunk
-                                                     'asdf)
-                               test-context))
+                                                                     space-chunk
+                                                                     'asdf)
+                                               test-context))
                  '("asdf"))
    (check-equal? (write-nekot (chunk-transform (between/attach-chunk comma-chunk
-                                                     space-chunk
-                                                     'asdf
-                                                     'jkl
-                                                     "12345")
-                               test-context))
+                                                                     space-chunk
+                                                                     'asdf
+                                                                     'jkl
+                                                                     "12345")
+                                               test-context))
                  '("asdf, jkl, 12345"))
    (check-equal? (write-nekot (chunk-transform (between/attach-chunk comma-chunk
-                                                     space-chunk
-                                                     'asdf
-                                                     "123"
-                                                     "12345"
-                                                     "1")
-                               test-context))
+                                                                     space-chunk
+                                                                     'asdf
+                                                                     "123"
+                                                                     "12345"
+                                                                     "1")
+                                               test-context))
                  '("asdf, 123, 12345, 1"))
    (check-equal? (write-nekot (chunk-transform (between/attach-chunk comma-chunk
-                                                     new-line-chunk
-                                                     'asdf
-                                                     "123"
-                                                     "12345"
-                                                     "1")
-                               test-context))
+                                                                     new-line-chunk
+                                                                     'asdf
+                                                                     "123"
+                                                                     "12345"
+                                                                     "1")
+                                               test-context))
                  '("1" "12345," "123," "asdf,"))
    (check-equal? (write-nekot (chunk-transform (between/attach-chunk comma-chunk
-                                                     space-chunk
-                                                     'asdf
-                                                     "123"
-                                                     "12345"
-                                                     "1")
-                               (construct-context 4)))
+                                                                     space-chunk
+                                                                     'asdf
+                                                                     "123"
+                                                                     "12345"
+                                                                     "1")
+                                               (construct-context 4)))
                  '("1" "12345," "123," "asdf,"))))
 
 (define/provide-test-suite test-arg-list-chunk
@@ -1024,34 +1024,34 @@
    (define test-context (construct-context 6))
    (define test-context-2 (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (arg-list-chunk open-paren-chunk
-                                               comma-chunk
-                                               close-paren-chunk
-                                               'asdf)
-                               test-context))
+                                                               comma-chunk
+                                                               close-paren-chunk
+                                                               'asdf)
+                                               test-context))
                  '("(asdf)"))
    (check-equal? (write-nekot (chunk-transform (arg-list-chunk open-paren-chunk
-                                               comma-chunk
-                                               close-paren-chunk
-                                               (concat-chunk 'asdf
-                                                             'jkl))
-                               test-context))
+                                                               comma-chunk
+                                                               close-paren-chunk
+                                                               (concat-chunk 'asdf
+                                                                             'jkl))
+                                               test-context))
                  '(" jkl)"
                    "(asdf"))
    (check-equal? (write-nekot (chunk-transform (arg-list-chunk open-paren-chunk
-                                               comma-chunk
-                                               close-paren-chunk
-                                               'asdf
-                                               empty-chunk
-                                               'jkl)
-                               test-context))
+                                                               comma-chunk
+                                                               close-paren-chunk
+                                                               'asdf
+                                                               empty-chunk
+                                                               'jkl)
+                                               test-context))
                  '(" jkl)" " ," "(asdf,"))
    (check-equal? (write-nekot (chunk-transform (arg-list-chunk open-paren-chunk
-                                               comma-chunk
-                                               close-paren-chunk
-                                               'asdf
-                                               empty-chunk
-                                               'jkl)
-                               test-context-2))
+                                                               comma-chunk
+                                                               close-paren-chunk
+                                                               'asdf
+                                                               empty-chunk
+                                                               'jkl)
+                                               test-context-2))
                  '("(asdf, , jkl)"))))
 
 (define/provide-test-suite test-paren-list-chunk
@@ -1060,14 +1060,14 @@
    (define test-context (construct-context 6))
    (define test-context-2 (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (paren-list-chunk 'asdf
-                                                 empty-chunk
-                                                 'jkl)
-                               test-context))
+                                                                 empty-chunk
+                                                                 'jkl)
+                                               test-context))
                  '(" jkl)" " ," "(asdf,"))
    (check-equal? (write-nekot (chunk-transform (paren-list-chunk 'asdf
-                                                 empty-chunk
-                                                 'jkl)
-                               test-context-2))
+                                                                 empty-chunk
+                                                                 'jkl)
+                                               test-context-2))
                  '("(asdf, , jkl)"))))
 
 (define/provide-test-suite test-template-list-chunk
@@ -1076,14 +1076,14 @@
    (define test-context (construct-context 6))
    (define test-context-2 (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (template-list-chunk 'asdf
-                                                    empty-chunk
-                                                    'jkl)
-                               test-context))
+                                                                    empty-chunk
+                                                                    'jkl)
+                                               test-context))
                  '(" jkl>" " ," "<asdf,"))
    (check-equal? (write-nekot (chunk-transform (template-list-chunk 'asdf
-                                                    empty-chunk
-                                                    'jkl)
-                               test-context-2))
+                                                                    empty-chunk
+                                                                    'jkl)
+                                               test-context-2))
                  '("<asdf, , jkl>"))))
 
 (define/provide-test-suite test-smt-list-chunk
@@ -1091,16 +1091,16 @@
    "Test smt-list-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (smt-list-chunk blank-line-chunk
-                                               'asdf
-                                               space-chunk
-                                               'jkl)
-                               test-context))
+                                                               'asdf
+                                                               space-chunk
+                                                               'jkl)
+                                               test-context))
                  '("jkl" "" " ;" "" "asdf;"))
    (check-equal? (write-nekot (chunk-transform (smt-list-chunk new-line-chunk
-                                               (spaces-chunk 4)
-                                               'asdf
-                                               empty-chunk)
-                               test-context))
+                                                               (spaces-chunk 4)
+                                                               'asdf
+                                                               empty-chunk)
+                                               test-context))
                  '("" "asdf;" "    ;"))))
 
 (define/provide-test-suite test-top-smt-list-chunk
@@ -1108,16 +1108,16 @@
    "Test top-smt-list-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (top-smt-list-chunk blank-line-chunk
-                                               'asdf
-                                               space-chunk
-                                               'jkl)
-                               test-context))
+                                                                   'asdf
+                                                                   space-chunk
+                                                                   'jkl)
+                                               test-context))
                  '("jkl;" "" " ;" "" "asdf;"))
    (check-equal? (write-nekot (chunk-transform (top-smt-list-chunk new-line-chunk
-                                               (spaces-chunk 4)
-                                               'asdf
-                                               empty-chunk)
-                               test-context))
+                                                                   (spaces-chunk 4)
+                                                                   'asdf
+                                                                   empty-chunk)
+                                               test-context))
                  '(";" "asdf;" "    ;"))))
 
 (define/provide-test-suite test-constructor-assignment-list-chunk
@@ -1126,18 +1126,18 @@
    (define test-context (construct-context 80))
    (define test-context-2 (construct-context 6))
    (check-equal? (write-nekot (chunk-transform (constructor-assignment-list-chunk)
-                               test-context))
+                                               test-context))
                  '(""))
    (check-equal? (write-nekot (chunk-transform (constructor-assignment-list-chunk 'asdf)
-                               test-context))
+                                               test-context))
                  '("  : asdf"))
    (check-equal? (write-nekot (chunk-transform (constructor-assignment-list-chunk 'asdf
-                                                                  'jkl)
-                               test-context))
+                                                                                  'jkl)
+                                               test-context))
                  '("  : asdf, jkl"))
    (check-equal? (write-nekot (chunk-transform (constructor-assignment-list-chunk 'asdf
-                                                                  'jkl)
-                               test-context-2))
+                                                                                  'jkl)
+                                               test-context-2))
                  '("    jkl"
                    "  : asdf,"))))
 
@@ -1147,19 +1147,19 @@
    (define test-context (construct-context 80))
    (define test-context-2 (construct-context 6))
    (check-equal? (write-nekot (chunk-transform (body-chunk 'asdf
-                                           space-chunk
-                                           'jkl)
-                               test-context))
+                                                           space-chunk
+                                                           'jkl)
+                                               test-context))
                  '("{ asdf;  ; jkl; }"))
    (check-equal? (write-nekot (chunk-transform (body-chunk "123456")
-                               test-context-2))
+                                               test-context-2))
                  '("}"
                    "   123456;"
                    "{"))
    (check-equal? (write-nekot (chunk-transform (body-chunk 'asdf
-                                           space-chunk
-                                           'jkl)
-                               test-context-2))
+                                                           space-chunk
+                                                           'jkl)
+                                               test-context-2))
                  '("}"
                    "   jkl;"
                    ""
@@ -1195,8 +1195,8 @@
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (pp-includes-chunk 'name) test-context)) '("#include <name>"))
    (check-equal? (write-nekot (chunk-transform (pp-includes-chunk 'name
-                                               'name2)
-                               test-context))
+                                                                  'name2)
+                                               test-context))
                  '("#include <name2>"
                    "#include <name>"))))
 
@@ -1240,17 +1240,17 @@
    "Test pp-conditional-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-chunk ifdef-chunk
-                                                     'condition
-                                                     'then)
-                               test-context))
+                                                                     'condition
+                                                                     'then)
+                                               test-context))
                  '("#endif /* condition */"
                    "   then"
                    "#ifdef condition"))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-chunk ifndef-chunk
-                                                     'condition
-                                                     'then
-                                                     'else2)
-                               test-context))
+                                                                     'condition
+                                                                     'then
+                                                                     'else2)
+                                               test-context))
                  '("#endif /* condition */"
                    "   else2"
                    "#else"
@@ -1262,15 +1262,15 @@
    "Test pp-conditional-ifdef-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-ifdef-chunk 'condition
-                                                           'then)
-                               test-context))
+                                                                           'then)
+                                               test-context))
                  '("#endif /* condition */"
                    "   then"
                    "#ifdef condition"))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-ifdef-chunk 'condition
-                                                           'then
-                                                           'else2)
-                               test-context))
+                                                                           'then
+                                                                           'else2)
+                                               test-context))
                  '("#endif /* condition */"
                    "   else2"
                    "#else"
@@ -1282,15 +1282,15 @@
    "Test pp-conditional-ifndef-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-ifndef-chunk 'condition
-                                                           'then)
-                               test-context))
+                                                                            'then)
+                                               test-context))
                  '("#endif /* condition */"
                    "   then"
                    "#ifndef condition"))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-ifndef-chunk 'condition
-                                                           'then
-                                                           'else2)
-                               test-context))
+                                                                            'then
+                                                                            'else2)
+                                               test-context))
                  '("#endif /* condition */"
                    "   else2"
                    "#else"
@@ -1302,10 +1302,10 @@
    "Test pp-header-file-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (pp-header-file-chunk 'header_file
-                                                     empty-chunk
-                                                     'asdf
-                                                     'jkl)
-                               test-context))
+                                                                     empty-chunk
+                                                                     'asdf
+                                                                     'jkl)
+                                               test-context))
                  '("#endif /* header_file */"
                    ""
                    "   jkl;"
@@ -1317,12 +1317,12 @@
                    "#  define header_file"
                    "#ifndef header_file"))
    (check-equal? (write-nekot (chunk-transform (pp-header-file-chunk 'header_file
-                                                     (concat-chunk (pp-include-chunk 'iostream)
-                                                                   new-line-chunk
-                                                                   (pp-include-chunk 'algorithm))
-                                                     'asdf
-                                                     'jkl)
-                               test-context))
+                                                                     (concat-chunk (pp-include-chunk 'iostream)
+                                                                                   new-line-chunk
+                                                                                   (pp-include-chunk 'algorithm))
+                                                                     'asdf
+                                                                     'jkl)
+                                               test-context))
                  '("#endif /* header_file */"
                    ""
                    "   jkl;"
@@ -1341,59 +1341,59 @@
    (define test-context (construct-context 80))
    (define test-context-2 (construct-context 20))
    (check-equal? (write-nekot (chunk-transform (macro-define-chunk 'name
-                                                   null
-                                                   'asdf)
-                               test-context))
+                                                                   null
+                                                                   'asdf)
+                                               test-context))
                  '("#define name asdf"))
    (check-equal? (write-nekot (chunk-transform (macro-define-chunk 'name
-                                                   (list 'first)
-                                                   (concat-chunk 'asdf
-                                                                 space-chunk
-                                                                 'first))
-                               test-context))
+                                                                   (list 'first)
+                                                                   (concat-chunk 'asdf
+                                                                                 space-chunk
+                                                                                 'first))
+                                               test-context))
                  '("#define name(first) asdf first"))
    (check-equal? (write-nekot (chunk-transform (macro-define-chunk 'name
-                                                   (list 'first)
-                                                   (concat-chunk 'asdf
-                                                                 space-chunk
-                                                                 'first))
-                               test-context-2))
+                                                                   (list 'first)
+                                                                   (concat-chunk 'asdf
+                                                                                 space-chunk
+                                                                                 'first))
+                                               test-context-2))
                  '("   asdf first" "#define name(first) \\"))
    (check-equal? (write-nekot (chunk-transform (macro-define-chunk 'name
-                                                   (list 'first
-                                                         'second)
-                                                   (concat-chunk 'asdf
-                                                                 space-chunk
-                                                                 'first
-                                                                 space-chunk
-                                                                 'second))
-                               test-context))
+                                                                   (list 'first
+                                                                         'second)
+                                                                   (concat-chunk 'asdf
+                                                                                 space-chunk
+                                                                                 'first
+                                                                                 space-chunk
+                                                                                 'second))
+                                               test-context))
                  '("#define name(first, second) asdf first second"))
    (check-equal? (write-nekot (chunk-transform (macro-define-chunk 'name
-                                                   (list 'first
-                                                         'second)
-                                                   (concat-chunk 'asdf
-                                                                 new-line-chunk
-                                                                 'first
-                                                                 new-line-chunk
-                                                                 'second))
-                               test-context-2))
+                                                                   (list 'first
+                                                                         'second)
+                                                                   (concat-chunk 'asdf
+                                                                                 new-line-chunk
+                                                                                 'first
+                                                                                 new-line-chunk
+                                                                                 'second))
+                                               test-context-2))
                  '("   second"
                    "   first           \\"
                    "   asdf            \\"
                    "             second) \\"
                    "#define name(first, \\"))
    (check-equal? (write-nekot (chunk-transform (macro-define-chunk 'name
-                                                   (list (concat-chunk (comment-env-chunk 't)
-                                                                       new-line-chunk
-                                                                       'first)
-                                                         'second)
-                                                   (concat-chunk 'asdf
-                                                                 new-line-chunk
-                                                                 'first
-                                                                 new-line-chunk
-                                                                 'second))
-                               test-context-2))
+                                                                   (list (concat-chunk (comment-env-chunk 't)
+                                                                                       new-line-chunk
+                                                                                       'first)
+                                                                         'second)
+                                                                   (concat-chunk 'asdf
+                                                                                 new-line-chunk
+                                                                                 'first
+                                                                                 new-line-chunk
+                                                                                 'second))
+                                               test-context-2))
                  '("   second"
                    "   first           \\"
                    "   asdf            \\"
@@ -1401,16 +1401,16 @@
                    "             first, \\"
                    "#define name(/* t */ \\"))
    (check-equal? (write-nekot (chunk-transform (macro-define-chunk 'name
-                                                   (list 'first
-                                                         (concat-chunk (comment-env-chunk 't)
-                                                                       new-line-chunk
-                                                                       'second))
-                                                   (concat-chunk 'asdf
-                                                                 new-line-chunk
-                                                                 'first
-                                                                 new-line-chunk
-                                                                 'second))
-                               test-context-2))
+                                                                   (list 'first
+                                                                         (concat-chunk (comment-env-chunk 't)
+                                                                                       new-line-chunk
+                                                                                       'second))
+                                                                   (concat-chunk 'asdf
+                                                                                 new-line-chunk
+                                                                                 'first
+                                                                                 new-line-chunk
+                                                                                 'second))
+                                               test-context-2))
                  '("   second"
                    "   first           \\"
                    "   asdf            \\"
@@ -1418,18 +1418,18 @@
                    "             /* t */ \\"
                    "#define name(first, \\"))
    (check-equal? (write-nekot (chunk-transform (macro-define-chunk 'name
-                                                   (list (concat-chunk (comment-env-chunk 't)
-                                                                       new-line-chunk
-                                                                       'first)
-                                                         (concat-chunk (comment-env-chunk 'T)
-                                                                       new-line-chunk
-                                                                       'second))
-                                                   (concat-chunk 'asdf
-                                                                 new-line-chunk
-                                                                 'first
-                                                                 new-line-chunk
-                                                                 'second))
-                               test-context-2))
+                                                                   (list (concat-chunk (comment-env-chunk 't)
+                                                                                       new-line-chunk
+                                                                                       'first)
+                                                                         (concat-chunk (comment-env-chunk 'T)
+                                                                                       new-line-chunk
+                                                                                       'second))
+                                                                   (concat-chunk 'asdf
+                                                                                 new-line-chunk
+                                                                                 'first
+                                                                                 new-line-chunk
+                                                                                 'second))
+                                               test-context-2))
                  '("   second"
                    "   first           \\"
                    "   asdf            \\"
@@ -1445,19 +1445,19 @@
    "Test namespace-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (namespace-define-chunk 'name
-                                                       'asdf)
-                               test-context))
+                                                                       'asdf)
+                                               test-context))
                  '("namespace name { asdf; }"))
    (check-equal? (write-nekot (chunk-transform (namespace-define-chunk 'name
-                                                       'asdf)
-                               (construct-context 12)))
+                                                                       'asdf)
+                                               (construct-context 12)))
                  '("} /* name */"
                    "   asdf;"
                    "namespace name {"))
    (check-equal? (write-nekot (chunk-transform (namespace-define-chunk 'name
-                                                       'asdf
-                                                       'jkl)
-                               (construct-context 12)))
+                                                                       'asdf
+                                                                       'jkl)
+                                               (construct-context 12)))
                  '("} /* name */"
                    "   jkl;"
                    ""
@@ -1470,22 +1470,22 @@
    "Test described-smts-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (described-smts-chunk 'name
-                                                     'asdf)
-                               test-context))
+                                                                     'asdf)
+                                               test-context))
                  '("asdf"
                    "/* name */"))
    (check-equal? (write-nekot (chunk-transform (described-smts-chunk 'name
-                                                     'asdf
-                                                     'jkl)
-                               test-context))
+                                                                     'asdf
+                                                                     'jkl)
+                                               test-context))
                  '("jkl"
                    "asdf;"
                    "/* name */"))
    (check-equal? (write-nekot (chunk-transform (described-smts-chunk 'name
-                                                     'asdf
-                                                     'jkl
-                                                     "1234")
-                               test-context))
+                                                                     'asdf
+                                                                     'jkl
+                                                                     "1234")
+                                               test-context))
                  '("1234"
                    "jkl;"
                    "asdf;"
@@ -1496,10 +1496,10 @@
    "Test constize-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (constize-chunk 'asdf)
-                               test-context))
+                                               test-context))
                  '("asdf const"))
    (check-equal? (write-nekot (chunk-transform (constize-chunk 'asdf)
-                               (construct-context 4)))
+                                               (construct-context 4)))
                  '("asdf const"))))
 
 ;template chunks
@@ -1509,27 +1509,27 @@
    "Test template-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (template-define-chunk null
-                                                      'asdf)
-                               test-context))
+                                                                      'asdf)
+                                               test-context))
                  '(" asdf"
                    "template<>"))
    (check-equal? (write-nekot (chunk-transform (template-define-chunk (list 'first)
-                                                      'asdf)
-                               test-context))
+                                                                      'asdf)
+                                               test-context))
                  '(" asdf"
                    "template<first>"))
    (check-equal? (write-nekot (chunk-transform (template-define-chunk (list 'first
-                                                            'second)
-                                                      'asdf)
-                               test-context))
+                                                                            'second)
+                                                                      'asdf)
+                                               test-context))
                  '(" asdf"
                    "template<first, second>"))
    (check-equal? (write-nekot (chunk-transform (template-define-chunk (list (concat-chunk (comment-env-chunk 'test)
-                                                                          new-line-chunk
-                                                                          'first)
-                                                            'second)
-                                                      'asdf)
-                               test-context))
+                                                                                          new-line-chunk
+                                                                                          'first)
+                                                                            'second)
+                                                                      'asdf)
+                                               test-context))
                  '(" asdf"
                    "         second>"
                    "         first,"
@@ -1540,22 +1540,22 @@
    "Test template-defintion-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (template-use-chunk 'name
-                                                   null)
-                               test-context))
+                                                                   null)
+                                               test-context))
                  '("name"))
    (check-equal? (write-nekot (chunk-transform (template-use-chunk 'name
-                                                   (list 'first))
-                               test-context))
+                                                                   (list 'first))
+                                               test-context))
                  '("name<first>"))
    (check-equal? (write-nekot (chunk-transform (template-use-chunk 'name
-                                                   (list 'first
-                                                         'second))
-                               test-context))
+                                                                   (list 'first
+                                                                         'second))
+                                               test-context))
                  '("name<first, second>"))
    (check-equal? (write-nekot (chunk-transform (template-use-chunk 'name
-                                                   (list 'first
-                                                         'second))
-                               (construct-context 6)))
+                                                                   (list 'first
+                                                                         'second))
+                                               (construct-context 6)))
                  '("     second>"
                    "name<first,"))))
 
@@ -1566,26 +1566,26 @@
    "Test function-declare-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
-                                                       'return-type
-                                                       null)
-                               test-context))
+                                                                       'return-type
+                                                                       null)
+                                               test-context))
                  '("inline return-type name (void)"))
    (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
-                                                       'return-type
-                                                       (list 'first))
-                               test-context))
+                                                                       'return-type
+                                                                       (list 'first))
+                                               test-context))
                  '("inline return-type name (first)"))
    (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
-                                                       'return-type
-                                                       (list 'first
-                                                             'second))
-                               test-context))
+                                                                       'return-type
+                                                                       (list 'first
+                                                                             'second))
+                                               test-context))
                  '("inline return-type name (first, second)"))
    (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
-                                                       'return-type
-                                                       (list 'first
-                                                             'second))
-                               (construct-context 8)))
+                                                                       'return-type
+                                                                       (list 'first
+                                                                             'second))
+                                               (construct-context 8)))
                  '("      second)"
                    "name (first,"
                    "return-type"
@@ -1596,26 +1596,26 @@
    "Test static-function-declare-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
-                                                       'return-type
-                                                       null)
-                               test-context))
+                                                                              'return-type
+                                                                              null)
+                                               test-context))
                  '("static inline return-type name (void)"))
    (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
-                                                       'return-type
-                                                       (list 'first))
-                               test-context))
+                                                                              'return-type
+                                                                              (list 'first))
+                                               test-context))
                  '("static inline return-type name (first)"))
    (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
-                                                       'return-type
-                                                       (list 'first
-                                                             'second))
-                               test-context))
+                                                                              'return-type
+                                                                              (list 'first
+                                                                                    'second))
+                                               test-context))
                  '("static inline return-type name (first, second)"))
    (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
-                                                       'return-type
-                                                       (list 'first
-                                                             'second))
-                               (construct-context 20)))
+                                                                              'return-type
+                                                                              (list 'first
+                                                                                    'second))
+                                               (construct-context 20)))
                  '("                  second)"
                    "return-type name (first,"
                    "static inline"))))
@@ -1625,22 +1625,22 @@
    "Test void-function-declare-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (void-function-declare-chunk 'name
-                                                            null)
-                               test-context))
+                                                                            null)
+                                               test-context))
                  '("inline void name (void)"))
    (check-equal? (write-nekot (chunk-transform (void-function-declare-chunk 'name
-                                                            (list 'first))
-                               test-context))
+                                                                            (list 'first))
+                                               test-context))
                  '("inline void name (first)"))
    (check-equal? (write-nekot (chunk-transform (void-function-declare-chunk 'name
-                                                            (list 'first
-                                                                  'second))
-                               test-context))
+                                                                            (list 'first
+                                                                                  'second))
+                                               test-context))
                  '("inline void name (first, second)"))
    (check-equal? (write-nekot (chunk-transform (void-function-declare-chunk 'name
-                                                            (list 'first
-                                                                  'second))
-                               (construct-context 20)))
+                                                                            (list 'first
+                                                                                  'second))
+                                               (construct-context 20)))
                  '("                  second)"
                    "inline void name (first,"))))
 
@@ -1649,21 +1649,21 @@
    "Test function-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (function-define-chunk 'signature)
-                               test-context))
+                                               test-context))
                  '("signature {}"))
    (check-equal? (write-nekot (chunk-transform (function-define-chunk 'signature
-                                                      'first)
-                               test-context))
+                                                                      'first)
+                                               test-context))
                  '("signature { first; }"))
    (check-equal? (write-nekot (chunk-transform (function-define-chunk 'signature
-                                                      'first
-                                                      'second)
-                               test-context))
+                                                                      'first
+                                                                      'second)
+                                               test-context))
                  '("signature { first; second; }"))
    (check-equal? (write-nekot (chunk-transform (function-define-chunk 'signature
-                                                      'first
-                                                      'second)
-                               (construct-context 20)))
+                                                                      'first
+                                                                      'second)
+                                               (construct-context 20)))
                  '("}"
                    "   second;"
                    ""
@@ -1676,28 +1676,28 @@
    "Test void-function-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (void-function-define-chunk 'name
-                                                           null
-                                                           null)
-                               test-context))
+                                                                           null
+                                                                           null)
+                                               test-context))
                  '("inline void name (void) {}"))
    (check-equal? (write-nekot (chunk-transform (void-function-define-chunk 'name
-                                                      (list 'first)
-                                                      (list 'first))
-                               test-context))
+                                                                           (list 'first)
+                                                                           (list 'first))
+                                               test-context))
                  '("inline void name (first) { first; }"))
    (check-equal? (write-nekot (chunk-transform (void-function-define-chunk 'name
-                                                      (list 'first
-                                                            'second)
-                                                      (list 'first
-                                                            'second))
-                               test-context))
+                                                                           (list 'first
+                                                                                 'second)
+                                                                           (list 'first
+                                                                                 'second))
+                                               test-context))
                  '("inline void name (first, second) { first; second; }"))
    (check-equal? (write-nekot (chunk-transform (void-function-define-chunk 'name
-                                                      (list 'first
-                                                            'second)
-                                                      (list 'first
-                                                            'second))
-                               (construct-context 10)))
+                                                                           (list 'first
+                                                                                 'second)
+                                                                           (list 'first
+                                                                                 'second))
+                                               (construct-context 10)))
                  '("}"
                    "   second;"
                    ""
@@ -1712,37 +1712,36 @@
    "Test returning-function-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
-                                                                                        'return-type
-                                                                                        null)
-                                                                null
-                                                                'expr)
-                               test-context))
+                                                                                                        'return-type
+                                                                                                        null)
+                                                                                null
+                                                                                'expr)
+                                               test-context))
                  '("inline return-type name (void) { return expr; }"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
-                                                                                        'return-type
-                                                                                        (list 'first))
-                                                                (list 'first)
-                                                                'expr)
-
-                               test-context))
+                                                                                                        'return-type
+                                                                                                        (list 'first))
+                                                                                (list 'first)
+                                                                                'expr)
+                                               test-context))
                  '("inline return-type name (first) { first; return expr; }"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
-                                                                                        'return-type
-                                                                                        (list 'first
-                                                                                              'second))
-                                                                (list 'first
-                                                                      'second)
-                                                                'expr)
-                               test-context))
+                                                                                                        'return-type
+                                                                                                        (list 'first
+                                                                                                              'second))
+                                                                                (list 'first
+                                                                                      'second)
+                                                                                'expr)
+                                               test-context))
                  '("inline return-type name (first, second) { first; second; return expr; }"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
-                                                                                        'return-type
-                                                                                        (list 'first
-                                                                                              'second))
-                                                                (list 'first
-                                                                      'second)
-                                                                'expr)
-                               (construct-context 20)))
+                                                                                                        'return-type
+                                                                                                        (list 'first
+                                                                                                              'second))
+                                                                                (list 'first
+                                                                                      'second)
+                                                                                'expr)
+                                               (construct-context 20)))
                  '("}"
                    "   return expr;"
                    ""
@@ -1753,13 +1752,13 @@
                    "name (first, second) {"
                    "inline return-type"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
-                                                                                        'return-type
-                                                                                        (list 'first
-                                                                                              'second))
-                                                                (list 'first
-                                                                      'second)
-                                                                'expr)
-                               (construct-context 10)))
+                                                                                                        'return-type
+                                                                                                        (list 'first
+                                                                                                              'second))
+                                                                                (list 'first
+                                                                                      'second)
+                                                                                'expr)
+                                               (construct-context 10)))
                  '("}"
                    "   return expr;"
                    ""
@@ -1777,8 +1776,8 @@
    "Test constructor-assignment-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (constructor-assignment-chunk 'first
-                                                             'second)
-                               test-context))
+                                                                             'second)
+                                               test-context))
                  '("first(second)"))))
 
 (define/provide-test-suite test-constructor-chunk
@@ -1786,26 +1785,26 @@
    "Test constructor-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (constructor-chunk 'name
-                                                  null
-                                                  null)
-                               test-context))
+                                                                  null
+                                                                  null)
+                                               test-context))
                  '("name() {}"))
    (check-equal? (write-nekot (chunk-transform (constructor-chunk 'name
-                                                  (list 'first)
-                                                  (list 'assign)
-                                                  'asdf)
-                               test-context))
+                                                                  (list 'first)
+                                                                  (list 'assign)
+                                                                  'asdf)
+                                               test-context))
                  '("{ asdf; }"
                    "  : assign"
                    "name(first)"))
    (check-equal? (write-nekot (chunk-transform (constructor-chunk 'name
-                                                  (list 'first
-                                                        'second)
-                                                  (list 'assign1
-                                                        'assign2)
-                                                  'asdf
-                                                  'jkl)
-                               test-context))
+                                                                  (list 'first
+                                                                        'second)
+                                                                  (list 'assign1
+                                                                        'assign2)
+                                                                  'asdf
+                                                                  'jkl)
+                                               test-context))
                  '("{ asdf; jkl; }"
                    "  : assign1, assign2"
                    "name(first, second)"))))
@@ -1817,7 +1816,7 @@
    "Test struct-declare-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (struct-declare-chunk 'name)
-                               test-context))
+                                               test-context))
                  '("struct name"))))
 
 (define/provide-test-suite test-template-struct-declare-chunk
@@ -1825,30 +1824,30 @@
    "Test template-struct-declare-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (template-struct-declare-chunk 'name
-                                                              null
-                                                              null)
-                               test-context))
+                                                                              null
+                                                                              null)
+                                               test-context))
                  '(" struct name"
                    "template<>"))
    (check-equal? (write-nekot (chunk-transform (template-struct-declare-chunk 'name
-                                                              (list 'first)
-                                                              (list 'first))
-                               test-context))
+                                                                              (list 'first)
+                                                                              (list 'first))
+                                               test-context))
                  '(" struct name<first>"
                    "template<first>"))
    (check-equal? (write-nekot (chunk-transform (template-struct-declare-chunk 'name
-                                                              (list 'first
-                                                                    'second)
-                                                              (list 'first
-                                                                    'second))
-                               test-context))
+                                                                              (list 'first
+                                                                                    'second)
+                                                                              (list 'first
+                                                                                    'second))
+                                               test-context))
                  '(" struct name<first, second>"
                    "template<first, second>"))
    (check-equal? (write-nekot (chunk-transform (template-struct-declare-chunk 'name
-                                                              (list 'first)
-                                                              (list 'first
-                                                                    'second))
-                               test-context))
+                                                                              (list 'first)
+                                                                              (list 'first
+                                                                                    'second))
+                                               test-context))
                  '(" struct name<first, second>"
                    "template<first>"))))
 
@@ -1857,9 +1856,9 @@
    "Test section-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (section-define-chunk 'name
-                                                     'first
-                                                     'second)
-                               test-context))
+                                                                     'first
+                                                                     'second)
+                                               test-context))
                  '(" second"
                    " first;"
                    "name:"))))
@@ -1869,14 +1868,14 @@
    "Test struct-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (struct-define-chunk 'signature
-                                                    'first
-                                                    'second)
-                               test-context))
+                                                                    'first
+                                                                    'second)
+                                               test-context))
                  '("signature { first; second; }"))
    (check-equal? (write-nekot (chunk-transform (struct-define-chunk 'signature
-                                                    'first
-                                                    'second)
-                               (construct-context 8)))
+                                                                    'first
+                                                                    'second)
+                                               (construct-context 8)))
                  '("}"
                    "   second;"
                    ""
@@ -1889,21 +1888,21 @@
    "Test template-struct-define-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (template-struct-define-chunk 'name
-                                                             (list 'first
-                                                                   'second)
-                                                             null
-                                                             'first
-                                                             'second)
-                               test-context))
+                                                                             (list 'first
+                                                                                   'second)
+                                                                             null
+                                                                             'first
+                                                                             'second)
+                                               test-context))
                  '(" struct name { first; second; }"
                    "template<first, second>"))
    (check-equal? (write-nekot (chunk-transform (template-struct-define-chunk 'name
-                                                             (list 'first
-                                                                   'second)
-                                                             null
-                                                             'first
-                                                             'second)
-                               (construct-context 12)))
+                                                                             (list 'first
+                                                                                   'second)
+                                                                             null
+                                                                             'first
+                                                                             'second)
+                                               (construct-context 12)))
                  '("}"
                    "   second;"
                    ""
@@ -1920,8 +1919,8 @@
    "Test typedef-smt-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (typedef-smt-chunk 'lhs
-                                                  'rhs)
-                               test-context))
+                                                                  'rhs)
+                                               test-context))
                  '("lhs typedef rhs"))))
 
 (define/provide-test-suite test-function-call-chunk
@@ -1929,21 +1928,21 @@
    "Test function-call-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (function-call-chunk 'name)
-                               test-context))
+                                               test-context))
                  '("name()"))
    (check-equal? (write-nekot (chunk-transform (function-call-chunk 'name
-                                                    'first)
-                               test-context))
+                                                                    'first)
+                                               test-context))
                  '("name(first)"))
    (check-equal? (write-nekot (chunk-transform (function-call-chunk 'name
-                                                    'first
-                                                    'second)
-                               test-context))
+                                                                    'first
+                                                                    'second)
+                                               test-context))
                  '("name(first, second)"))
    (check-equal? (write-nekot (chunk-transform (function-call-chunk 'name
-                                                    'first
-                                                    'second)
-                               (construct-context 4)))
+                                                                    'first
+                                                                    'second)
+                                               (construct-context 4)))
                  '("     second)"
                    "name(first,"))))
 
@@ -1952,24 +1951,24 @@
    "Test member-function-call-chunk"
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (member-function-call-chunk 'obj
-                                                           'name)
-                               test-context))
+                                                                           'name)
+                                               test-context))
                  '("obj.name()"))
    (check-equal? (write-nekot (chunk-transform (member-function-call-chunk 'obj
-                                                           'name
-                                                           'first)
-                               test-context))
+                                                                           'name
+                                                                           'first)
+                                               test-context))
                  '("obj.name(first)"))
    (check-equal? (write-nekot (chunk-transform (member-function-call-chunk 'obj
-                                                           'name
-                                                           'first
-                                                           'second)
-                               test-context))
+                                                                           'name
+                                                                           'first
+                                                                           'second)
+                                               test-context))
                  '("obj.name(first, second)"))
    (check-equal? (write-nekot (chunk-transform (member-function-call-chunk 'object
-                                                           'name
-                                                           'first
-                                                           'second)
-                               (construct-context 4)))
+                                                                           'name
+                                                                           'first
+                                                                           'second)
+                                               (construct-context 4)))
                  '("            second)"
                    "object.name(first,"))))

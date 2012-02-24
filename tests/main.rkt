@@ -164,6 +164,7 @@
         test-section-define-chunk
         test-struct-define-chunk
         test-template-struct-define-chunk
+        test-scope-resolution-operator-chunk
         test-typedef-smt-chunk
         test-function-call-chunk
         test-member-function-call-chunk))

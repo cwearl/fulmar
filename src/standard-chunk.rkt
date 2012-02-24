@@ -809,7 +809,6 @@
                 return-type
                 space-chunk
                 name
-                imm-space-chunk
                 (if (empty? (flatten params))
                     (concat-chunk imm-open-paren-chunk
                                   imm-void-chunk
@@ -927,6 +926,15 @@
   (struct-define-chunk (template-struct-declare-chunk name params args)
                        body))
 (provide template-struct-define-chunk)
+
+;scope resolution operator
+(define/contract (scope-resolution-operator-chunk scope variable)
+  (-> chunk/c chunk/c chunk/c)
+  (concat-chunk scope
+                imm-colon-chunk
+                imm-colon-chunk
+                variable))
+(provide scope-resolution-operator-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;statement chunks;;;;;
