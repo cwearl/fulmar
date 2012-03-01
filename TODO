@@ -1,5 +1,10 @@
 ;TODO: for v1.0.0
 
+;TODO: clean up meta-chunk interfaces:
+;TODO: sub: struct-define allow empty body
+
+;TODO: fix build-indentation contract and tests
+
 ;TODO: make the indenting for template definitions/specializations consistent: currently there is a difference between templated functions and templated structures (mainly because there is not a standard form for functions)
 
 ;TODO: fix constructor-assignment-chunk to accept multiple values as arguments...
