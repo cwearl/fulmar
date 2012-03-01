@@ -914,7 +914,7 @@
 
 ;struct definition
 (define/contract (struct-define-chunk signature . body)
-  (->* (chunk/c) #:rest chunk-list/c chunk/c)
+  (->* (chunk/c) #:rest nullable-chunk-list/c chunk/c)
   (concat-chunk signature
                 imm-space-chunk
                 (body-chunk body)))
