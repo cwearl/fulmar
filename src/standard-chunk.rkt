@@ -896,8 +896,8 @@
 (provide struct-declare-chunk)
 
 ;template struct declaration
-(define/contract (template-struct-declare-chunk name params args)
-  (-> chunk/c nullable-chunk-list/c nullable-chunk-list/c chunk/c)
+(define/contract (template-struct-declare-chunk name params . args)
+  (->* (chunk/c nullable-chunk-list/c) #:rest nullable-chunk-list/c chunk/c)
   (template-define-chunk params
                          (template-use-chunk (struct-declare-chunk name)
                                              args)))
