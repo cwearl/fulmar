@@ -1569,25 +1569,25 @@
                                                                        'return-type
                                                                        null)
                                                test-context))
-                 '("inline return-type name (void)"))
+                 '("inline return-type name(void)"))
    (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
                                                                        'return-type
                                                                        (list 'first))
                                                test-context))
-                 '("inline return-type name (first)"))
+                 '("inline return-type name(first)"))
    (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
                                                                        'return-type
                                                                        (list 'first
                                                                              'second))
                                                test-context))
-                 '("inline return-type name (first, second)"))
+                 '("inline return-type name(first, second)"))
    (check-equal? (write-nekot (chunk-transform (function-declare-chunk 'name
                                                                        'return-type
                                                                        (list 'first
                                                                              'second))
                                                (construct-context 8)))
-                 '("      second)"
-                   "name (first,"
+                 '("     second)"
+                   "name(first,"
                    "return-type"
                    "inline"))))
 
@@ -1599,25 +1599,25 @@
                                                                               'return-type
                                                                               null)
                                                test-context))
-                 '("static inline return-type name (void)"))
+                 '("static inline return-type name(void)"))
    (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
                                                                               'return-type
                                                                               (list 'first))
                                                test-context))
-                 '("static inline return-type name (first)"))
+                 '("static inline return-type name(first)"))
    (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
                                                                               'return-type
                                                                               (list 'first
                                                                                     'second))
                                                test-context))
-                 '("static inline return-type name (first, second)"))
+                 '("static inline return-type name(first, second)"))
    (check-equal? (write-nekot (chunk-transform (static-function-declare-chunk 'name
                                                                               'return-type
                                                                               (list 'first
                                                                                     'second))
                                                (construct-context 20)))
-                 '("                  second)"
-                   "return-type name (first,"
+                 '("                 second)"
+                   "return-type name(first,"
                    "static inline"))))
 
 (define/provide-test-suite test-void-function-declare-chunk
@@ -1627,22 +1627,22 @@
    (check-equal? (write-nekot (chunk-transform (void-function-declare-chunk 'name
                                                                             null)
                                                test-context))
-                 '("inline void name (void)"))
+                 '("inline void name(void)"))
    (check-equal? (write-nekot (chunk-transform (void-function-declare-chunk 'name
                                                                             (list 'first))
                                                test-context))
-                 '("inline void name (first)"))
+                 '("inline void name(first)"))
    (check-equal? (write-nekot (chunk-transform (void-function-declare-chunk 'name
                                                                             (list 'first
                                                                                   'second))
                                                test-context))
-                 '("inline void name (first, second)"))
+                 '("inline void name(first, second)"))
    (check-equal? (write-nekot (chunk-transform (void-function-declare-chunk 'name
                                                                             (list 'first
                                                                                   'second))
                                                (construct-context 20)))
-                 '("                  second)"
-                   "inline void name (first,"))))
+                 '("                 second)"
+                   "inline void name(first,"))))
 
 (define/provide-test-suite test-function-define-chunk
   (test-case
@@ -1679,19 +1679,19 @@
                                                                            null
                                                                            null)
                                                test-context))
-                 '("inline void name (void) {}"))
+                 '("inline void name(void) {}"))
    (check-equal? (write-nekot (chunk-transform (void-function-define-chunk 'name
                                                                            (list 'first)
                                                                            (list 'first))
                                                test-context))
-                 '("inline void name (first) { first; }"))
+                 '("inline void name(first) { first; }"))
    (check-equal? (write-nekot (chunk-transform (void-function-define-chunk 'name
                                                                            (list 'first
                                                                                  'second)
                                                                            (list 'first
                                                                                  'second))
                                                test-context))
-                 '("inline void name (first, second) { first; second; }"))
+                 '("inline void name(first, second) { first; second; }"))
    (check-equal? (write-nekot (chunk-transform (void-function-define-chunk 'name
                                                                            (list 'first
                                                                                  'second)
@@ -1703,8 +1703,8 @@
                    ""
                    "   first;"
                    ""
-                   "           second) {"
-                   "void name (first,"
+                   "          second) {"
+                   "void name(first,"
                    "inline"))))
 
 (define/provide-test-suite test-returning-function-define-chunk
@@ -1717,14 +1717,14 @@
                                                                                 null
                                                                                 'expr)
                                                test-context))
-                 '("inline return-type name (void) { return expr; }"))
+                 '("inline return-type name(void) { return expr; }"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
                                                                                                         'return-type
                                                                                                         (list 'first))
                                                                                 (list 'first)
                                                                                 'expr)
                                                test-context))
-                 '("inline return-type name (first) { first; return expr; }"))
+                 '("inline return-type name(first) { first; return expr; }"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
                                                                                                         'return-type
                                                                                                         (list 'first
@@ -1733,7 +1733,7 @@
                                                                                       'second)
                                                                                 'expr)
                                                test-context))
-                 '("inline return-type name (first, second) { first; second; return expr; }"))
+                 '("inline return-type name(first, second) { first; second; return expr; }"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
                                                                                                         'return-type
                                                                                                         (list 'first
@@ -1749,7 +1749,7 @@
                    ""
                    "   first;"
                    ""
-                   "name (first, second) {"
+                   "name(first, second) {"
                    "inline return-type"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
                                                                                                         'return-type
@@ -1766,8 +1766,8 @@
                    ""
                    "   first;"
                    ""
-                   "      second) {"
-                   "name (first,"
+                   "     second) {"
+                   "name(first,"
                    "return-type"
                    "inline"))))
 
@@ -1911,6 +1911,15 @@
                    " struct name {"
                    "         second>"
                    "template<first,"))))
+
+(define/provide-test-suite test-scope-resolution-operator-chunk
+  (test-case
+   "Test scope-resolution-operator-chunk"
+   (define test-context (construct-context 80))
+   (check-equal? (write-nekot (chunk-transform (scope-resolution-operator-chunk 'first
+                                                                                'second)
+                                               test-context))
+                 '("first::second"))))
 
 ;statement chunks
 
