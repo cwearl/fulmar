@@ -210,3 +210,23 @@
                                  [body nekot-body/c]
                                  [context context/c])))
 (provide nekot/c)
+
+;Logical line
+(define line/c (listof (or/c char? natural-number/c)))
+(define ll/c (cons/c 'll (cons/c line/c (cons/c natural-number/c null?))))
+(define/contract (ll line length)
+  (-> line/c natural-number/c ll/c)
+  (list 'll line length))
+(define/contract ll-line
+  (-> ll/c line/c)
+  second)
+(define/contract ll-length
+  (-> ll/c natural-number/c)
+  third)
+
+;Logical pivot
+;(struct pivot (lines length) #:transparent)
+;(define pivot/c (struct/c pivot (listof (or/c ll/c (recursive-contract pivot/c))) natural-number/c))
+;(provide/contract (struct pivot ([lines (listof (or/c ll/c pivot/c))]
+;                                 [length natural-number/c])))
+;(provide pivot/c)
