@@ -922,7 +922,7 @@
 
 ;template struct definition
 (define/contract (template-struct-define-chunk name params args . body)
-  (->* (chunk/c nullable-chunk-list/c nullable-chunk-list/c) #:rest chunk-list/c chunk/c)
+  (->* (chunk/c nullable-chunk-list/c nullable-chunk-list/c) #:rest nullable-chunk-list/c chunk/c)
   (struct-define-chunk (template-struct-declare-chunk name params args)
                        body))
 (provide template-struct-define-chunk)
