@@ -1,5 +1,7 @@
 ;TODO: for v1.0.0
 
+;TODO: change reading to allow uses/fulmar-define format (fulmar equivalent of require)
+
 ;TODO: clean up meta-chunk interfaces:
 ;TODO: sub: struct-define allow empty body
 
@@ -20,7 +22,7 @@
 
 ;TODO: for v1.5.0
 
-;TODO: clean up eval in io.rkt to use racket/base and standard-chunks.rkt only - for speed?
+;TODO: clean up eval in io.rkt to use racket/base and standard-chunks.rkt only - for security (and speed?)
 ;TODO: find a way to limit eval in io.rkt so that it doesn't have access to the file system  (something less than racket/base, probably)
 
 
@@ -28,6 +30,10 @@
 
 ;TODO: extend properties to as many conceivable formatting settings as possible
 
+
+;TODO: for v3.0.0
+
+;TODO: set up @fulmar() functionality (output the input file verbatim except for S-expressions begun with ... (meta-;TODO:)
 
 ;TODO: general
 
