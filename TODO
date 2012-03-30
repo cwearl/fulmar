@@ -12,6 +12,7 @@
 ;TODO: change writor to use logical lines/sections for writing instead of nekots
 ;TODO: change chunks (chunk-transform, specifically) to generate logical lines/sections instead of nekots
 
+:TODO: add uses fuctionality/fulmar-definitions file format (roughly equivalent to require)
 
 ;TODO: for v1.1.0
 

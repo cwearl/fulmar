@@ -10,147 +10,217 @@
   (->* () #:rest (listof any/c) (listof any/c))
   (flatten lst))
 (provide flatten*)
+(define/contract (non-empty-list? lst)
+  (-> any/c boolean?)
+  (and (list? lst)
+       (not (null? lst))))
+(provide non-empty-list?)
 
 ;basic contracts
-(define indent/c natural-number/c)
-(define line-length/c exact-positive-integer?)
-(provide indent/c line-length/c)
-(define string-value/c (or/c symbol? string?))
-(define string-list/c (or/c string-value/c
-                            (non-empty-listof (recursive-contract string-list/c))))
-(provide string-value/c string-list/c)
-(define length-value/c (or/c natural-number/c string-value/c))
-(define length-list/c (or/c length-value/c
-                            (non-empty-listof (recursive-contract length-list/c))))
-(provide length-value/c length-list/c)
-(define sc-name/c symbol?)
-(define sc-body/c any/c)
-(provide sc-name/c sc-body/c)
-(define nekot-name/c symbol?)
-(define nekot-body/c any/c)
-(provide nekot-name/c nekot-body/c)
-(define environment-description/c (or/c 'comment 'macro 'comment-macro 'macro-comment))
-(define optional-environment-description/c (or/c environment-description/c #false))
-(provide environment-description/c optional-environment-description/c)
-(define position/c natural-number/c)
-(define optional-position/c (or/c position/c #false))
-(provide position/c optional-position/c)
-(define empty-env/c #false)
-(provide empty-env/c)
-(define written-line/c string?)
-(define written-lines/c (non-empty-listof written-line/c))
-(provide written-line/c written-lines/c)
-(define mode/c (or/c 'normal 'immediate))
-(define null/c (one-of/c null))
-(provide mode/c null/c)
+(define/contract indent?
+  (-> any/c boolean?)
+  exact-nonnegative-integer?)
+(provide indent?)
+(define/contract line-length?
+  (-> any/c boolean?)
+  exact-positive-integer?)
+(provide line-length?)
+(define/contract (chunk-literal? g)
+  (-> any/c boolean?)
+  (or (symbol? g)
+      (string? g)
+      (char? g)
+      (exact-nonnegative-integer? g)))
+(provide chunk-literal?)
+(define/contract (chunk-literal-list? g)
+  (-> any/c boolean?)
+  (or (chunk-literal? g)
+      (and (non-empty-list? g)
+           (andmap chunk-literal-list? g))))
+(provide chunk-literal-list?)
+(define/contract sc-name?
+  (-> any/c boolean?)
+  symbol?)
+(define/contract (sc-body? g)
+  (-> any/c boolean?)
+  #true)
+(provide sc-name? sc-body?)
+(define/contract nekot-name?
+  (-> any/c boolean?)
+  symbol?)
+(define/contract (nekot-body? g)
+  (-> any/c boolean?)
+  #true)
+(provide nekot-name? nekot-body?)
+(define/contract (environment-description? g)
+  (-> any/c boolean?)
+  (match g
+    ['comment #true]
+    ['macro #true]
+    ['comment-macro #true]
+    ['macro-comment #true]
+    [_ #false]))
+(define/contract (optional-environment-description? g)
+  (-> any/c boolean?)
+  (or (not g)
+      (environment-description? g)))
+(provide environment-description? optional-environment-description?)
+(define/contract position?
+  (-> any/c boolean?)
+  exact-nonnegative-integer?)
+(define/contract (optional-position? g)
+  (-> any/c boolean?)
+  (or (not g)
+      (position? g)))
+(provide position? optional-position?)
+(define/contract written-line?
+  (-> any/c boolean?)
+  string?)
+(define/contract (written-lines? g)
+  (-> any/c boolean?)
+  (and (non-empty-list? g)
+       (andmap written-line? g)))
+(provide written-line? written-lines?)
+(define (mode? g)
+  (-> any/c boolean?)
+  (match g
+    ['normal #true]
+    ['immediate #true]
+    [_ #false]))
+(provide mode?)
 
-;chunk Contract
-(struct s-chunk (name body) #:transparent)
-(define s-chunk/c (struct/c s-chunk sc-name/c sc-body/c))
-(define chunk/c (or/c s-chunk/c string-value/c natural-number/c))
-(define chunk-list/c (or/c chunk/c
-                           (non-empty-listof (recursive-contract chunk-list/c))))
-(define nullable-chunk-list/c (or/c chunk/c
-                                    null/c
-                                    (non-empty-listof (recursive-contract nullable-chunk-list/c))))
-(provide/contract (struct s-chunk ([name sc-name/c]
-                                   [body sc-body/c])))
-(provide s-chunk/c chunk/c chunk-list/c nullable-chunk-list/c)
+;chunk-struct
+(struct chunk-struct (name body) #:transparent)
+(provide/contract (struct chunk-struct ([name sc-name?]
+                                        [body sc-body?])))
 
-;environment Structure
-(struct environment (description initial-position) #:transparent)
-(define environment/c (struct/c environment environment-description/c optional-position/c))
-(define optional-environment/c (or/c environment/c #false))
-(provide/contract (struct environment ([description environment-description/c]
-                                       [initial-position optional-position/c])))
-(provide environment/c optional-environment/c)
+;general chunk definitions
+(define/contract (chunk? c)
+  (-> any/c boolean?)
+  (or (chunk-struct? c)
+      (chunk-literal? c)))
+(define/contract (chunk-list? g)
+  (-> any/c boolean?)
+  (or (chunk? g)
+      (and (non-empty-list? g)
+           (andmap chunk-list? g))))
+(define (nullable-chunk-list? g)
+  (-> any/c boolean?)
+  (or (chunk? g)
+      (null? g)
+      (and (non-empty-list? g)
+           (andmap nullable-chunk-list? g))))
+(provide chunk? chunk-list? nullable-chunk-list?)
 
 ;empty environment
-(define/contract empty-env empty-env/c #false)
-(define/contract (empty-env? env)
+(define/contract empty-env?
   (-> any/c boolean?)
-  (not env))
-(provide empty-env/c empty-env empty-env?)
+  not)
+(provide empty-env?)
+(define/contract empty-env
+  empty-env?
+  #false)
+(provide empty-env? empty-env)
+
+;environment Structure
+(struct environment-struct (description initial-position) #:transparent)
+(define/contract (environment? g)
+  (-> any/c boolean?)
+  (or (empty-env? g)
+      (environment-struct? g)))
+(define/contract (optional-environment? g)
+  (-> any/c boolean?)
+  (or (not g)
+      (environment? g)))
+(provide/contract (struct environment-struct ([description environment-description?]
+                                              [initial-position optional-position?])))
+(provide environment? optional-environment?)
 
 ;comment block environment
-(define comment-env/c (struct/c environment 'comment position/c))
-(define/contract (comment-env indent)
-  (-> indent/c comment-env/c)
-  (environment 'comment indent))
-(define/contract (comment-env? env)
+(define/contract (comment-env? g)
   (-> any/c boolean?)
-  (and (environment/c env)
-       (eq? (environment-description env) 'comment)))
-(provide comment-env/c comment-env comment-env?)
+  (and (environment-struct? g)
+       (equal? 'comment
+               (environment-struct-description g))))
+(define/contract (comment-env indent)
+  (-> indent? comment-env?)
+  (environment-struct 'comment indent))
+(provide comment-env? comment-env)
 
 ;macro definition environment
-(define macro-env/c (struct/c environment 'macro #false))
-(define/contract macro-env
-  macro-env/c
-  (environment 'macro #false))
-(define/contract (macro-env? env)
+(define/contract (macro-env? g)
   (-> any/c boolean?)
-  (and (environment/c env)
-       (eq? (environment-description env) 'macro)))
-(provide macro-env/c macro-env macro-env?)
+  (and (environment-struct? g)
+       (equal? 'macro
+               (environment-struct-description g))))
+(define/contract macro-env
+  macro-env?
+  (environment-struct 'macro #false))
+(provide macro-env? macro-env)
 
 ;commented macro defintion environment
-(define comment-macro-env/c (struct/c environment 'comment-macro position/c))
-(define/contract (comment-macro-env indent)
-  (-> indent/c comment-macro-env/c)
-  (environment 'comment-macro indent))
-(define/contract (comment-macro-env? env)
+(define/contract (comment-macro-env? g)
   (-> any/c boolean?)
-  (and (environment/c env)
-       (eq? (environment-description env) 'comment-macro)))
-(provide comment-macro-env/c comment-macro-env comment-macro-env?)
+  (and (environment-struct? g)
+       (equal? 'comment-macro
+               (environment-struct-description g))))
+(define/contract (comment-macro-env indent)
+  (-> indent? comment-macro-env?)
+  (environment-struct 'comment-macro indent))
+(provide comment-macro-env? comment-macro-env)
 
 ;macro definition with embedded comment block environment
-(define macro-comment-env/c (struct/c environment 'macro-comment position/c))
-(define/contract (macro-comment-env indent)
-  (-> indent/c macro-comment-env/c)
-  (environment 'macro-comment indent))
-(define/contract (macro-comment-env? env)
+(define/contract (macro-comment-env? g)
   (-> any/c boolean?)
-  (and (environment/c env)
-       (eq? (environment-description env) 'macro-comment)))
-(provide macro-comment-env/c macro-comment-env macro-comment-env?)
+  (and (environment-struct? g)
+       (equal? 'macro-comment
+               (environment-struct-description g))))
+(define/contract (macro-comment-env indent)
+  (-> indent? macro-comment-env?)
+  (environment-struct 'macro-comment indent))
+(provide macro-comment-env? macro-comment-env)
 
 ;build resulting environment of old and new environments
-(define user-env/c (or/c empty-env/c comment-env/c macro-env/c))
-(define possible-env/c (or/c user-env/c comment-macro-env/c macro-comment-env/c))
+(define/contract (user-env? g)
+  (-> any/c boolean?)
+  (or (empty-env? g)
+      (comment-env? g)
+      (macro-env? g)))
+(define/contract (possible-env? g)
+  (-> any/c boolean?)
+  (or (user-env? g)
+      (comment-macro-env? g)
+      (macro-comment-env? g)))
 (define/contract (combine-env old new)
-  (-> possible-env/c user-env/c possible-env/c)
+  (-> possible-env? user-env? possible-env?)
   (cond [(empty-env? old) ;was in empty env
          new]
         [(empty-env? new) ;entering empty env
          old]
-        [(and (or (comment-env? old)        ;was in a comment-type env (comment, macro-comment, or comment-macro)
+        [(and (comment-env? new)            ;entering: comment env
+              (or (comment-env? old)        ;in: comment-type env (comment, macro-comment, or comment-macro)
                   (comment-macro-env? old)
-                  (macro-comment-env? old))
-              (comment-env? new))           ; and entering comment env
+                  (macro-comment-env? old)))
          old]
-        [(and (comment-env? old) ;was in comment env
-              (macro-env? new))  ; and entering macro env
-         (comment-macro-env (environment-initial-position old))]
-        [(and (macro-env? old)    ;was in macro env
-              (comment-env? new)) ; and entering comment env
-         (macro-comment-env (environment-initial-position new))]
+        [(and (comment-env? new)            ;entering: comment env
+              (macro-env? old))             ;in: macro env
+         (macro-comment-env (environment-struct-initial-position new))]
+        [(and (macro-env? new)              ;entering: macro env
+              (comment-env? old))           ;in: comment env
+         (comment-macro-env (environment-struct-initial-position old))]
         [else ;else error...
          (error "Incompatible environments combined; given: " old new)]))
-(provide user-env/c possible-env/c combine-env)
+(provide user-env? possible-env? combine-env)
 
 ;context Structure
 (struct context (indent line-length env) #:transparent)
-(define context/c (struct/c context indent/c line-length/c optional-environment/c))
-(provide/contract (struct context ([indent indent/c]
-                                   [line-length line-length/c]
-                                   [env optional-environment/c])))
-(provide context/c)
+(provide/contract (struct context ([indent indent?]
+                                   [line-length line-length?]
+                                   [env optional-environment?])))
 
 ;construct context
 (define/contract (construct-context line-length)
-  (-> line-length/c context/c)
+  (-> line-length? context?)
   (context 0
            line-length
            empty-env))
@@ -158,75 +228,92 @@
 
 ;new environment context
 (define/contract (enter-env new-env obj)
-  (-> user-env/c context/c context/c)
+  (-> user-env? context? context?)
   (struct-copy context obj [env (combine-env (context-env obj) new-env)]))
 (provide enter-env)
 
 ;context accessors
 (define/contract (context-description context)
-  (-> context/c optional-environment-description/c)
+  (-> context? optional-environment-description?)
   (let ([env (context-env context)])
     (if env
-        (environment-description env)
+        (environment-struct-description env)
         #false)))
 (define/contract (context-initial-position context)
-  (-> context/c optional-position/c)
+  (-> context? optional-position?)
   (let* ([env (context-env context)])
-    (if env (environment-initial-position env) #false)))
+    (if env
+        (environment-struct-initial-position env)
+        #false)))
 (provide context-description
          context-initial-position)
 
 ;increase indent level context
 (define/contract (reindent new-indent obj)
-  (-> indent/c context/c context/c)
+  (-> indent? context? context?)
   (struct-copy context obj [indent (+ new-indent
                                       (context-indent obj))]))
 (provide reindent)
 
 ;reset indent level context
 (define/contract (reset-indent new-indent obj)
-  (-> indent/c context/c context/c)
+  (-> indent? context? context?)
   (struct-copy context obj [indent new-indent]))
 (provide reset-indent)
 
 ;new comment block
 (define/contract (enter-comment-env context)
-  (-> context/c context/c)
+  (-> context? context?)
   (enter-env (comment-env (context-indent context))
              context))
 (provide enter-comment-env)
 
 ;new macro definition
 (define/contract (enter-macro-env context)
-  (-> context/c context/c)
+  (-> context? context?)
   (enter-env macro-env
              context))
 (provide enter-macro-env)
 
 ;nekot Structure (reverse token - token spelled backwards)
 (struct nekot (name body context) #:transparent)
-(define nekot/c (struct/c nekot nekot-name/c nekot-body/c context/c))
-(provide/contract (struct nekot ([name nekot-name/c]
-                                 [body nekot-body/c]
-                                 [context context/c])))
-(provide nekot/c)
+(provide/contract (struct nekot ([name nekot-name?]
+                                 [body nekot-body?]
+                                 [context context?])))
 
-;Logical line
-(define line/c (listof (or/c char? natural-number/c)))
-(define ll/c (cons/c 'll (cons/c line/c (cons/c natural-number/c null?))))
-(define/contract (ll line length)
-  (-> line/c natural-number/c ll/c)
-  (list 'll line length))
-(define/contract ll-line
-  (-> ll/c line/c)
-  second)
-(define/contract ll-length
-  (-> ll/c natural-number/c)
-  third)
+;basic-line struct
+(define/contract (basic-line-string? g)
+  (-> any/c boolean?)
+  (and (non-empty-list? g)
+       (andmap (λ (g) (or (char? g)
+                          (exact-nonnegative-integer? g)))
+               g)))
+(struct basic-line (string length) #:transparent)
+(provide/contract (struct basic-line ([string basic-line-string?]
+                                      [length natural-number/c])))
+(provide basic-line-string?)
 
-;Logical pivot
-;(struct pivot (lines length) #:transparent)
-;(define pivot/c (struct/c pivot (listof (or/c ll/c (recursive-contract pivot/c))) natural-number/c))
-;(provide/contract (struct pivot ([lines (listof (or/c ll/c pivot/c))]
-;                                 [length natural-number/c])))
-;(provide pivot/c)
+;logical pivot
+(struct pivot (sections length) #:transparent)
+(define/contract (logical-line-string? g)
+  (-> any/c boolean?)
+  (and (non-empty-list? g)
+       (andmap (λ (g) (or (char? g)
+                          (exact-nonnegative-integer? g)
+                          (pivot? g)))
+               g)))
+(provide logical-line-string?)
+
+(define/contract (logical-line-string-list? g)
+  (-> any/c boolean?)
+  (and (non-empty-list? g)
+       (andmap logical-line-string? g)))
+(provide logical-line-string-list?)
+
+(provide/contract (struct pivot ([sections logical-line-string-list?]
+                                 [length natural-number/c])))
+
+;logical line
+(struct logical-line (sections length) #:transparent)
+(provide/contract (struct logical-line ([sections logical-line-string-list?]
+                                        [length natural-number/c])))
