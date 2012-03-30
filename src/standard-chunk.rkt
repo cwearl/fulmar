@@ -670,7 +670,7 @@
   (-> chunk/c chunk/c)
   (concat-chunk pp-directive-chunk
                 endif-chunk
-                space-chunk
+                new-line-chunk
                 (comment-env-chunk condition)))
 (provide pp-endif-chunk)
 
