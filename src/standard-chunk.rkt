@@ -632,6 +632,18 @@
                 (template-list-chunk included)))
 (provide pp-include-chunk)
 
+;alternate preprocessor include chunk
+; #include<...> chunk
+(define/contract (pp-alt-include-chunk included)
+  (-> chunk/c chunk/c)
+  (concat-chunk pp-directive-chunk
+                include-chunk
+                space-chunk
+                "\""
+                included
+                "\""))
+(provide pp-alt-include-chunk)
+
 ;multiple includes
 (define/contract (pp-includes-chunk . chunks)
   (->* () #:rest chunk-list/c chunk/c)
