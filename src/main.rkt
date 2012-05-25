@@ -57,5 +57,5 @@
                                                                    new-line-chunk
                                                                    input-chunk)])
                                          (print-file! (write-nekot (chunk-transform chunk
-                                                                                    (construct-context (cmdln-line-length))))
+                                                                                    (initial-context (cmdln-line-length))))
                                                       output))))
