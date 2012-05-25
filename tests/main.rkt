@@ -54,14 +54,16 @@
   (listof test-suite?)
   (list test-flatten*
         test-non-empty-list?
+        test-string-type?
+        test-string-list?
         test-indent?
+        test-length-type?
+        test-length-list?
         test-line-length?
         test-chunk-literal?
         test-chunk-literal-list?
         test-sc-name?
         test-sc-body?
-        test-nekot-name?
-        test-nekot-body?
         test-environment-description?
         test-optional-environment-description?
         test-position?
@@ -72,17 +74,19 @@
         test-chunk?
         test-chunk-list?
         test-nullable-chunk-list?
-        ;1test-empty-env
+        test-empty-env
         test-comment-env
         test-macro-env
         test-comment-macro-env
         test-macro-comment-env
+        test-environment?
+        test-user-env?
         test-combine-env
-        test-construct-context
+        test-context?
         test-enter-env
         test-context-accessors
-        test-reindent
         test-reset-indent
+        test-reindent
         test-enter-comment
         test-enter-macro))
 
