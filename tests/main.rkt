@@ -54,22 +54,18 @@
   (listof test-suite?)
   (list test-flatten*
         test-non-empty-list?
-        test-string-type?
-        test-string-list?
         test-indent?
-        test-length-type?
-        test-length-list?
+        test-string-type?
+        test-literal-type?
+        test-literal-list?
         test-line-length?
         test-chunk-literal?
-        test-chunk-literal-list?
         test-sc-name?
         test-sc-body?
         test-environment-description?
         test-optional-environment-description?
         test-position?
         test-optional-position?
-        test-written-line?
-        test-written-lines?
         test-mode?
         test-chunk?
         test-chunk-list?

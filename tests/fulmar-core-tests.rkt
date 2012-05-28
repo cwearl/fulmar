@@ -17,21 +17,6 @@
    (check-true (non-empty-list? (list 'a)))
    (check-false (non-empty-list? (list)))))
 
-(define/provide-test-suite test-string-type?
-  (test-case
-   "Test string-type?"
-   (check-true (string-type? "asdf"))
-   (check-true (string-type? 'asdf))
-   (check-false (string-type? -1))))
-
-(define/provide-test-suite test-string-list?
-  (test-case
-   "Test string-list?"
-   (check-true (string-list? "asdf"))
-   (check-true (string-list? 'asdf))
-   (check-true (string-list? (list 'asdf "asdf" (list 'asdf))))
-   (check-false (string-list? -1))))
-
 (define/provide-test-suite test-indent?
   (test-case
    "Test indent?"
@@ -39,20 +24,27 @@
    (check-true (indent? 0))
    (check-false (indent? -1))))
 
-(define/provide-test-suite test-length-type?
+(define/provide-test-suite test-string-type?
   (test-case
-   "Test length-type?"
-   (check-true (length-type? 3))
-   (check-true (length-type? 'asdf))
-   (check-false (length-type? -1))))
+   "Test string-type?"
+   (check-true (string-type? "asdf"))
+   (check-true (string-type? 'asdf))
+   (check-false (string-type? -1))))
 
-(define/provide-test-suite test-length-list?
+(define/provide-test-suite test-literal-type?
   (test-case
-   "Test length-list?"
-   (check-true (length-list? 3))
-   (check-true (length-list? 'asdf))
-   (check-true (length-list? (list 3 "asdf" 'asdf (list 0 2))))
-   (check-false (length-list? -1))))
+   "Test literal-type?"
+   (check-true (literal-type? 3))
+   (check-true (literal-type? 'asdf))
+   (check-false (literal-type? -1))))
+
+(define/provide-test-suite test-literal-list?
+  (test-case
+   "Test literal-list?"
+   (check-true (literal-list? 3))
+   (check-true (literal-list? 'asdf))
+   (check-true (literal-list? (list 3 "asdf" 'asdf (list 0 2))))
+   (check-false (literal-list? -1))))
 
 (define/provide-test-suite test-line-length?
   (test-case
@@ -69,13 +61,6 @@
    (check-true (chunk-literal? #\a))
    (check-true (chunk-literal? 3))
    (check-false (chunk-literal? -1))))
-
-(define/provide-test-suite test-chunk-literal-list?
-  (test-case
-   "Test chunk-literal-list?"
-   (check-true (chunk-literal-list? 'asdf))
-   (check-true (chunk-literal-list? (list "asdf" #\a 3)))
-   (check-false (chunk-literal-list? null))))
 
 (define/provide-test-suite test-sc-name?
   (test-case
@@ -123,19 +108,6 @@
    (check-true (optional-position? 0))
    (check-true (optional-position? 3))
    (check-false (optional-position? -1))))
-
-(define/provide-test-suite test-written-line?
-  (test-case
-   "Test written-line?"
-   (check-true (written-line? "asdf"))
-   (check-false (written-line? 'asdf))))
-
-(define/provide-test-suite test-written-lines?
-  (test-case
-   "Test written-lines?"
-   (check-true (written-lines? (list "asdf")))
-   (check-true (written-lines? (list "asdf" "jkl")))
-   (check-false (written-lines? (list "asdf" 3)))))
 
 (define/provide-test-suite test-mode?
   (test-case
