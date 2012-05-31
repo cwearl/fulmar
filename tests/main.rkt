@@ -3,8 +3,10 @@
 (require rackunit)
 (require rackunit/gui)
 (require rackunit/text-ui)
-(require "fulmar-core-tests.rkt")
-;(require "core-chunk-tests.rkt")
+(require "basics-tests.rkt")
+(require "environment-tests.rkt")
+(require "context-tests.rkt")
+(require "chunk-tests.rkt")
 ;(require "writer-tests.rkt")
 ;(require "standard-chunk-tests.rkt")
 ;(require "io-tests.rkt")
@@ -49,45 +51,69 @@
                (void))
            result)))
 
-;fulmar-core tests:
-(define/contract fulmar-core-tests
+;basics tests:
+(define/contract basics-tests
   (listof test-suite?)
   (list test-flatten*
         test-non-empty-list?
         test-indent?
-        test-string-type?
-        test-literal-type?
-        test-literal-list?
-        test-line-length?
-        test-chunk-literal?
-        test-sc-name?
-        test-sc-body?
-        test-environment-description?
-        test-optional-environment-description?
-        test-position?
-        test-optional-position?
-        test-mode?
+        test-line-length?))
+
+(apply test-fail-with-gui? basics-tests)
+;(apply run-tests-text basics-tests)
+
+;environment tests:
+(define/contract environment-tests
+  (listof test-suite?)
+  (list test-env-description?
+        test-optional-env-description?
+        test-env-type-constructors-and-predicates
+        test-env?
+        test-user-env?
+        test-env-description
+        test-env-comment-indent
+        test-combine-env))
+
+(apply test-fail-with-gui? environment-tests)
+;(apply run-tests-text environment-tests)
+
+;context tests:
+(define/contract context-tests
+  (listof test-suite?)
+  (list test-context-constructor-and-predicate
+        test-context-accessors
+        test-increase-indent
+        test-enter-comment-env
+        test-enter-macro-env))
+
+(apply test-fail-with-gui? context-tests)
+;(apply run-tests-text context-tests)
+
+;chunk tests:
+(define/contract chunk-tests
+  (listof test-suite?)
+  (list test-literal-chunk?
+        test-indent-chunk-body?
+        test-chunk-nl-internal?
+        test-chunk-nl?
+        test-chunk-name?
+        test-chunk-body?
         test-chunk?
         test-chunk-list?
         test-nullable-chunk-list?
-        test-empty-env
-        test-comment-env
-        test-macro-env
-        test-comment-macro-env
-        test-macro-comment-env
-        test-environment?
-        test-user-env?
-        test-combine-env
-        test-context?
-        test-enter-env
-        test-context-accessors
-        test-reset-indent
-        test-reindent
-        test-enter-comment
-        test-enter-macro))
+        test-literal-chunk
+        test-spaces-chunk
+        test-new-line-chunk
+        test-pp-directive-chunk
+        test-concat-chunk
+        test-no-line-chunk
+        test-position-indent-chunk
+        test-indent-chunk
+        test-comment-chunk
+        test-macro-chunk))
 
-(apply test-fail-with-gui? fulmar-core-tests)
-;(apply run-tests-text fulmar-core-tests)
+(apply test-fail-with-gui? chunk-tests)
+;(apply run-tests-text chunk-tests)
 
 ;writer tests:
 ;(define/contract writer-tests
@@ -113,30 +139,6 @@
 
 ;(apply test-fail-with-gui? writer-tests)
 ;(apply run-tests-text writer-tests)
-
-;core chunk tests:
-;(define/contract core-chunk-tests
-;  (listof test-suite?)
-;  (list test-combine-lengths
-;        test-combine-strings
-;        test-length-equals-one
-;        test-chunk-transform
-;        test-literal-chunk
-;        test-spaces-chunk
-;        test-new-line-chunk
-;        test-pp-directive-chunk
-;        test-empty-chunk
-;        test-concat-chunk
-;        test-immediate-chunk
-;        test-speculative-chunk
-;        test-position-indent-chunk
-;        test-modify-context-chunk
-;        test-indent-chunk
-;        test-comment-env-chunk
-;        test-macro-env-chunk))
-
-;(apply test-fail-with-gui? core-chunk-tests)
-;(apply run-tests-text core-chunk-tests)
 
 ;standard chunk tests:
 ;(define/contract standard-core-tests
