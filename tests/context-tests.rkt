@@ -37,6 +37,13 @@
    (check-equal? (context-indent (increase-indent 4 test-context)) 4)
    (check-equal? (context-indent (increase-indent 2 (increase-indent 5 test-context))) 7)))
 
+(define/provide-test-suite test-reset-indent
+  (test-case
+   "Test reset-indent"
+   (define test-context (initial-context 80))
+   (check-equal? (context-indent (reset-indent 4 test-context)) 4)
+   (check-equal? (context-indent (reset-indent 5 (reset-indent 2 test-context))) 5)))
+
 (define/provide-test-suite test-enter-comment-env
   (test-case
    "Test enter-comment-env"

@@ -72,22 +72,22 @@
                                                  (context-indent context))]))
 (provide increase-indent)
 
-;new environment context
-(define/contract (enter-env new-env context)
-  (-> user-env? context? context?)
-  (struct-copy context-struct context [env (combine-env (context-struct-env context) new-env)]))
-;(provide enter-env)
+;reset indent level context
+(define/contract (reset-indent new-indent context)
+  (-> indent? context? context?)
+  (struct-copy context-struct context [indent new-indent]))
+(provide reset-indent)
 
 ;new comment block
 (define/contract (enter-comment-env context)
   (-> context? context?)
-  (enter-env (comment-env (context-indent context))
-             context))
+  (struct-copy context-struct context [env (combine-env (context-env context)
+                                                        (comment-env (context-indent context)))]))
 (provide enter-comment-env)
 
 ;new macro definition
 (define/contract (enter-macro-env context)
   (-> context? context?)
-  (enter-env macro-env
-             context))
+  (struct-copy context-struct context [env (combine-env (context-env context)
+                                                        macro-env)]))
 (provide enter-macro-env)

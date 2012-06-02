@@ -86,6 +86,7 @@
   (list test-context-constructor-and-predicate
         test-context-accessors
         test-increase-indent
+        test-reset-indent
         test-enter-comment-env
         test-enter-macro-env))
 
