@@ -7,9 +7,8 @@
 (require "environment-tests.rkt")
 (require "context-tests.rkt")
 (require "chunk-tests.rkt")
-;(require "writer-tests.rkt")
-;(require "standard-chunk-tests.rkt")
-;(require "io-tests.rkt")
+(require "line-tests.rkt")
+(require "block-tests.rkt")
 
 ;sequentially check if any tests fail
 ; returns true if all given tests pass
@@ -120,6 +119,43 @@
 
 (apply test-fail-with-gui? chunk-tests)
 ;(apply run-tests-text chunk-tests)
+
+;line tests:
+(define/contract line-tests
+  (listof test-suite?)
+  (list test-print-item?
+        test-line-IR?
+        test-line-input?
+        test-line?
+        test-line
+        test-line-IR
+        test-build-line-IR
+        test-simplify-line-IR
+        test-pivot-IR?
+        test-pivot-input?
+        test-pivot?
+        test-pivot
+        test-pivot-IR
+        test-pivot-length
+        test-build-pivot
+        test-pivot-full-line-length
+        test-full-line-length))
+
+(apply test-fail-with-gui? line-tests)
+;(apply run-tests-text line-tests)
+
+;block tests:
+(define/contract block-tests
+  (listof test-suite?)
+  (list test-block-IR?
+        test-block-input?
+        test-block?
+        test-block
+        test-block-IR
+        test-build-block-IR))
+
+(apply test-fail-with-gui? block-tests)
+;(apply run-tests-text block-tests)
 
 ;writer tests:
 ;(define/contract writer-tests
