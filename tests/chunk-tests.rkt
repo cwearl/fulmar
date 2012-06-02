@@ -42,8 +42,6 @@
    (check-true (chunk-nl-internal? 'concat 'asdf))
    (check-true (chunk-nl-internal? 'concat (list 'asdf 3 6)))
    (check-false (chunk-nl-internal? 'concat (list 'asdf 3 -1)))
-   (check-true (chunk-nl-internal? 'position-indent 'asdf))
-   (check-false (chunk-nl-internal? 'position-indent -1))
    (check-true (chunk-nl-internal? 'indent (list 3 'asdf)))
    (check-false (chunk-nl-internal? 'indent -1))
    (check-true (chunk-nl-internal? 'comment 'asdf))
@@ -58,7 +56,6 @@
    (check-true (chunk-nl? new-line-chunk))
    (check-true (chunk-nl? pp-directive-chunk))
    (check-true (chunk-nl? (concat-chunk 'as 'df)))
-   (check-true (chunk-nl? (position-indent-chunk 'asdf)))
    (check-true (chunk-nl? (indent-chunk 0 'asdf)))
    (check-true (chunk-nl? (comment-chunk 'asdf)))
    (check-true (chunk-nl? (macro-chunk 'asdf)))
@@ -71,7 +68,6 @@
    (check-true (chunk-name? 'new-line))
    (check-true (chunk-name? 'pp-directive))
    (check-true (chunk-name? 'concat))
-   (check-true (chunk-name? 'position-indent))
    (check-true (chunk-name? 'indent))
    (check-true (chunk-name? 'comment))
    (check-true (chunk-name? 'macro))
@@ -168,14 +164,6 @@
    (check-equal? (chunk-name (no-line-chunk 'asdf 0)) 'no-line)
    (check-equal? (chunk-body (no-line-chunk 'asdf 0 (list 3 2))) (list 'asdf 0 3 2))))
 
-(define/provide-test-suite test-position-indent-chunk
-  (test-case
-   "Test position-indent-chunk"
-   (check-true (chunk? (position-indent-chunk 'asdf)))
-   (check-true (chunk-nl? (position-indent-chunk 'asdf)))
-   (check-equal? (chunk-name (position-indent-chunk 'asdf)) 'position-indent)
-   (check-equal? (chunk-body (position-indent-chunk 'asdf)) 'asdf)))
-
 (define/provide-test-suite test-indent-chunk
   (test-case
    "Test indent-chunk"
@@ -208,7 +196,6 @@
    (check-equal? (chunk-name new-line-chunk) 'new-line)
    (check-equal? (chunk-name pp-directive-chunk) 'pp-directive)
    (check-equal? (chunk-name (concat-chunk 'asdf 0)) 'concat)
-   (check-equal? (chunk-name (position-indent-chunk 'asdf)) 'position-indent)
    (check-equal? (chunk-name (indent-chunk 0 'asdf)) 'indent)
    (check-equal? (chunk-name (comment-chunk 'asdf)) 'comment)
    (check-equal? (chunk-name (macro-chunk 'asdf)) 'macro)))
@@ -221,7 +208,6 @@
    (check-equal? (chunk-body new-line-chunk) #false)
    (check-equal? (chunk-body pp-directive-chunk) #false)
    (check-equal? (chunk-body (concat-chunk 'asdf 0)) (list 'asdf 0))
-   (check-equal? (chunk-body (position-indent-chunk 'asdf)) 'asdf)
    (check-equal? (chunk-body (indent-chunk 0 'asdf)) (list 0 'asdf))
    (check-equal? (chunk-body (comment-chunk 'asdf)) 'asdf)
    (check-equal? (chunk-body (macro-chunk 'asdf)) 'asdf)))

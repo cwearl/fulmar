@@ -111,7 +111,6 @@
         test-pp-directive-chunk
         test-concat-chunk
         test-no-line-chunk
-        test-position-indent-chunk
         test-indent-chunk
         test-comment-chunk
         test-macro-chunk

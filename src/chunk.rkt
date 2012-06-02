@@ -42,7 +42,6 @@
         ['pp-directive    (not b)]
         ['concat          (chunk-list? b)]
         ['no-line         (chunk-list? b)]
-        ['position-indent (chunk? b)]
         ['indent          (indent-chunk-body? b)]
         ['comment         (chunk? b)]
         ['macro           (chunk? b)]
@@ -68,7 +67,6 @@
          'pp-directive
          'concat
          'no-line
-         'position-indent
          'indent
          'comment
          'macro)          #true]
@@ -160,12 +158,6 @@
   (->* () #:rest chunk-list? chunk?)
   (chunk-struct 'no-line (flatten* chunks)))
 (provide no-line-chunk)
-
-;position indent chunk
-(define/contract (position-indent-chunk chunk)
-  (-> chunk? chunk?)
-  (chunk-struct 'position-indent chunk))
-(provide position-indent-chunk)
 
 ;indent chunk
 (define/contract (indent-chunk indent chunk)
