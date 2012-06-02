@@ -13,31 +13,31 @@
 
 ;predicate for environment description
 (define/contract (env-description? g)
-  (-> any/c boolean?)
+  pred/c
   (match g
     [(or 'comment
          'macro
          'comment-macro
          'macro-comment) #true]
-    [_ #false]))
+    [_                   #false]))
 (provide env-description?)
 
 ;predicate for optional environment description
 (define/contract (optional-env-description? g)
-  (-> any/c boolean?)
-  (or (not g)
-      (env-description? g)))
+  pred/c
+  ((or? not
+        env-description?) g))
 (provide optional-env-description?)
 
 ;predicate for empty environment
 (define/contract empty-env?
-  (-> any/c boolean?)
+  pred/c
   not)
 (provide empty-env?)
 
 ;predicate for comment block environment
 (define/contract (comment-env? g)
-  (-> any/c boolean?)
+  pred/c
   (and (env-struct? g)
        (equal? 'comment
                (env-struct-description g))))
@@ -45,7 +45,7 @@
 
 ;predicate for macro definition environment
 (define/contract (macro-env? g)
-  (-> any/c boolean?)
+  pred/c
   (and (env-struct? g)
        (equal? 'macro
                (env-struct-description g))))
@@ -53,7 +53,7 @@
 
 ;predicate for commented macro defintion environment
 (define/contract (comment-macro-env? g)
-  (-> any/c boolean?)
+  pred/c
   (and (env-struct? g)
        (equal? 'comment-macro
                (env-struct-description g))))
@@ -61,7 +61,7 @@
 
 ;predicate for macro definition with embedded comment block environment
 (define/contract (macro-comment-env? g)
-  (-> any/c boolean?)
+  pred/c
   (and (env-struct? g)
        (equal? 'macro-comment
                (env-struct-description g))))
@@ -69,20 +69,20 @@
 
 ;predicate for environment
 (define/contract (env? g)
-  (-> any/c boolean?)
-  (or (empty-env? g)
-      (comment-env? g)
-      (macro-env? g)
-      (comment-macro-env? g)
-      (macro-comment-env? g)))
+  pred/c
+  ((or? empty-env?
+        comment-env?
+        macro-env?
+        comment-macro-env?
+        macro-comment-env?) g))
 (provide env?)
 
 ;predicate for user-definable environment
 (define/contract (user-env? g)
-  (-> any/c boolean?)
-  (or (empty-env? g)
-      (comment-env? g)
-      (macro-env? g)))
+  pred/c
+  ((or? empty-env?
+        macro-env?
+        comment-env?) g))
 (provide user-env?)
 
 ;constructors
@@ -145,9 +145,9 @@
         [(empty-env? new) ;entering empty env
          old]
         [(and (comment-env? new)            ;entering: comment env
-              (or (comment-env? old)        ;in: comment-type env (comment, macro-comment, or comment-macro)
-                  (comment-macro-env? old)
-                  (macro-comment-env? old)))
+              ((or? comment-env?            ;in: comment-type env (comment, macro-comment, or comment-macro)
+                    comment-macro-env?
+                    macro-comment-env?) old))
          old]
         [(and (comment-env? new)            ;entering: comment env
               (macro-env? old))             ;in: macro env

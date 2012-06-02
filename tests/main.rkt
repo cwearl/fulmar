@@ -56,7 +56,11 @@
   (listof test-suite?)
   (list test-flatten*
         test-non-empty-list?
+        test-or?
+        test-and?
+        test-list-of?
         test-indent?
+        test-optional-indent?
         test-line-length?))
 
 (apply test-fail-with-gui? basics-tests)
@@ -110,7 +114,9 @@
         test-position-indent-chunk
         test-indent-chunk
         test-comment-chunk
-        test-macro-chunk))
+        test-macro-chunk
+        test-chunk-name
+        test-chunk-body))
 
 (apply test-fail-with-gui? chunk-tests)
 ;(apply run-tests-text chunk-tests)

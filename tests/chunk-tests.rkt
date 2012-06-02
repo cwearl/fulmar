@@ -216,12 +216,12 @@
 (define/provide-test-suite test-chunk-body
   (test-case
    "Test chunk-body"
-   (check-equal? (chunk-name 'asdf) 'asdf)
-   (check-equal? (chunk-name 3) 3)
-   (check-equal? (chunk-name new-line-chunk) #false)
-   (check-equal? (chunk-name pp-directive-chunk) #false)
-   (check-equal? (chunk-name (concat-chunk 'asdf 0)) (list 'asdf 0))
-   (check-equal? (chunk-name (position-indent-chunk 'asdf)) 'asdf)
-   (check-equal? (chunk-name (indent-chunk 0 'asdf)) (list 0 'asdf))
-   (check-equal? (chunk-name (comment-chunk 'asdf)) 'asdf)
-   (check-equal? (chunk-name (macro-chunk 'asdf)) 'asdf)))
+   (check-equal? (chunk-body 'asdf) 'asdf)
+   (check-equal? (chunk-body 3) 3)
+   (check-equal? (chunk-body new-line-chunk) #false)
+   (check-equal? (chunk-body pp-directive-chunk) #false)
+   (check-equal? (chunk-body (concat-chunk 'asdf 0)) (list 'asdf 0))
+   (check-equal? (chunk-body (position-indent-chunk 'asdf)) 'asdf)
+   (check-equal? (chunk-body (indent-chunk 0 'asdf)) (list 0 'asdf))
+   (check-equal? (chunk-body (comment-chunk 'asdf)) 'asdf)
+   (check-equal? (chunk-body (macro-chunk 'asdf)) 'asdf)))

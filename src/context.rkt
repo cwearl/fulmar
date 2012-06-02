@@ -14,7 +14,7 @@
 
 ;predicate for context
 (define/contract (context? context)
-  (-> any/c boolean?)
+  pred/c
   (and (context-struct? context)
        (indent? (context-struct-indent context))
        (line-length? (context-struct-line-length context))

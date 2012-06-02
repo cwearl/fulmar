@@ -13,18 +13,18 @@
 
 ;predicate for literal chunk value
 (define/contract (chunk-literal? g)
-  (-> any/c boolean?)
-  (or (string? g)
-      (symbol? g)
-      (char? g)
-      (indent? g)
-      (and (non-empty-list? g)
-           (andmap chunk-literal? g))))
+  pred/c
+  (list-of? (or? string?
+                 symbol?
+                 char?
+                 indent?)
+            1
+            g))
 (provide chunk-literal?)
 
 ;predicate for body of indent chunk body
 (define/contract (indent-chunk-body? g)
-  (-> any/c boolean?)
+  pred/c
   (and (list? g)
        (= 2 (length g))
        (indent? (first g))
@@ -52,7 +52,7 @@
 
 ;predicate for non-literal chunk value
 (define/contract (chunk-nl? g)
-  (-> any/c boolean?)
+  pred/c
   (and (chunk-struct? g)
        (chunk-nl-internal? (chunk-struct-name g)
                            (chunk-struct-body g))))
@@ -61,7 +61,7 @@
 ;TODO: change chunk-name? to only accept valid chunk types
 ;predicate for chunk name
 (define/contract (chunk-name? g)
-  (-> any/c boolean?)
+  pred/c
   (match g
     [(or 'literal
          'new-line
@@ -71,42 +71,38 @@
          'position-indent
          'indent
          'comment
-         'macro) #true]
-    [_ #false]))
+         'macro)          #true]
+    [_                    #false]))
 (provide chunk-name?)
 
 ;predicate for non-literal chunk body
 (define/contract (chunk-body? g)
-  (-> any/c boolean?)
-  (or (chunk-literal? g)
-      (not g)
-      (chunk-list? g)
-      (chunk? g)
-      (indent-chunk-body? g)))
+  pred/c
+  ((or? chunk-literal?
+        not
+        chunk-list?
+        chunk?
+        indent-chunk-body?) g))
 (provide chunk-body?)
 
 ;predicate for general chunk
 (define/contract (chunk? g)
-  (-> any/c boolean?)
-  (or (chunk-literal? g)
-      (chunk-nl? g)))
+  pred/c
+  ((or? chunk-nl?
+        chunk-literal?) g))
 (provide chunk?)
 
 ;predicate for list of chunks
 (define/contract (chunk-list? g)
-  (-> any/c boolean?)
-  (or (chunk? g)
-      (and (non-empty-list? g)
-           (andmap chunk-list? g))))
+  pred/c
+  (list-of? chunk? 1 g))
 (provide chunk-list?)
 
 ;TODO: Determine if nullable-chunk-list? is needed
 ;predicate for list of chunks (possibly empty)
 (define (nullable-chunk-list? g)
-  (-> any/c boolean?)
-  (or (chunk? g)
-      (and (list? g)
-           (andmap nullable-chunk-list? g))))
+  pred/c
+  (list-of? chunk? 0 g))
 (provide nullable-chunk-list?)
 
 ;constructors
