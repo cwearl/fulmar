@@ -80,3 +80,21 @@
                  (list (line #\b) (line #\a)))
    (check-equal? (build-block-IR (line #\a) (line #\b) (line #\c))
                  (list (line #\c) (line #\b) (line #\a)))))
+
+(define/provide-test-suite test-block-last
+  (test-case
+   "Test block-last"
+   (check-equal? (block-last (block)) (line))
+   (check-equal? (block-last (block (line #\a))) (line #\a))
+   (check-equal? (block-last (block (line #\a) (line #\b))) (line #\b))
+   (check-equal? (block-last (block (line #\a) (line #\b) (line #\c))) (line #\c))))
+
+(define/provide-test-suite test-block-rest
+  (test-case
+   "Test block-rest"
+   (check-equal? (block-IR (block-rest (block))) null)
+   (check-equal? (block-IR (block-rest (block (line #\a)))) null)
+   (check-equal? (block-IR (block-rest (block (line #\a) (line #\b)))) (list (line #\a)))
+   (check-equal? (block-rest (block (line #\a) (line #\b))) (block (line #\a)))
+   (check-equal? (block-rest (block (line #\a) (line #\b) (line #\c))) (block (line #\a) (line #\b)))
+   (check-equal? (block-rest (block (line #\a) (line #\b) (line #\c) (line #\d))) (block (line #\a) (line #\b) (line #\c)))))

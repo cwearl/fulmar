@@ -63,3 +63,23 @@
                null
                items))))
 (provide build-block-IR)
+
+;transformers
+
+;return last/current line
+(define/contract (block-last block)
+  (-> block? line?)
+  (let ([ir (block-IR block)])
+    (if (list? ir)
+        (first ir)
+        ir)))
+(provide block-last)
+
+;return block containing all but the last/current line
+(define/contract (block-rest block)
+  (-> block? block?)
+  (let ([ir (block-IR block)])
+    (block-struct (if (list? ir)
+                      (rest ir)
+                      null))))
+(provide block-rest)
