@@ -47,23 +47,6 @@
   (block-struct-IR lb))
 (provide block-IR)
 
-;general procedures
-
-;build block internal representation
-(define/contract (build-block-IR . g)
-  (->* () #:rest block-input? block-IR?)
-  (let ([items (flatten* g)])
-    (if (null? items)
-        (line 0)
-        ;foldl (as opposed to foldr) is used to reverse list as it builds it
-        (foldl (λ (item bir)
-                 (cond [(line? item) (cons item bir)]
-                       [(block? item) (append (block-IR item) bir)]
-                       [else (error "Unrecognized input for block; unrecognized: " item "; given: " items)]))
-               null
-               items))))
-(provide build-block-IR)
-
 ;transformers
 
 ;return last/current line
@@ -83,3 +66,20 @@
                       (rest ir)
                       null))))
 (provide block-rest)
+
+;general procedures
+
+;build block internal representation
+(define/contract (build-block-IR . g)
+  (->* () #:rest block-input? block-IR?)
+  (let ([items (flatten* g)])
+    (if (null? items)
+        (line 0)
+        ;foldl (as opposed to foldr) is used to reverse list as it builds it
+        (foldl (λ (item bir)
+                 (cond [(line? item) (cons item bir)]
+                       [(block? item) (append (block-IR item) bir)]
+                       [else (error "Unrecognized input for block; unrecognized: " item "; given: " items)]))
+               null
+               items))))
+(provide build-block-IR)

@@ -171,9 +171,9 @@
         test-block?
         test-block
         test-block-IR
-        test-build-block-IR
         test-block-last
-        test-block-rest))
+        test-block-rest
+        test-build-block-IR))
 
 (apply test-fail-with-gui? block-tests)
 ;(apply run-tests-text block-tests)

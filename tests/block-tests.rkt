@@ -68,19 +68,6 @@
    (check-equal? (block-IR (block (line #\a) (line #\b) (block (line #\c))))
                  (list (line #\c) (line #\b) (line #\a)))))
 
-(define/provide-test-suite test-build-block-IR
-  (test-case
-   "Test-case"
-   (check-equal? (build-block-IR) (line))
-   (check-equal? (build-block-IR null) (line))
-   (check-equal? (build-block-IR (list null null)) (line))
-   (check-equal? (build-block-IR (line #\a))
-                 (list (line #\a)))
-   (check-equal? (build-block-IR (line #\a) (line #\b))
-                 (list (line #\b) (line #\a)))
-   (check-equal? (build-block-IR (line #\a) (line #\b) (line #\c))
-                 (list (line #\c) (line #\b) (line #\a)))))
-
 (define/provide-test-suite test-block-last
   (test-case
    "Test block-last"
@@ -98,3 +85,16 @@
    (check-equal? (block-rest (block (line #\a) (line #\b))) (block (line #\a)))
    (check-equal? (block-rest (block (line #\a) (line #\b) (line #\c))) (block (line #\a) (line #\b)))
    (check-equal? (block-rest (block (line #\a) (line #\b) (line #\c) (line #\d))) (block (line #\a) (line #\b) (line #\c)))))
+
+(define/provide-test-suite test-build-block-IR
+  (test-case
+   "Test-case"
+   (check-equal? (build-block-IR) (line))
+   (check-equal? (build-block-IR null) (line))
+   (check-equal? (build-block-IR (list null null)) (line))
+   (check-equal? (build-block-IR (line #\a))
+                 (list (line #\a)))
+   (check-equal? (build-block-IR (line #\a) (line #\b))
+                 (list (line #\b) (line #\a)))
+   (check-equal? (build-block-IR (line #\a) (line #\b) (line #\c))
+                 (list (line #\c) (line #\b) (line #\a)))))
