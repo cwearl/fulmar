@@ -7,6 +7,7 @@
 (require "environment-tests.rkt")
 (require "context-tests.rkt")
 (require "chunk-tests.rkt")
+(require "sequence-tests.rkt")
 (require "line-tests.rkt")
 (require "block-tests.rkt")
 
@@ -122,6 +123,21 @@
 
 (apply test-fail-with-gui? chunk-tests)
 ;(apply run-tests-text chunk-tests)
+
+;sequence tests:
+(define/contract sequence-tests
+  (listof test-suite?)
+  (list test-seq-IR?
+        test-seq-input?
+        test-seq?
+        test-seq-output?
+        test-seq
+        test-seq-IR
+        test-build-seq
+        test-simplify-seq-IR))
+
+(apply test-fail-with-gui? sequence-tests)
+;(apply run-tests-text sequence-tests)
 
 ;line tests:
 (define/contract line-tests

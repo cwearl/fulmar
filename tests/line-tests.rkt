@@ -1,6 +1,7 @@
 #lang racket
 
 (require rackunit)
+(require "../src/sequence.rkt")
 (require "../src/line.rkt")
 
 ;unit tests for line.rkt
@@ -10,6 +11,7 @@
    "Test print-item?"
    (check-true (print-item? #\a))
    (check-true (print-item? 3))
+   (check-true (print-item? (seq #\a 3)))
    (check-true (print-item? (pivot (line #\c #\b #\a)
                                    (line #\c #\b #\a))))
    (check-false (print-item? -1))
@@ -22,6 +24,7 @@
    (check-true (line-IR? #\a))
    (check-true (line-IR? 3))
    (check-true (line-IR? 0))
+   (check-true (line-IR? (seq #\a 3)))
    (check-true (line-IR? (pivot (line #\c #\b #\a)
                                 (line #\c #\b #\a))))
    (check-true (line-IR? (list #\a #\b #\c #\d)))
@@ -30,6 +33,11 @@
                                       (line #\c #\b #\a))
                                (pivot (line #\c #\b #\a)
                                       (line #\c #\b #\a)))))
+   (check-true (line-IR? (list (pivot (line #\c #\b #\a)
+                                      (line #\c #\b #\a))
+                               #\a
+                               3
+                               (seq #\a #\b #\c))))
    (check-false (line-IR? -1))
    (check-false (line-IR? null))))
 
@@ -38,6 +46,7 @@
    "Test line-input?"
    (check-true (line-input? #\a))
    (check-true (line-input? 3))
+   (check-true (line-input? (seq #\a 3)))
    (check-true (line-input? (pivot (line #\c #\b #\a)
                                    (line #\c #\b #\a))))
    (check-true (line-input? (line #\a #\b #\c)))
@@ -48,6 +57,7 @@
                                          (line #\a 3)))))
    (check-true (line-input? (list #\a
                                   3
+                                  (seq 3 #\a)
                                   (pivot (line #\c #\b #\a)
                                          (line #\c #\b #\a))
                                   (line #\a #\b #\c)
@@ -67,8 +77,8 @@
    (check-true (line? (line 2 3 4 5 5)))
    (check-true (line? (line (pivot (line 3 #\a)
                                    (line #\a 3)))))
-   (check-true (line? (line #\a 3 (pivot (line 3 #\a)
-                                         (line #\a 3)))))
+   (check-true (line? (line #\a 3 (seq #\a 3) (pivot (line 3 #\a)
+                                                     (line #\a 3)))))
    (check-false (line? 'other))
    (check-false (line? "other"))))
 
@@ -85,10 +95,11 @@
    "Test line-IR"
    (check-equal? (line-IR (line)) 0)
    (check-equal? (line-IR (line #\a #\b #\c)) (list #\c #\b #\a))
-   (check-equal? (line-IR (line #\a 3 (pivot (line #\a)
-                                             (line #\b))))
+   (check-equal? (line-IR (line #\a 3 (seq #\a 3) (pivot (line #\a)
+                                                         (line #\b))))
                  (list (pivot (line #\a)
                               (line #\b))
+                       (seq #\a 3)
                        3
                        #\a))))
 
@@ -99,10 +110,11 @@
    (check-equal? (build-line-IR null) 0)
    (check-equal? (build-line-IR (list null null)) 0)
    (check-equal? (build-line-IR #\a) (list #\a))
-   (check-equal? (build-line-IR #\a 3 (pivot (line #\a)
-                                             (line 3)))
+   (check-equal? (build-line-IR #\a 3 (seq #\a 3) (pivot (line #\a)
+                                                         (line 3)))
                  (list (pivot (line #\a)
                               (line 3))
+                       (seq #\a 3)
                        3
                        #\a))
    (check-equal? (build-line-IR (line #\a #\b)) (list #\b #\a))

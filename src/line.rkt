@@ -1,6 +1,7 @@
 #lang racket
 
 (require "basics.rkt")
+(require "sequence.rkt")
 
 ;structures, functions, and contracts for line (and pivot)
 
@@ -19,6 +20,7 @@
 (define/contract (print-item? g)
   pred/c
   ((or? pivot?
+        seq?
         char?
         indent?) g))
 (provide print-item?)
@@ -104,7 +106,7 @@
 
 ;structures
 
-;logical pivot structure
+;pivot structure
 (struct pivot-struct (IR length) #:transparent)
 
 ;predicates
