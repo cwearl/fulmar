@@ -83,7 +83,10 @@
 ;context tests:
 (define/contract context-tests
   (listof test-suite?)
-  (list test-context-constructor-and-predicate
+  (list test-divide?
+        test-abut?
+        test-mode?
+        test-context-constructor-and-predicate
         test-context-accessors
         test-increase-indent
         test-reset-indent
