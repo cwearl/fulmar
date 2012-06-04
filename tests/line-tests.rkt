@@ -221,6 +221,26 @@
                                                (line #\c)))
                  9)))
 
+(define/provide-test-suite test-line-last
+  (test-case
+   "Test line-last"
+   (check-equal? (line-last (line)) 0)
+   (check-equal? (line-last (line #\a)) #\a)
+   (check-equal? (line-last (line #\a #\b)) #\b)
+   (check-equal? (line-last (line #\a #\b #\c)) #\c)))
+
+(define/provide-test-suite test-line-rest
+  (test-case
+   "Test line-rest"
+   (check-true (line? (line-rest (line))))
+   (check-equal? (line-IR (line-rest (line))) 0)
+   (check-true (line? (line-rest (line (line #\a)))))
+   (check-equal? (line-IR (line-rest (line (line #\a)))) 0)
+   (check-equal? (line-rest (line #\a #\b)) (line #\a))
+   (check-equal? (line-IR (line-rest (line #\a #\b))) (list #\a))
+   (check-equal? (line-rest (line #\a #\b #\c)) (line #\a #\b))
+   (check-equal? (line-rest (line #\a #\b #\c #\d)) (line #\a #\b #\c))))
+
 (define/provide-test-suite test-full-line-length
   (test-case
    "Test full-line-length"

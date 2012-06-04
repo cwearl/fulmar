@@ -61,6 +61,27 @@
   (line-struct-IR l))
 (provide line-IR)
 
+;transformers
+
+;return last/current print item
+(define/contract (line-last line)
+  (-> line? print-item?)
+  (let ([ir (line-IR line)])
+    (if (list? ir)
+        (first ir)
+        ir)))
+(provide line-last)
+
+;return line containing all but the last/current print item
+(define/contract (line-rest line)
+  (-> line? line?)
+  (let ([ir (line-IR line)])
+    (line-struct (if (and (list? ir)
+                          (< 1 (length ir)))
+                     (rest ir)
+                     0))))
+(provide line-rest)
+
 ;general procedures
 
 ;build line internal representation

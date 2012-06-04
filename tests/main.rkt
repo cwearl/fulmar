@@ -148,6 +148,8 @@
         test-line?
         test-line
         test-line-IR
+        test-block-last
+        test-block-rest
         test-build-line-IR
         test-simplify-line-IR
         test-pivot-IR?
