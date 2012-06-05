@@ -70,6 +70,23 @@
   (seq-struct-IR g))
 (provide seq-IR)
 
+;transformers
+
+;return last/current print item in sequence
+(define/contract (seq-last seq)
+  (-> seq? (or? char? indent?))
+  (first (seq-IR seq)))
+(provide seq-last)
+
+;return sequence containing all but last/current print item
+(define/contract (seq-rest seq)
+  (-> seq? seq-output?)
+  (let ([sir (seq-IR seq)])
+    (if (= 2 (length sir))
+        (second sir)
+        (seq-struct (rest sir)))))
+(provide seq-rest)
+
 ;general procedures
 
 ;procedure to build a sequence intermediate internal representation

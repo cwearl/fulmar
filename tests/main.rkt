@@ -135,6 +135,8 @@
         test-seq-output?
         test-seq
         test-seq-IR
+        test-seq-last
+        test-seq-rest
         test-build-seq-IIR
         test-simplify-seq-IIR))
 

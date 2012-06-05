@@ -93,6 +93,18 @@
    (check-equal? (seq-IR (seq #\a #\b #\c))
                  (list #\c #\b #\a))))
 
+(define/provide-test-suite test-seq-last
+  (test-case
+   "Test seq-last"
+   (check-equal? (seq-last (seq #\a #\b)) #\b)
+   (check-equal? (seq-last (seq #\a #\b #\c)) #\c)))
+
+(define/provide-test-suite test-seq-rest
+  (test-case
+   "Test seq-rest"
+   (check-equal? (seq-rest (seq #\a #\b)) #\a)
+   (check-equal? (seq-rest (seq #\a #\b #\c)) (seq #\a #\b))))
+
 (define/provide-test-suite test-build-seq-IIR
   (test-case
    "Test build-seq-IIR"
