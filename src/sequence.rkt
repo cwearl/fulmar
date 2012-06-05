@@ -14,9 +14,16 @@
 ;predicate for sequence internal representation
 (define/contract (seq-IR? g)
   pred/c
-  (list-of? (or? char?
-                 indent?) 2 g))
+  (flat-list-of? (or? char?
+                      indent?) 2 g))
 (provide seq-IR?)
+
+;predicate for sequence intermediate internal representation
+(define/contract (seq-IIR? g)
+  pred/c
+  (flat-list-of? (or? char?
+                      indent?) 0 g))
+(provide seq-IIR?)
 
 ;predicate for building sequence
 (define/contract (seq-input? g)
@@ -46,7 +53,13 @@
 ;sequence constructor
 (define/contract (seq . g)
   (->* () #:rest seq-input? seq-output?)
-  (build-seq g))
+  (let ([items (simplify-seq-IIR (build-seq-IIR g))])
+    (cond [(null? items)
+           0]
+          [(= 1 (length items))
+           (first items)]
+          [else
+           (seq-struct items)])))
 (provide seq)
 
 ;accessors
@@ -59,50 +72,35 @@
 
 ;general procedures
 
-;procedure to build a sequence
-(define/contract (build-seq g)
-  (-> seq-input? seq-output?)
-  (let ([items (simplify-seq-IR (flatten* g))])
-    (cond [((or? seq?
-                 char?
-                 indent?) items)
-           items]
-          [(list? items)
-           ;foldl is used to reverse list
-           (seq-struct (foldl (λ (item sir)
-                                (cond [(seq? item)
-                                       (append (seq-IR item) sir)]
-                                      [((or? char?
-                                             indent?) item)
-                                       (cons item sir)]
-                                      [else
-                                       (error "Unrecognized item for sequence; unrecognized: " item "; given: " g)]))
-                              null
-                              items))]
-          [else
-           (error "Unrecognized item for sequence; unrecognized: " g)])))
-(provide build-seq)
+;procedure to build a sequence intermediate internal representation
+(define/contract (build-seq-IIR g)
+  (-> seq-input? seq-IIR?)
+  (foldl (λ (item sir)
+           (cond [(seq? item)
+                  (append (seq-IR item) sir)]
+                 [((or? char?
+                        indent?) item)
+                  (cons item sir)]
+                 [else
+                  (error "Unrecognized item for sequence; unrecognized: " item "; given: " g)]))
+         null
+         (flatten* g)))
+(provide build-seq-IIR)
 
-;procedure to simplify a sequence internal representation
-(define/contract (simplify-seq-IR g)
-  (-> (listof (or? seq? char? indent?)) (or? seq?
-                                             char?
-                                             indent?
-                                             (list-of? (or? seq? char? indent?) 1)))
+;procedure to simplify a sequence intermediate internal representation
+(define/contract (simplify-seq-IIR g)
+  (-> seq-IIR? seq-IIR?)
   ;foldr is used to keep list in same order as given
-  (let ([new-sir (foldr (λ (item sir)
-                          (cond [(and (indent? item)
-                                      (= 0 item))
-                                 sir]
-                                [(and (indent? item)
-                                      (non-empty-list? sir)
-                                      (indent? (first sir)))
-                                 (cons (+ item (first sir))
-                                       (rest sir))]
-                                [else (cons item sir)]))
-                        null
-                        g)])
-    (cond [(null? new-sir) 0]
-          [(= 1 (length new-sir)) (first new-sir)]
-          [else new-sir])))
-(provide simplify-seq-IR)
+  (foldr (λ (item sir)
+           (cond [(and (indent? item)
+                       (= 0 item))
+                  sir]
+                 [(and (indent? item)
+                       (non-empty-list? sir)
+                       (indent? (first sir)))
+                  (cons (+ item (first sir))
+                        (rest sir))]
+                 [else (cons item sir)]))
+         null
+         g))
+(provide simplify-seq-IIR)

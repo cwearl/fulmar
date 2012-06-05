@@ -28,8 +28,14 @@
 ;predicate for line internal representation
 (define/contract (line-IR? g)
   pred/c
-  (list-of? print-item? 1 g))
+  (flat-list-of? print-item? 1 g))
 (provide line-IR?)
+
+;predicate for line intermediate internal representation
+(define/contract (line-IIR? g)
+  pred/c
+  (flat-list-of? print-item? 0 g))
+(provide line-IIR?)
 
 ;predicate for building line
 (define/contract (line-input? g)
@@ -48,9 +54,12 @@
 ;constructors
 
 ;line constructor
-(define/contract (line . items)
+(define/contract (line . g)
   (->* () #:rest line-input? line?)
-  (line-struct (simplify-line-IR (build-line-IR items))))
+  (let ([items (simplify-line-IIR (build-line-IIR g))])
+    (line-struct (if (null? items)
+                     (list 0)
+                     items))))
 (provide line)
 
 ;accessors
@@ -85,41 +94,38 @@
 ;general procedures
 
 ;build line internal representation
-(define/contract (build-line-IR . g)
-  (->* () #:rest line-input? line-IR?)
+(define/contract (build-line-IIR . g)
+  (->* () #:rest line-input? line-IIR?)
   (let ([items (flatten* g)])
-    (if (null? items)
-        0
-        ;foldl (as opposed to foldr) is used to reverse list as it build it
-        (foldl (λ (item lir) 
-                 (cond [(print-item? item) (cons item lir)]
-                       [(line? item) (append (line-IR item) lir)]
-                       [else
-                        (error "Unrecognized input for line; unrecognized: " item "; given: " items)]))
-               null
-               items))))
-(provide build-line-IR)
+    ;foldl (as opposed to foldr) is used to reverse list as it build it
+    (foldl (λ (item lir)
+             (cond [(print-item? item)
+                    (cons item lir)]
+                   [(line? item)
+                    (append (line-IR item) lir)]
+                   [else
+                    (error "Unrecognized input for line; unrecognized: " item "; given: " items)]))
+           null
+           items)))
+(provide build-line-IIR)
 
 ;simply line internal representation
-(define/contract (simplify-line-IR g)
-  (-> line-IR? line-IR?)
+(define/contract (simplify-line-IIR g)
+  (-> line-IIR? line-IIR?)
   ;foldr is used to keep list in same order as given
-  (let ([new-lir (foldr (λ (item lir)
-                          (cond [(and (indent? item)
-                                      (= 0 item))
-                                 lir]
-                                [(and (indent? item)
-                                      (non-empty-list? lir)
-                                      (indent? (first lir)))
-                                 (cons (+ item (first lir))
-                                       (rest lir))]
-                                [else (cons item lir)]))
-                        null
-                        (flatten* g))])
-    (if (null? new-lir)
-        0
-        new-lir)))
-(provide simplify-line-IR)
+  (foldr (λ (item lir)
+           (cond [(and (indent? item)
+                       (= 0 item))
+                  lir]
+                 [(and (indent? item)
+                       (non-empty-list? lir)
+                       (indent? (first lir)))
+                  (cons (+ item (first lir))
+                        (rest lir))]
+                 [else (cons item lir)]))
+         null
+         (flatten* g)))
+(provide simplify-line-IIR)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;pivot;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -135,8 +141,14 @@
 ;predicate for pivot internal representation
 (define/contract (pivot-IR? g)
   pred/c
-  (list-of? line? 2 g))
+  (flat-list-of? line? 2 g))
 (provide pivot-IR?)
+
+;predicate for pivot intermediate internal representation
+(define/contract (pivot-IIR? g)
+  pred/c
+  (flat-list-of? line? 0 g))
+(provide pivot-IIR?)
 
 ;predicate for building pivot
 (define/contract (pivot-input? g)
@@ -165,7 +177,14 @@
 ;pivot constructor
 (define/contract (pivot . g)
   (->* () #:rest pivot-input? pivot-output?)
-  (build-pivot g))
+  (let ([lines (build-pivot-IIR g)])
+    (cond [(null? lines)
+           0]
+          [(= 1 (length lines))
+           (first lines)]
+          [else
+           (pivot-struct lines
+                         (pivot-full-line-length lines))])))
 (provide pivot)
 
 ;accessors
@@ -202,30 +221,20 @@
 
 ;general procedures
 
-;procedure to build a pivot
-(define/contract (build-pivot g)
-  (-> pivot-input? pivot-output?)
+;procedure to build a pivot intermediate internal representation
+(define/contract (build-pivot-IIR g)
+  (-> pivot-input? pivot-IIR?)
   ;foldl is used to reverse list
-  (let ([pir (foldl (λ (item pir)
-                      (cond [(line? item)
-                             (cons item pir)]
-                            [(pivot? item)
-                             (append (pivot-IR item) pir)]
-                            [else
-                             (error "Unrecognized pivot input; unrecognized: " item "; given: " g)]))
-                    null
-                    (flatten* g))])
-    (cond [(pivot-IR? pir)
-           (pivot-struct pir
-                         (pivot-full-line-length pir))]
-          [(and (= 1 (length pir))
-                (line? (first pir)))
-           (first pir)]
-          [(null? pir)
-           0]
-          [else
-           (error "Unknown pivot input; given: " g)])))
-(provide build-pivot)
+  (foldl (λ (item pir)
+           (cond [(line? item)
+                  (cons item pir)]
+                 [(pivot? item)
+                  (append (pivot-IR item) pir)]
+                 [else
+                  (error "Unrecognized pivot input; unrecognized: " item "; given: " g)]))
+         null
+         (flatten* g)))
+(provide build-pivot-IIR)
 
 ;procedure to compute full length of pivot
 (define/contract (pivot-full-line-length g)

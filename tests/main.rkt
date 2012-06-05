@@ -129,13 +129,14 @@
 (define/contract sequence-tests
   (listof test-suite?)
   (list test-seq-IR?
+        test-seq-IIR?
         test-seq-input?
         test-seq?
         test-seq-output?
         test-seq
         test-seq-IR
-        test-build-seq
-        test-simplify-seq-IR))
+        test-build-seq-IIR
+        test-simplify-seq-IIR))
 
 (apply test-fail-with-gui? sequence-tests)
 ;(apply run-tests-text sequence-tests)
@@ -145,22 +146,24 @@
   (listof test-suite?)
   (list test-print-item?
         test-line-IR?
+        test-line-IIR?
         test-line-input?
         test-line?
         test-line
         test-line-IR
         test-block-last
         test-block-rest
-        test-build-line-IR
-        test-simplify-line-IR
+        test-build-line-IIR
+        test-simplify-line-IIR
         test-pivot-IR?
+        test-pivot-IIR?
         test-pivot-input?
         test-pivot?
         test-pivot-output?
         test-pivot
         test-pivot-IR
         test-pivot-length
-        test-build-pivot
+        test-build-pivot-IIR
         test-pivot-full-line-length
         test-full-line-length))
 

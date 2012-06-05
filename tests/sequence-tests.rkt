@@ -15,6 +15,17 @@
    (check-false (seq-IR? (list #\a)))
    (check-false (seq-IR? 'other))))
 
+(define/provide-test-suite test-seq-IIR?
+  (test-case
+   "Test seq-IIR?"
+   (check-true (seq-IIR? null))
+   (check-true (seq-IIR? (list #\a #\b)))
+   (check-true (seq-IIR? (list 3 4)))
+   (check-true (seq-IIR? (list #\a 3 #\b)))
+   (check-true (seq-IIR? (list #\a)))
+   (check-false (seq-IIR? #\a))
+   (check-false (seq-IIR? 'other))))
+
 (define/provide-test-suite test-seq-input?
   (test-case
    "Test seq-input?"
@@ -66,9 +77,11 @@
    (check-equal? (seq null) 0)
    (check-equal? (seq (list null null)) 0)
    (check-equal? (seq 3) 3)
+   (check-equal? (seq 3 4) 7)
    (check-equal? (seq #\a) #\a)
    (check-true (seq? (seq #\a #\b)))
    (check-true (seq? (seq #\a #\b)))
+   (check-equal? (seq-IR (seq 3 #\a 4 #\b 0)) (list #\b 4 #\a 3))
    (check-equal? (seq-IR (seq #\a #\b)) (list #\b #\a))
    (check-equal? (seq-IR (seq (seq #\a #\b))) (list #\b #\a))))
 
@@ -80,21 +93,21 @@
    (check-equal? (seq-IR (seq #\a #\b #\c))
                  (list #\c #\b #\a))))
 
-(define/provide-test-suite test-build-seq
+(define/provide-test-suite test-build-seq-IIR
   (test-case
-   "Test build-seq"
-   (check-true (seq? (build-seq (list #\a #\b))))
-   (check-equal? (build-seq (list #\a)) #\a)
-   (check-equal? (build-seq null) 0)
-   (check-equal? (seq-IR (build-seq (list #\a #\b)))
+   "Test build-seq-IIR"
+   (check-true (seq-IIR? (build-seq-IIR (list #\a #\b))))
+   (check-equal? (build-seq-IIR (list #\a)) (list #\a))
+   (check-equal? (build-seq-IIR null) null)
+   (check-equal? (build-seq-IIR (list #\a #\b))
                  (list #\b #\a))
-   (check-equal? (build-seq (list 3 4)) 7)))
+   (check-equal? (build-seq-IIR (list 3 #\a 4)) (list 4 #\a 3))))
 
-(define/provide-test-suite test-simplify-seq-IR
+(define/provide-test-suite test-simplify-seq-IIR
   (test-case
-   "Test simplify-seq-IR"
-   (check-equal? (simplify-seq-IR null) 0)
-   (check-equal? (simplify-seq-IR (list #\a #\b)) (list #\a #\b))
-   (check-equal? (simplify-seq-IR (list 3 5)) 8)
-   (check-equal? (simplify-seq-IR (list 3 5 #\a)) (list 8 #\a))
-   (check-equal? (simplify-seq-IR (list 3 5 #\a 3)) (list 8 #\a 3))))
+   "Test simplify-seq-IIR"
+   (check-equal? (simplify-seq-IIR null) null)
+   (check-equal? (simplify-seq-IIR (list #\a #\b)) (list #\a #\b))
+   (check-equal? (simplify-seq-IIR (list 3 5)) (list 8))
+   (check-equal? (simplify-seq-IIR (list 3 5 #\a)) (list 8 #\a))
+   (check-equal? (simplify-seq-IIR (list 3 5 #\a 3)) (list 8 #\a 3))))

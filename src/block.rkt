@@ -15,7 +15,7 @@
 ;predicate for block internal representation
 (define/contract (block-IR? g)
   (-> any/c boolean?)
-  (list-of? line? 0 g))
+  (flat-list-of? line? 0 g))
 (provide block-IR?)
 
 ;predicate for block internal representation
@@ -52,19 +52,13 @@
 ;return last/current line
 (define/contract (block-last block)
   (-> block? line?)
-  (let ([ir (block-IR block)])
-    (if (list? ir)
-        (first ir)
-        ir)))
+  (first (block-IR block)))
 (provide block-last)
 
 ;return block containing all but the last/current line
 (define/contract (block-rest block)
   (-> block? block?)
-  (let ([ir (block-IR block)])
-    (block-struct (if (list? ir)
-                      (rest ir)
-                      null))))
+  (block-struct (rest (block-IR block))))
 (provide block-rest)
 
 ;general procedures
@@ -74,7 +68,7 @@
   (->* () #:rest block-input? block-IR?)
   (let ([items (flatten* g)])
     (if (null? items)
-        (line 0)
+        (list (line 0))
         ;foldl (as opposed to foldr) is used to reverse list as it builds it
         (foldl (λ (item bir)
                  (cond [(line? item) (cons item bir)]

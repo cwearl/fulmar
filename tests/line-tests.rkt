@@ -21,12 +21,12 @@
 (define/provide-test-suite test-line-IR?
   (test-case
    "Test line-IR?"
-   (check-true (line-IR? #\a))
-   (check-true (line-IR? 3))
-   (check-true (line-IR? 0))
-   (check-true (line-IR? (seq #\a 3)))
-   (check-true (line-IR? (pivot (line #\c #\b #\a)
-                                (line #\c #\b #\a))))
+   (check-true (line-IR? (list #\a)))
+   (check-true (line-IR? (list 3)))
+   (check-true (line-IR? (list 0)))
+   (check-true (line-IR? (list (seq #\a 3))))
+   (check-true (line-IR? (list (pivot (line #\c #\b #\a)
+                                      (line #\c #\b #\a)))))
    (check-true (line-IR? (list #\a #\b #\c #\d)))
    (check-true (line-IR? (list 0 1 2 3 4)))
    (check-true (line-IR? (list (pivot (line #\c #\b #\a)
@@ -38,8 +38,33 @@
                                #\a
                                3
                                (seq #\a #\b #\c))))
-   (check-false (line-IR? -1))
+   (check-false (line-IR? #\a))
+   (check-false (line-IR? 3))
    (check-false (line-IR? null))))
+
+(define/provide-test-suite test-line-IIR?
+  (test-case
+   "Test line-IIR?"
+   (check-true (line-IIR? (list #\a)))
+   (check-true (line-IIR? (list 3)))
+   (check-true (line-IIR? (list 0)))
+   (check-true (line-IIR? (list (seq #\a 3))))
+   (check-true (line-IIR? (list (pivot (line #\c #\b #\a)
+                                      (line #\c #\b #\a)))))
+   (check-true (line-IIR? (list #\a #\b #\c #\d)))
+   (check-true (line-IIR? (list 0 1 2 3 4)))
+   (check-true (line-IIR? (list (pivot (line #\c #\b #\a)
+                                      (line #\c #\b #\a))
+                               (pivot (line #\c #\b #\a)
+                                      (line #\c #\b #\a)))))
+   (check-true (line-IIR? (list (pivot (line #\c #\b #\a)
+                                      (line #\c #\b #\a))
+                               #\a
+                               3
+                               (seq #\a #\b #\c))))
+   (check-true (line-IIR? null))
+   (check-false (line-IIR? #\a))
+   (check-false (line-IIR? 3))))
 
 (define/provide-test-suite test-line-input?
   (test-case
@@ -93,7 +118,7 @@
 (define/provide-test-suite test-line-IR
   (test-case
    "Test line-IR"
-   (check-equal? (line-IR (line)) 0)
+   (check-equal? (line-IR (line)) (list 0))
    (check-equal? (line-IR (line #\a #\b #\c)) (list #\c #\b #\a))
    (check-equal? (line-IR (line #\a 3 (seq #\a 3) (pivot (line #\a)
                                                          (line #\b))))
@@ -103,32 +128,32 @@
                        3
                        #\a))))
 
-(define/provide-test-suite test-build-line-IR
+(define/provide-test-suite test-build-line-IIR
   (test-case
-   "Test-case"
-   (check-equal? (build-line-IR) 0)
-   (check-equal? (build-line-IR null) 0)
-   (check-equal? (build-line-IR (list null null)) 0)
-   (check-equal? (build-line-IR #\a) (list #\a))
-   (check-equal? (build-line-IR #\a 3 (seq #\a 3) (pivot (line #\a)
+   "Testcase build-line-IIR"
+   (check-equal? (build-line-IIR) null)
+   (check-equal? (build-line-IIR null) null)
+   (check-equal? (build-line-IIR (list null null)) null)
+   (check-equal? (build-line-IIR #\a) (list #\a))
+   (check-equal? (build-line-IIR #\a 3 (seq #\a 3) (pivot (line #\a)
                                                          (line 3)))
                  (list (pivot (line #\a)
                               (line 3))
                        (seq #\a 3)
                        3
                        #\a))
-   (check-equal? (build-line-IR (line #\a #\b)) (list #\b #\a))
-   (check-equal? (build-line-IR (line #\a #\b) (line #\c #\d)) (list #\d #\c #\b #\a))
-   (check-equal? (build-line-IR (line #\a #\b) #\c (line #\d #\e)) (list #\e #\d #\c #\b #\a))))
+   (check-equal? (build-line-IIR (line #\a #\b)) (list #\b #\a))
+   (check-equal? (build-line-IIR (line #\a #\b) (line #\c #\d)) (list #\d #\c #\b #\a))
+   (check-equal? (build-line-IIR (line #\a #\b) #\c (line #\d #\e)) (list #\e #\d #\c #\b #\a))))
 
-(define/provide-test-suite test-simplify-line-IR
+(define/provide-test-suite test-simplify-line-IIR
   (test-case
-   "Test simplify-line-IR"
-   (check-equal? (simplify-line-IR (list 0)) 0)
-   (check-equal? (simplify-line-IR (list 0 0)) 0)
-   (check-equal? (simplify-line-IR (list 3 7 1 0 2)) (list 13))
-   (check-equal? (simplify-line-IR (list 3 7 #\a 1 0 2)) (list 10 #\a 3))
-   (check-equal? (simplify-line-IR (list 0 3 2 1 0 #\a (pivot (line #\a)
+   "Test simplify-line-IIR"
+   (check-equal? (simplify-line-IIR (list 0)) null)
+   (check-equal? (simplify-line-IIR (list 0 0)) null)
+   (check-equal? (simplify-line-IIR (list 3 7 1 0 2)) (list 13))
+   (check-equal? (simplify-line-IIR (list 3 7 #\a 1 0 2)) (list 10 #\a 3))
+   (check-equal? (simplify-line-IIR (list 0 3 2 1 0 #\a (pivot (line #\a)
                                                               (line 3))))
                  (list 6 #\a (pivot (line #\a)
                                     (line 3))))))
@@ -142,6 +167,18 @@
                                 (line #\c #\a)
                                 (line #\c #\a))))
    (check-false (pivot-IR? (list (line #\c #\a))))))
+
+(define/provide-test-suite test-pivot-IIR?
+  (test-case
+   "Test pivot-IIR?"
+   (check-true (pivot-IIR? null))
+   (check-true (pivot-IIR? (list (line #\c #\a))))
+   (check-true (pivot-IIR? (list (line #\c #\a)
+                                 (line #\c #\a))))
+   (check-true (pivot-IIR? (list (line #\c #\a)
+                                 (line #\c #\a)
+                                 (line #\c #\a))))
+   (check-false (pivot-IIR? (line #\c #\a)))))
 
 (define/provide-test-suite test-pivot-input?
   (test-case
@@ -205,19 +242,18 @@
   (test-case
    "Test pivot-length"
    (check-equal? (pivot-length (pivot (line #\a) (line #\b))) 3)
-   (check-equal? (pivot-length (pivot (line #\a) (line #\b) (line #\c))) 5)))
+   (check-equal? (pivot-length (pivot (line #\a) (line #\b) (line #\c))) 5)
+   (check-equal? (pivot-length (pivot (line #\a) (line #\b #\c) (line 5 3))) 13)))
                  
-(define/provide-test-suite test-build-pivot
+(define/provide-test-suite test-build-pivot-IIR
   (test-case
-   "Test build-pivot"
-   (check-true (pivot? (build-pivot (list (line #\a) (line #\b)))))
-   (check-true (line? (build-pivot (list (line #\a)))))
-   (check-equal? (build-pivot null) 0)
-   (check-equal? (pivot-IR (build-pivot (list (line #\a) (line #\b))))
-                 (list (line #\b) (line #\a)))
-   (check-equal? (pivot-length (build-pivot (list (line #\a) (line #\b)))) 3)
-   (check-equal? (pivot-length (build-pivot (list (line #\a) (line #\b #\c)))) 4)
-   (check-equal? (pivot-length (build-pivot (list (line #\a) (line #\b #\c) (line 5 3)))) 13)))
+   "Test build-pivot-IIR"
+   (check-true (pivot-IR? (build-pivot-IIR (list (line #\a) (line #\b)))))
+   (check-equal? (build-pivot-IIR (list (line #\a)))
+                 (list (line #\a)))
+   (check-equal? (build-pivot-IIR null) null)
+   (check-equal? (build-pivot-IIR (list (line #\a) (line #\b)))
+                 (list (line #\b) (line #\a)))))
 
 (define/provide-test-suite test-pivot-full-line-length
   (test-case

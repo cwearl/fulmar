@@ -10,13 +10,13 @@
   (test-case
    "Test block-IR?"
    (check-true (block-IR? null))
-   (check-true (block-IR? (list null null)))
-   (check-true (block-IR? (line #\a)))
    (check-true (block-IR? (list (line #\a #\b)
                                 (line #\c 3))))
    (check-true (block-IR? (list (line #\a #\b)
                                 (line #\c 3)
                                 (line #\d 0))))
+   (check-false (block-IR? (list null null)))
+   (check-false (block-IR? (line #\a)))
    (check-false (block-IR? (block)))
    (check-false (block-IR? 'other))))
 
@@ -58,7 +58,7 @@
 (define/provide-test-suite test-block-IR
   (test-case
    "Test block-IR"
-   (check-equal? (block-IR (block)) (line 0))
+   (check-equal? (block-IR (block)) (list (line 0)))
    (check-equal? (block-IR (block (line #\a)))
                  (list (line #\a)))
    (check-equal? (block-IR (block (line #\a) (line #\b)))
@@ -89,9 +89,9 @@
 (define/provide-test-suite test-build-block-IR
   (test-case
    "Test-case"
-   (check-equal? (build-block-IR) (line))
-   (check-equal? (build-block-IR null) (line))
-   (check-equal? (build-block-IR (list null null)) (line))
+   (check-equal? (build-block-IR) (list (line)))
+   (check-equal? (build-block-IR null) (list (line)))
+   (check-equal? (build-block-IR (list null null)) (list (line)))
    (check-equal? (build-block-IR (line #\a))
                  (list (line #\a)))
    (check-equal? (build-block-IR (line #\a) (line #\b))
