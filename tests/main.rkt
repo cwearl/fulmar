@@ -162,6 +162,8 @@
         test-pivot-output?
         test-pivot
         test-pivot-IR
+        test-pivot-last
+        test-pivot-rest
         test-pivot-length
         test-build-pivot-IIR
         test-pivot-full-line-length

@@ -209,14 +209,14 @@
   (first (pivot-IR pivot)))
 (provide pivot-last)
 
-;return line containing all but the last/current line
-(define/contract (pivot-rest pivot)
+;return pivot containing all but the last/current line
+(define/contract (pivot-rest g)
   (-> pivot? pivot-output?)
-  (let ([ir (line-IR line)])
-    (line-struct (if (and (list? ir)
-                          (< 1 (length ir)))
-                     (rest ir)
-                     0))))
+  (let ([pir (pivot-IR g)])
+    (if (= 2 (length pir))
+        (second pir)
+        (pivot-struct (rest pir)
+                      (pivot-full-line-length (rest pir))))))
 (provide pivot-rest)
 
 ;general procedures
