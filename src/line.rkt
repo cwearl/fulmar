@@ -141,7 +141,7 @@
 ;predicate for building pivot
 (define/contract (pivot-input? g)
   pred/c
-  (list-of? line? 0 g))
+  (list-of? (or? pivot? line?) 0 g))
 (provide pivot-input?)
 
 ;predicate for pivot
@@ -152,12 +152,20 @@
        (indent? (pivot-struct-length g))))
 (provide pivot?)
 
+;predicate for output of pivot
+(define/contract (pivot-output? g)
+  pred/c
+  ((or? pivot?
+        line?
+        indent?) g))
+(provide pivot-output?)
+
 ;constructors
 
 ;pivot constructor
 (define/contract (pivot . g)
-  (->* () #:rest pivot-input? line-input?)
-  (build-pivot (flatten* g)))
+  (->* () #:rest pivot-input? pivot-output?)
+  (build-pivot g))
 (provide pivot)
 
 ;accessors
@@ -174,20 +182,49 @@
   (pivot-struct-length pivot))
 (provide pivot-length)
 
+;transformers
+
+;return last/current line
+(define/contract (pivot-last pivot)
+  (-> pivot? line?)
+  (first (pivot-IR pivot)))
+(provide pivot-last)
+
+;return line containing all but the last/current line
+(define/contract (pivot-rest pivot)
+  (-> pivot? pivot-output?)
+  (let ([ir (line-IR line)])
+    (line-struct (if (and (list? ir)
+                          (< 1 (length ir)))
+                     (rest ir)
+                     0))))
+(provide pivot-rest)
+
 ;general procedures
 
 ;procedure to build a pivot
 (define/contract (build-pivot g)
-  (-> (listof line?) line-input?)
-  (cond [(pivot-IR? g)
-         (pivot-struct (reverse g)
-                       (pivot-full-line-length g))]
-        [(and (= 1 (length g))
-              (line? (first g)))
-         (first g)]
-        [(null? g) 0]
-        [else
-         (error "Unknown pivot input; given: " g)]))
+  (-> pivot-input? pivot-output?)
+  ;foldl is used to reverse list
+  (let ([pir (foldl (λ (item pir)
+                      (cond [(line? item)
+                             (cons item pir)]
+                            [(pivot? item)
+                             (append (pivot-IR item) pir)]
+                            [else
+                             (error "Unrecognized pivot input; unrecognized: " item "; given: " g)]))
+                    null
+                    (flatten* g))])
+    (cond [(pivot-IR? pir)
+           (pivot-struct pir
+                         (pivot-full-line-length pir))]
+          [(and (= 1 (length pir))
+                (line? (first pir)))
+           (first pir)]
+          [(null? pir)
+           0]
+          [else
+           (error "Unknown pivot input; given: " g)])))
 (provide build-pivot)
 
 ;procedure to compute full length of pivot

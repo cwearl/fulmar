@@ -155,6 +155,7 @@
         test-pivot-IR?
         test-pivot-input?
         test-pivot?
+        test-pivot-output?
         test-pivot
         test-pivot-IR
         test-pivot-length

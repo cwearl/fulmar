@@ -167,6 +167,15 @@
    (check-false (pivot? (line #\a)))
    (check-false (pivot? (list (line #\a) (line #\b))))))
 
+(define/provide-test-suite test-pivot-output?
+  (test-case
+   "Test pivot-output?"
+   (check-true (pivot-output? (pivot)))
+   (check-true (pivot-output? (pivot (line #\a))))
+   (check-true (pivot-output? (pivot (line #\a) (line #\b))))
+   (check-false (pivot-output? -1))
+   (check-false (pivot-output? 'other))))
+
 (define/provide-test-suite test-pivot
   (test-case
    "Test pivot"
@@ -177,6 +186,9 @@
    (check-equal? (pivot (list null null)) 0)
    (check-equal? (pivot-IR (pivot (line #\a) (line #\b)))
                  (list (line #\b) (line #\a)))
+   (check-equal? (pivot (pivot (line #\a) (line #\b))) (pivot (line #\a) (line #\b)))
+   (check-equal? (pivot (line #\a) (pivot (line #\b) (line #\c)) (line #\d))
+                 (pivot (line #\a) (line #\b) (line #\c) (line #\d)))
    (check-equal? (pivot-length (pivot (line #\a) (line #\b))) 3)
    (check-equal? (pivot-length (pivot (line #\a) (line #\b #\c))) 4)
    (check-equal? (pivot-length (pivot (line #\a) (line #\b #\c) (line 5 3))) 13)))
