@@ -36,26 +36,31 @@
            preds)))
 (provide and?)
 
-;predicate for list of at least a given length and each element matches a given predicate
+;predicate for list of at least given length and each element matches a given predicate
 (define/contract list-of?
   (case-> (-> pred/c exact-nonnegative-integer? (->* () #:rest (listof any/c) boolean?))
           (-> pred/c exact-nonnegative-integer? #:rest (listof any/c) boolean?))
   (case-lambda [(pred? len)
-                (λ g
-                  (let ([lst (flatten* g)])
-                    (if (null? lst)
-                        (= 0 len)
-                        (list-of? pred? len lst))))]
+                (λ g (list-of? pred? len g))]
                [(pred? len . g)
                 (let ([lst (flatten* g)])
                   (and (<= len (length lst))
                        (andmap pred? lst)))]))
-;(define/contract (list-of? pred? len . g)
-;  (->* (pred/c exact-nonnegative-integer?) #:rest (listof any/c) boolean?)
-;  (let ([lst (flatten* g)])
-;    (and (<= len (length lst))
-;         (andmap pred? lst))))
 (provide list-of?)
+
+;predicate for flat list of at least given length and each element matches a given predicate
+(define/contract flat-list-of?
+  (case-> (-> pred/c exact-nonnegative-integer? (-> any/c boolean?))
+          (-> pred/c exact-nonnegative-integer? any/c boolean?))
+  (case-lambda [(pred? len)
+                (λ (g) (if (null? g)
+                         (= 0 len)
+                         (flat-list-of? pred? len g)))]
+               [(pred? len g)
+                (and (list? g)
+                     (<= len (length g))
+                     (andmap pred? g))]))
+(provide flat-list-of?)
 
 ;predicates
 

@@ -59,6 +59,7 @@
         test-or?
         test-and?
         test-list-of?
+        test-flat-list-of?
         test-indent?
         test-optional-indent?
         test-line-length?))
