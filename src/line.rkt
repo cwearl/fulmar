@@ -87,6 +87,97 @@
                      (list 0)))))
 (provide line-rest)
 
+;return first print item
+(define/contract (line-first line)
+  (-> line? print-item?)
+  (last (line-IR line)))
+(provide line-first)
+
+;return line containing all but the first print item
+(define/contract (line-tser line)
+  (-> line? line?)
+  (let ([ir (line-IR line)])
+    (line-struct (if (< 1 (length ir))
+                     (drop-right ir 1)
+                     (list 0)))))
+(provide line-tser)
+
+;add given print item to line in a sequence after the last/current item in line
+(define/contract (add-to-last li item)
+  (-> line? print-item? line?)
+  (line li item))
+(provide add-to-last)
+
+;add given print item to line in a sequence before the first item in line
+(define/contract (add-to-first item li)
+  (-> print-item? line? line?)
+  (line item li))
+(provide add-to-first)
+
+;add given print item to line in a sequence with the last/current item in line
+(define/contract (seq-with-last li item)
+  (-> line? print-item? line?)
+  (line (line-rest li)
+        (let ([last (line-last li)])
+          (cond [(and (pivot? last)
+                      (pivot? item))
+                 ;both are pivots...
+                 (pivot (pivot-rest last)
+                        (let* ([new-line-prefix (pivot-last last)]
+                               [item-line (pivot-first item)]
+                               [new-item (line-first item-line)]
+                               [new-line-suffix (line-tser item-line)])
+                          (line (seq-with-last new-line-prefix
+                                               new-item)
+                                new-line-suffix))
+                        (pivot-tser item))]
+                [(pivot? last)
+                 ;last is a pivot - item is not
+                 (pivot (pivot-rest last)
+                        (seq-with-last (pivot-last last)
+                                       item))]
+                [(pivot? item)
+                 ;item is a pivot - last is not
+                 (pivot (seq-with-first last
+                                        (pivot-first item))
+                        (pivot-tser item))]
+                [else
+                 ;neither last nor item is a pivot
+                 (seq last item)]))))
+(provide seq-with-last)
+
+;add given print item to line in a sequence with the first item in line
+(define/contract (seq-with-first item li)
+  (-> print-item? line? line?)
+  (line (let ([first (line-first li)])
+          (cond [(and (pivot? first)
+                      (pivot? item))
+                 ;both are pivots...
+                 (pivot (pivot-rest item)
+                        (let* ([new-line-prefix (pivot-last item)]
+                               [item-line (pivot-first first)]
+                               [new-item (line-first item-line)]
+                               [new-line-suffix (line-tser item-line)])
+                          (line (seq-with-last new-line-prefix
+                                               new-item)
+                                new-line-suffix))
+                        (pivot-tser first))]
+                [(pivot? first)
+                 ;first is a pivot - item is not
+                 (pivot (seq-with-first item
+                                        (pivot-first first))
+                        (pivot-tser first))]
+                [(pivot? item)
+                 ;item is a pivot - first is not
+                 (pivot (pivot-rest item)
+                        (seq-with-last (pivot-last item)
+                                       first))]
+                [else
+                 ;neither last nor item is a pivot
+                 (seq item first)]))
+        (line-tser li)))
+(provide seq-with-first)
+
 ;general procedures
 
 ;build line internal representation
@@ -200,9 +291,9 @@
 ;transformers
 
 ;return last/current line
-(define/contract (pivot-last pivot)
+(define/contract (pivot-last g)
   (-> pivot? line?)
-  (first (pivot-IR pivot)))
+  (first (pivot-IR g)))
 (provide pivot-last)
 
 ;return pivot containing all but the last/current line
@@ -214,6 +305,22 @@
         (pivot-struct (rest pir)
                       (pivot-full-line-length (rest pir))))))
 (provide pivot-rest)
+
+;return first line
+(define/contract (pivot-first g)
+  (-> pivot? line?)
+  (last (pivot-IR g)))
+(provide pivot-first)
+
+;return pivot containing all but the last/current line
+(define/contract (pivot-tser g)
+  (-> pivot? pivot-output?)
+  (let ([pir (pivot-IR g)])
+    (if (= 2 (length pir))
+        (first pir)
+        (pivot-struct (drop-right pir 1)
+                      (pivot-full-line-length (drop-right pir 1))))))
+(provide pivot-tser)
 
 ;general procedures
 

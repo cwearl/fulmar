@@ -155,6 +155,12 @@
         test-line-IR
         test-line-last
         test-line-rest
+        test-line-first
+        test-line-tser
+        test-add-to-last
+        test-add-to-first
+        test-seq-with-last
+        test-seq-with-first
         test-build-line-IIR
         test-simplify-line-IIR
         test-pivot-IR?
@@ -166,6 +172,8 @@
         test-pivot-IR
         test-pivot-last
         test-pivot-rest
+        test-pivot-first
+        test-pivot-tser
         test-pivot-length
         test-build-pivot-IIR
         test-pivot-full-line-length

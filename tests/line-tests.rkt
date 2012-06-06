@@ -148,6 +148,146 @@
    (check-equal? (line-rest (line #\a #\b #\c)) (line #\a #\b))
    (check-equal? (line-rest (line #\a #\b #\c #\d)) (line #\a #\b #\c))))
 
+(define/provide-test-suite test-line-first
+  (test-case
+   "Test line-first"
+   (check-equal? (line-first (line)) 0)
+   (check-equal? (line-first (line #\a)) #\a)
+   (check-equal? (line-first (line #\a #\b)) #\a)
+   (check-equal? (line-first (line #\a #\b #\c)) #\a)))
+
+(define/provide-test-suite test-line-tser
+  (test-case
+   "Test line-tser"
+   (check-true (line? (line-tser (line))))
+   (check-equal? (line-IR (line-tser (line))) (list 0))
+   (check-true (line? (line-tser (line (line #\a)))))
+   (check-equal? (line-IR (line-tser (line (line #\a)))) (list 0))
+   (check-equal? (line-tser (line #\a #\b)) (line #\b))
+   (check-equal? (line-IR (line-tser (line #\a #\b))) (list #\b))
+   (check-equal? (line-tser (line #\a #\b #\c)) (line #\b #\c))
+   (check-equal? (line-tser (line #\a #\b #\c #\d)) (line #\b #\c #\d))))
+
+(define/provide-test-suite test-add-to-last
+  (test-case
+   "Test add-to-last"
+   (check-equal? (add-to-last (line #\a) #\b)
+                 (line #\a #\b))
+   (check-equal? (add-to-last (line #\a #\b) #\c)
+                 (line #\a #\b #\c))
+   (check-equal? (add-to-last (line #\a 4) 3)
+                 (line #\a 7))
+   (check-equal? (add-to-last (line #\a) (pivot (line #\b) (line #\c)))
+                 (line #\a (pivot (line #\b) (line #\c))))
+   (check-equal? (add-to-last (line (pivot (line #\a) (line #\b))) #\c)
+                 (line (pivot (line #\a) (line #\b)) #\c))
+   (check-equal? (add-to-last (line (pivot (line #\a) (line #\b)))
+                              (pivot (line #\c) (line #\d)))
+                 (line (pivot (line #\a) (line #\b))
+                       (pivot (line #\c) (line #\d))))
+   (check-equal? (add-to-last (line (seq #\a #\b)) #\c)
+                 (line (seq #\a #\b) #\c))
+   (check-equal? (add-to-last (line #\a) (seq #\b #\c))
+                 (line #\a (seq #\b #\c)))
+   (check-equal? (add-to-last (line (seq #\a #\b)) (seq #\c #\d))
+                 (line (seq #\a #\b) (seq #\c #\d)))
+   (check-equal? (add-to-last (line (pivot (line #\a) (line #\b)))
+                              (seq #\c #\d))
+                 (line (pivot (line #\a) (line #\b)) (seq #\c #\d)))
+   (check-equal? (add-to-last (line (seq #\a #\b)) (pivot (line #\c) (line #\d)))
+                 (line (seq #\a #\b) (pivot (line #\c) (line #\d))))))
+
+(define/provide-test-suite test-add-to-first
+  (test-case
+   "Test add-to-first"
+   (check-equal? (add-to-first #\a (line #\b))
+                 (line #\a #\b))
+   (check-equal? (add-to-first #\a (line #\b #\c))
+                 (line #\a #\b #\c))
+   (check-equal? (add-to-first 3 (line 4 #\a))
+                 (line 7 #\a))
+   (check-equal? (add-to-first (pivot (line #\a) (line #\b)) (line #\c))
+                 (line (pivot (line #\a) (line #\b)) #\c))
+   (check-equal? (add-to-first #\a (line (pivot (line #\b) (line #\c))))
+                 (line #\a (pivot (line #\b) (line #\c))))
+   (check-equal? (add-to-first (pivot (line #\a) (line #\b))
+                               (line (pivot (line #\c) (line #\d))))
+                 (line (pivot (line #\a) (line #\b))
+                       (pivot (line #\c) (line #\d))))
+   (check-equal? (add-to-first #\a (line (seq #\b #\c)))
+                 (line #\a (seq #\b #\c)))
+   (check-equal? (add-to-first (seq #\a #\b) (line #\c))
+                 (line (seq #\a #\b) #\c))
+   (check-equal? (add-to-first (seq #\a #\b) (line (seq #\c #\d)))
+                 (line (seq #\a #\b) (seq #\c #\d)))
+   (check-equal? (add-to-first (seq #\a #\b)
+                               (line (pivot (line #\c) (line #\d))))
+                 (line (seq #\a #\b) (pivot (line #\c) (line #\d))))
+   (check-equal? (add-to-first (pivot (line #\a) (line #\b)) (line (seq #\c #\d)))
+                 (line (pivot (line #\a) (line #\b)) (seq #\c #\d)))))
+
+(define/provide-test-suite test-seq-with-last
+  (test-case
+   "Test seq-with-last"
+   (check-equal? (seq-with-last (line #\a) #\b)
+                 (line (seq #\a #\b)))
+   (check-equal? (seq-with-last (line #\a #\b) #\c)
+                 (line #\a (seq #\b #\c)))
+   (check-equal? (seq-with-last (line #\a 4) 3)
+                 (line #\a 7))
+   (check-equal? (seq-with-last (line #\a) (pivot (line #\b) (line #\c)))
+                 (line (pivot (line (seq #\a #\b)) (line #\c))))
+   (check-equal? (seq-with-last (line (pivot (line #\a) (line #\b))) #\c)
+                 (line (pivot (line #\a) (line (seq #\b #\c)))))
+   (check-equal? (seq-with-last (line (pivot (line #\a) (line #\b)))
+                                (pivot (line #\c) (line #\d)))
+                 (line (pivot (line #\a)
+                              (line (seq #\b #\c))
+                              (line #\d))))
+   (check-equal? (seq-with-last (line (seq #\a #\b)) #\c)
+                 (line (seq #\a #\b #\c)))
+   (check-equal? (seq-with-last (line #\a) (seq #\b #\c))
+                 (line (seq #\a #\b #\c)))
+   (check-equal? (seq-with-last (line (seq #\a #\b)) (seq #\c #\d))
+                 (line (seq #\a #\b #\c #\d)))
+   (check-equal? (seq-with-last (line (pivot (line #\a) (line #\b)))
+                                (seq #\c #\d))
+                 (line (pivot (line #\a) (line (seq #\b #\c #\d)))))
+   (check-equal? (seq-with-last (line (seq #\a #\b)) (pivot (line #\c) (line #\d)))
+                 (line (pivot (line (seq #\a #\b #\c))
+                              (line #\d))))))
+
+(define/provide-test-suite test-seq-with-first
+  (test-case
+   "Test seq-with-first"
+   (check-equal? (seq-with-first #\a (line #\b))
+                 (line (seq #\a #\b)))
+   (check-equal? (seq-with-first #\a (line #\b #\c))
+                 (line (seq #\a #\b) #\c))
+   (check-equal? (seq-with-first 3 (line 4 #\a))
+                 (line 7 #\a))
+   (check-equal? (seq-with-first (pivot (line #\a) (line #\b)) (line #\c))
+                 (line (pivot (line #\a) (line (seq #\b #\c)))))
+   (check-equal? (seq-with-first #\a (line (pivot (line #\b) (line #\c))))
+                 (line (pivot (line (seq #\a #\b)) (line #\c))))
+   (check-equal? (seq-with-first (pivot (line #\a) (line #\b))
+                                 (line (pivot (line #\c) (line #\d))))
+                 (line (pivot (line #\a)
+                              (line (seq #\b #\c))
+                              (line #\d))))
+   (check-equal? (seq-with-first #\a (line (seq #\b #\c)))
+                 (line (seq #\a #\b #\c)))
+   (check-equal? (seq-with-first (seq #\a #\b) (line #\c))
+                 (line (seq #\a #\b #\c)))
+   (check-equal? (seq-with-first (seq #\a #\b) (line (seq #\c #\d)))
+                 (line (seq #\a #\b #\c #\d)))
+   (check-equal? (seq-with-first (seq #\a #\b)
+                                 (line (pivot (line #\c) (line #\d))))
+                 (line (pivot (line (seq #\a #\b #\c)) (line #\d))))
+   (check-equal? (seq-with-first (pivot (line #\a) (line #\b)) (line (seq #\c #\d)))
+                 (line (pivot (line #\a)
+                              (line (seq #\b #\c #\d)))))))
+
 (define/provide-test-suite test-build-line-IIR
   (test-case
    "Testcase build-line-IIR"
@@ -300,6 +440,18 @@
    "Test pivot-rest"
    (check-equal? (pivot-rest (pivot (line #\a) (line #\b))) (line #\a))
    (check-equal? (pivot-rest (pivot (line #\a) (line #\b) (line #\c))) (pivot (line #\a) (line #\b)))))
+
+(define/provide-test-suite test-pivot-first
+  (test-case
+   "Test pivot-first"
+   (check-equal? (pivot-first (pivot (line #\a) (line #\b))) (line #\a))
+   (check-equal? (pivot-first (pivot (line #\a) (line #\b) (line #\c))) (line #\a))))
+
+(define/provide-test-suite test-pivot-tser
+  (test-case
+   "Test pivot-tser"
+   (check-equal? (pivot-tser (pivot (line #\a) (line #\b))) (line #\b))
+   (check-equal? (pivot-tser (pivot (line #\a) (line #\b) (line #\c))) (pivot (line #\b) (line #\c)))))
 
 (define/provide-test-suite test-full-line-length
   (test-case
