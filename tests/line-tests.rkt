@@ -140,9 +140,9 @@
   (test-case
    "Test line-rest"
    (check-true (line? (line-rest (line))))
-   (check-equal? (line-IR (line-rest (line))) 0)
+   (check-equal? (line-IR (line-rest (line))) (list 0))
    (check-true (line? (line-rest (line (line #\a)))))
-   (check-equal? (line-IR (line-rest (line (line #\a)))) 0)
+   (check-equal? (line-IR (line-rest (line (line #\a)))) (list 0))
    (check-equal? (line-rest (line #\a #\b)) (line #\a))
    (check-equal? (line-IR (line-rest (line #\a #\b))) (list #\a))
    (check-equal? (line-rest (line #\a #\b #\c)) (line #\a #\b))

@@ -75,20 +75,16 @@
 ;return last/current print item
 (define/contract (line-last line)
   (-> line? print-item?)
-  (let ([ir (line-IR line)])
-    (if (list? ir)
-        (first ir)
-        ir)))
+  (first (line-IR line)))
 (provide line-last)
 
 ;return line containing all but the last/current print item
 (define/contract (line-rest line)
   (-> line? line?)
   (let ([ir (line-IR line)])
-    (line-struct (if (and (list? ir)
-                          (< 1 (length ir)))
+    (line-struct (if (< 1 (length ir))
                      (rest ir)
-                     0))))
+                     (list 0)))))
 (provide line-rest)
 
 ;general procedures
