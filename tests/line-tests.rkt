@@ -308,3 +308,11 @@
    (check-equal? (full-line-length (line #\a #\b)) 2)
    (check-equal? (full-line-length (line #\a 3)) 4)
    (check-equal? (full-line-length (line #\a 3 (pivot (line #\a) (line #\b)))) 7)))
+
+(define/provide-test-suite test-full-seq-length
+  (test-case
+   "Test full-seq-length"
+   (check-equal? (full-seq-length (seq #\a #\b)) 2)
+   (check-equal? (full-seq-length (seq #\a #\b #\c)) 3)
+   (check-equal? (full-seq-length (seq #\a 3)) 4)
+   (check-equal? (full-seq-length (seq #\a 3 #\a #\b)) 6)))

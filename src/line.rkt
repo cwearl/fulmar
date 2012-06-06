@@ -248,6 +248,19 @@
   (-> line? indent?)
   (foldl + 0 (map (λ (g) (cond [(char? g) 1]
                                [(indent? g) g]
-                               [(pivot? g) (pivot-length g)]))
+                               [(seq? g) (full-seq-length g)]
+                               [(pivot? g) (pivot-length g)]
+                               [else
+                                (error "Unrecognized print item; given: " g)]))
                   (line-IR l))))
 (provide full-line-length)
+
+;procedure to compute full length of sequence
+(define/contract (full-seq-length s)
+  (-> seq? indent?)
+  (foldl + 0 (map (λ (g) (cond [(char? g) 1]
+                               [(indent? g) g]
+                               [else
+                                (error "Unrecognized print item; given: " g)]))
+                  (seq-IR s))))
+(provide full-seq-length)

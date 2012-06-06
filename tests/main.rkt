@@ -169,7 +169,8 @@
         test-pivot-length
         test-build-pivot-IIR
         test-pivot-full-line-length
-        test-full-line-length))
+        test-full-line-length
+        test-full-seq-length))
 
 (apply test-fail-with-gui? line-tests)
 ;(apply run-tests-text line-tests)
