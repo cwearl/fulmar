@@ -8,8 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;checks if given string is just spaces
-(define/contract (is-whitespace? string)
-  (-> written-line/c boolean?)
+(define (is-whitespace? string)
   (letrec ([is-whitespace-list? (λ (lst) (cond [(empty? lst) #true]
                                                [(eq? #\  (car lst)) (is-whitespace-list? (cdr lst))]
                                                [else #false]))])
@@ -17,14 +16,12 @@
 (provide is-whitespace?)
 
 ;give n spaces
-(define/contract (make-whitespace n)
-  (-> natural-number/c string?)
+(define (make-whitespace n)
   (make-string n #\ ))
 (provide make-whitespace)
 
 ;remove whitespace from the end of a line
-(define/contract (remove-whitespace line)
-  (-> written-line/c written-line/c)
+(define (remove-whitespace line)
   (list->string (reverse (second (foldl (λ (char result) (if (equal? char #\ )
                                                              (list (cons #\  (first result))
                                                                    (second result))
@@ -37,8 +34,7 @@
 (provide remove-whitespace)
 
 ;build indentation for new line given current context
-(define/contract (build-indentation context [char #\ ])
-  (-> context/c string?)
+(define (build-indentation context [char #\ ])
   (if (or (empty-env? (context-env context))
           (macro-env? (context-env context)))
       (make-whitespace (context-indent context))
@@ -54,8 +50,7 @@
 (provide build-indentation)
 
 ;finish line
-(define/contract (finish-line given-line context)
-  (-> written-line/c context/c written-line/c)
+(define (finish-line given-line context)
   (let* ([line (remove-whitespace given-line)]
          [length (string-length line)]
          [max (context-line-length context)]
@@ -109,8 +104,7 @@
 (provide finish-line)
 
 ;check speculative line
-(define/contract (check-speculative-line-length first-part second-part context)
-  (-> (or/c natural-number/c string?) string? context/c boolean?)
+(define (check-speculative-line-length first-part second-part context)
   (<= (+ (if (string? first-part)
              (string-length first-part)
              first-part)
@@ -119,8 +113,7 @@
 (provide check-speculative-line-length)
 
 ;check if lengths match
-(define/contract (match-lengths first-line second-line)
-  (-> (or/c natural-number/c string?) string? boolean?)
+(define (match-lengths first-line second-line)
   (= (if (string? first-line)
          (string-length first-line)
          first-line)
@@ -128,8 +121,7 @@
 (provide match-lengths)
 
 ;add '#' to proper place in given line
-(define/contract (add-hash-character line)
-  (-> written-line/c written-line/c)
+(define (add-hash-character line)
   (cond [(= 0 (string-length line)) "#"]
         [(is-whitespace? line)
          (string-append "#"
@@ -144,8 +136,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;add a literal string to current line
-(define/contract (add-literal mode string context line)
-  (-> mode/c string? context/c written-line/c written-lines/c)
+(define (add-literal mode string context line)
   (match mode
     ['normal (cond [(= 0 (string-length string))
                     (list line)]
@@ -165,8 +156,7 @@
 (provide add-literal)
 
 ;add spaces to current line
-(define/contract (add-spaces mode count context line)
-  (-> mode/c natural-number/c context/c written-line/c written-lines/c)
+(define (add-spaces mode count context line)
   (match mode
     ['normal (cond [(= 0 count)
                     (list line)]
@@ -184,15 +174,13 @@
 (provide add-spaces)
 
 ;add new line
-(define/contract (add-new-line mode body context line)
-  (-> mode/c null/c context/c written-line/c written-lines/c)
+(define (add-new-line mode body context line)
   (list ""
         (finish-line line context)))
 (provide add-new-line)
 
 ;add preprocessor directive
-(define/contract (add-pp-directive mode body context line)
-  (-> mode/c null/c context/c written-line/c written-lines/c)
+(define (add-pp-directive mode body context line)
   (list (add-hash-character line)))
 (provide add-pp-directive)
 
@@ -202,8 +190,7 @@
 
 ;add empty nekot
 ; - equivalent to identity function...
-(define/contract (add-empty mode body context line)
-  (-> mode/c null/c context/c written-line/c written-lines/c)
+(define (add-empty mode body context line)
   (list (if (equal? (build-indentation context)
                     line)
             ""
@@ -211,22 +198,19 @@
 (provide add-empty)
 
 ;add concatenated nekots
-(define/contract (add-concatenated mode nekots context line)
-  (-> mode/c (non-empty-listof nekot/c) context/c written-line/c written-lines/c)
+(define (add-concatenated mode nekots context line)
   (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
     (append (write-nekot mode nekot (car lines))
             (cdr lines))))
 (provide add-concatenated)
 
 ;add nekot immediately
-(define/contract (add-immediate mode nekot context line)
-  (-> mode/c nekot/c context/c written-line/c written-lines/c)
+(define (add-immediate mode nekot context line)
   (write-nekot 'immediate nekot line))
 (provide add-immediate)
 
 ;add nekot(s) speculatively
-(define/contract (add-speculative mode body context line)
-  (-> mode/c (list/c nekot/c (-> written-lines/c boolean?) nekot/c) context/c written-line/c written-lines/c)
+(define (add-speculative mode body context line)
   (let* ([attempt (first body)]
          [success? (second body)]
          [backup (third body)]
@@ -237,8 +221,7 @@
 (provide add-speculative)
 
 ;change indent to length of current line
-(define/contract (change-indent-to-current mode chunk context line)
-  (-> mode/c chunk/c context/c written-line/c written-lines/c)
+(define (change-indent-to-current mode chunk context line)
   (let* ([diff (- (string-length line)
                   (context-indent context))]
          [new-indent (if (< 0 diff)
@@ -251,8 +234,7 @@
 (provide change-indent-to-current)
 
 ;error nekot...
-(define/contract (unknown-nekot-type name)
-  (-> symbol? (-> mode/c any/c context/c written-line/c written-lines/c))
+(define (unknown-nekot-type name)
   (λ (mode body context line)
     (error "Unrecognized nekot/chunk; given: " name mode body context line)))
 (provide unknown-nekot-type)
@@ -265,9 +247,7 @@
 ; mode determines if pretty-printing is on or not
 ; - normal: pretty-printing ON
 ; - immediate: pretty-printing OFF
-(define/contract write-nekot
-  (case-> (-> nekot/c written-lines/c)
-          (-> mode/c nekot/c written-line/c written-lines/c))
+(define write-nekot
   (case-lambda [(nekot)
                 (write-nekot 'normal nekot "")]
                [(mode nekot line)

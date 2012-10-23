@@ -7,8 +7,7 @@
 
 ;Open output port
 ; - saves a simple backup
-(define/contract (open-output! location)
-  (-> path? output-port?)
+(define (open-output! location)
   (begin
     ; Overwrites old backup file (if exists) without backing up the backup...
     (if (file-exists? location)
@@ -20,8 +19,7 @@
 ;(provide open-output!)
 
 ;Print written code with port
-(define/contract (print-code-with-port! lines port)
-  (-> written-lines/c output-port? void?)
+(define (print-code-with-port! lines port)
   (if (empty? lines)
       (void)
       (begin
@@ -30,8 +28,7 @@
 ;(provide print-code-with-port!)
 
 ;Print written code for a file to a file
-(define/contract (print-file! lines port/location)
-  (-> written-lines/c (or/c output-port? path?) void?)
+(define (print-file! lines port/location)
   (if (output-port? port/location)
       (print-code-with-port! lines port/location)
       ;(path? port/location)
@@ -41,16 +38,14 @@
 (provide print-file!)
 
 ;open input port
-(define/contract (open-input location)
-  (-> path? input-port?)
+(define (open-input location)
   (if (not (file-exists? location))
       (error "Could not open file at: " location)
       (open-input-file location)))
 ;(provide open-input)
 
 ;parse file containing singleton
-(define/contract (read-singleton port/location)
-  (-> (or/c input-port? path?) any/c)
+(define (read-singleton port/location)
   (if (input-port? port/location)
       (read port/location)
       (let* ([port (open-input port/location)]
@@ -67,8 +62,7 @@
 ;(provide fulmar-namespace)
 
 ;read chunk
-(define/contract (read-chunk port/location)
-  (-> (or/c input-port? path?) chunk/c)
+(define (read-chunk port/location)
   (eval (read-singleton port/location)
         fulmar-chunk-namespace))
 (provide read-chunk)

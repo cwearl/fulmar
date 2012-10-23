@@ -9,15 +9,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;fulmar-core definitions
-(provide chunk/c)
-(provide chunk-list/c)
-(provide nullable-chunk-list/c)
 (provide flatten*)
 
 ;TODO: increase tests to handle new contracts for combine-lengths and combine-strings (and a good number of chunks: ones that contain "*-list/c")
 ;combine lengths of given values
-(define/contract (combine-lengths . values)
-  (->* () #:rest length-list/c natural-number/c)
+(define (combine-lengths . values)
   (foldl (λ (value total)
            (+ total
               (cond [(integer? value) value]
@@ -29,8 +25,7 @@
 (provide combine-lengths)
 
 ;combine strings
-(define/contract (combine-strings . values)
-  (->* () #:rest string-list/c string?)
+(define (combine-strings . values)
   (foldl (λ (str total)
            (string-append total
                           (cond [(string? str) str]
@@ -42,16 +37,14 @@
 
 ;helper for speculative-chunk
 ; (located here for testing)
-(define/contract (length-equals-one lst)
-  (-> written-lines/c boolean?)
+(define (length-equals-one lst)
   (and (pair? lst)
        (= 1 (length lst))))
 (provide length-equals-one)
 
 ;chunk transformer
 ; transforms chunks into nekots
-(define/contract (chunk-transform chunk context)
-  (-> chunk/c context/c nekot/c)
+(define (chunk-transform chunk context)
   (cond [(string? chunk) (nekot 'literal
                                 chunk
                                 context)]
@@ -118,38 +111,33 @@
 
 ;literal chunk
 ; simple string
-(define/contract (literal-chunk . strings)
-  (->* () #:rest string-list/c chunk/c)
+(define (literal-chunk . strings)
   (combine-strings strings))
 (provide literal-chunk)
 
 ;sequence of spaces chunk
 ; adds some number of spaces
-(define/contract (spaces-chunk . lengths)
-  (->* () #:rest length-list/c chunk/c)
+(define (spaces-chunk . lengths)
   (combine-lengths lengths))
 (provide spaces-chunk)
 
 ;new line chunk
 ; adds a new line
-(define/contract new-line-chunk
-  chunk/c
+(define new-line-chunk
   (s-chunk 'new-line
            null))
 (provide new-line-chunk)
 
 ;preprocessor directive chunk
 ; correctly adds # to line
-(define/contract pp-directive-chunk
-  chunk/c
+(define pp-directive-chunk
   (s-chunk 'pp-directive
            null))
 (provide pp-directive-chunk)
 
 ;empty (no-op) chunk
 ; only real uses of this chunk are for testing and filing in stubs/empty parameters
-(define/contract empty-chunk
-  chunk/c
+(define empty-chunk
   (s-chunk 'empty
            null))
 (provide empty-chunk)
@@ -162,16 +150,14 @@
 ; sets up a general concatenation chunks
 ; - attempts to put as many on the same line as possible
 ; - no spaces added
-(define/contract (concat-chunk . chunks)
-  (->* () #:rest chunk-list/c chunk/c)
+(define (concat-chunk . chunks)
   (s-chunk 'concat
            (flatten chunks)))
 (provide concat-chunk)
 
 ;immediate chunk
 ; bypasses usual writing rules and writes chunk immediately after preceeding chunk
-(define/contract (immediate-chunk chunk)
-  (-> chunk/c chunk/c)
+(define (immediate-chunk chunk)
   (s-chunk 'immediate
            chunk))
 (provide immediate-chunk)
@@ -181,8 +167,7 @@
 ; run proc on first chunk
 ; if proc returns true, use results of first chunk
 ; otherwise,            use results of second chunk
-(define/contract (speculative-chunk attempt success? backup)
-  (-> chunk/c (-> written-lines/c boolean?) chunk/c chunk/c)
+(define (speculative-chunk attempt success? backup)
   (s-chunk 'speculative
            (list attempt
                  success?
@@ -191,16 +176,14 @@
 
 ;position indent chunk
 ; sets indent to current position of line
-(define/contract (position-indent-chunk chunk)
-  (-> chunk/c chunk/c)
+(define (position-indent-chunk chunk)
   (s-chunk 'position-indent
            chunk))
 (provide position-indent-chunk)
 
 ;modify context chunk
 ; changes context for given chunk
-(define/contract (modify-context-chunk chunk modify)
-  (-> chunk/c (-> context/c context/c) chunk/c)
+(define (modify-context-chunk chunk modify)
   (s-chunk 'modify-context
            (list chunk
                  modify)))
@@ -212,8 +195,7 @@
 
 ;indent chunk
 ; increases current indent
-(define/contract (indent-chunk length chunk)
-  (-> length-list/c chunk/c chunk/c)
+(define (indent-chunk length chunk)
   (modify-context-chunk chunk
                         (λ (context)
                           (reindent (combine-lengths length)
@@ -222,8 +204,7 @@
 
 ;comment env chunk
 ; puts chunks in a comment env environment
-(define/contract (comment-env-chunk chunk [char #\ ])
-  (->* (chunk/c) (char?) chunk/c)
+(define (comment-env-chunk chunk [char #\ ])
   (s-chunk 'comment-env
            (list chunk
                  char)))
@@ -231,8 +212,7 @@
 
 ;macro environment chunk
 ; puts chunks in a macro environment
-(define/contract (macro-env-chunk chunk)
-  (-> chunk/c chunk/c)
+(define (macro-env-chunk chunk)
   (modify-context-chunk chunk
                         enter-macro-env))
 (provide macro-env-chunk)

@@ -1,6 +1,5 @@
 #lang racket
 
-(define/contract version-number
-  symbol?
-  '0.7.6)
+(define version-number
+  '0.7.6-no-contracts)
 (provide version-number)
