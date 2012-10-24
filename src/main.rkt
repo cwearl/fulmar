@@ -13,13 +13,13 @@
 (define cmdln-output-location (make-parameter #false))
 
 ;TODO: add checks to line length argument in case string is not a number (currently converts any input string into integer silently)
-(define/contract (string->integer str)
-  (-> string? exact-positive-integer?)
+(define (string->integer str)
   (foldl (λ (i t) (+ (* t 10) i))
          0
          (map (λ (c) (- (char->integer c)
                         (char->integer #\0)))
               (string->list str))))
+;(provide (contract-out (string->integer (-> string? exact-positive-integer?))))
 
 (command-line #:program "fulmar"
               #:once-each

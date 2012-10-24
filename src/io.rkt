@@ -7,8 +7,7 @@
 
 ;Open output port
 ; - saves a simple backup
-(define/contract (open-output! location)
-  (-> path? output-port?)
+(define (open-output! location)
   (begin
     ; Overwrites old backup file (if exists) without backing up the backup...
     (if (file-exists? location)
@@ -17,47 +16,43 @@
                                   #true)
         (void))
     (open-output-file location #:exists 'replace)))
-;(provide open-output!)
+;(provide (contract-out (open-output! (-> path? output-port?))))
 
 ;Print written code with port
-(define/contract (print-code-with-port! lines port)
-  (-> written-lines/c output-port? void?)
+(define (print-code-with-port! lines port)
   (if (empty? lines)
       (void)
       (begin
         (print-code-with-port! (cdr lines) port)
         (displayln (car lines) port))))
-;(provide print-code-with-port!)
+;(provide (contract-out (print-code-with-port! (-> written-lines/c output-port? void?))))
 
 ;Print written code for a file to a file
-(define/contract (print-file! lines port/location)
-  (-> written-lines/c (or/c output-port? path?) void?)
+(define (print-file! lines port/location)
   (if (output-port? port/location)
       (print-code-with-port! lines port/location)
       ;(path? port/location)
       (let ([port (open-output! port/location)])
         (print-file! lines port)
         (close-output-port port))))
-(provide print-file!)
+(provide (contract-out (print-file! (-> written-lines/c (or/c output-port? path?) void?))))
 
 ;open input port
-(define/contract (open-input location)
-  (-> path? input-port?)
+(define (open-input location)
   (if (not (file-exists? location))
       (error "Could not open file at: " location)
       (open-input-file location)))
-;(provide open-input)
+;(provide (contract-out (open-input (-> path? input-port?))))
 
 ;parse file containing singleton
-(define/contract (read-singleton port/location)
-  (-> (or/c input-port? path?) any/c)
+(define (read-singleton port/location)
   (if (input-port? port/location)
       (read port/location)
       (let* ([port (open-input port/location)]
              [singleton (read-singleton port)])
         (close-input-port port)
         singleton)))
-;(provide read-singleton)
+(provide (contract-out (read-singleton (-> (or/c input-port? path?) any/c))))
 
 ;TODO: change this namespace (and/or namespace-anchor) to only include standard chunks
 ;defintions needed for eval in read-chunks
@@ -67,8 +62,7 @@
 ;(provide fulmar-namespace)
 
 ;read chunk
-(define/contract (read-chunk port/location)
-  (-> (or/c input-port? path?) chunk/c)
+(define (read-chunk port/location)
   (eval (read-singleton port/location)
         fulmar-chunk-namespace))
-(provide read-chunk)
+(provide (contract-out (read-chunk (-> (or/c input-port? path?) chunk/c))))
