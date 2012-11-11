@@ -1,6 +1,8 @@
 #lang racket
 
-(define/contract version-number
+(require "debug.rkt")
+
+(define/debug version-number
   symbol?
   '0.7.6)
 (provide version-number)

@@ -1,5 +1,6 @@
 #lang racket
 
+(require "debug.rkt")
 (require "fulmar-core.rkt")
 (require "standard-chunk.rkt") ; for eval
 
@@ -7,7 +8,7 @@
 
 ;Open output port
 ; - saves a simple backup
-(define/contract (open-output! location)
+(define/debug (open-output! location)
   (-> path? output-port?)
   (begin
     ; Overwrites old backup file (if exists) without backing up the backup...
@@ -20,7 +21,7 @@
 ;(provide open-output!)
 
 ;Print written code with port
-(define/contract (print-code-with-port! lines port)
+(define/debug (print-code-with-port! lines port)
   (-> written-lines/c output-port? void?)
   (if (empty? lines)
       (void)
@@ -30,7 +31,7 @@
 ;(provide print-code-with-port!)
 
 ;Print written code for a file to a file
-(define/contract (print-file! lines port/location)
+(define/debug (print-file! lines port/location)
   (-> written-lines/c (or/c output-port? path?) void?)
   (if (output-port? port/location)
       (print-code-with-port! lines port/location)
@@ -41,7 +42,7 @@
 (provide print-file!)
 
 ;open input port
-(define/contract (open-input location)
+(define/debug (open-input location)
   (-> path? input-port?)
   (if (not (file-exists? location))
       (error "Could not open file at: " location)
@@ -49,7 +50,7 @@
 ;(provide open-input)
 
 ;parse file containing singleton
-(define/contract (read-singleton port/location)
+(define/debug (read-singleton port/location)
   (-> (or/c input-port? path?) any/c)
   (if (input-port? port/location)
       (read port/location)
@@ -67,7 +68,7 @@
 ;(provide fulmar-namespace)
 
 ;read chunk
-(define/contract (read-chunk port/location)
+(define/debug (read-chunk port/location)
   (-> (or/c input-port? path?) chunk/c)
   (eval (read-singleton port/location)
         fulmar-chunk-namespace))

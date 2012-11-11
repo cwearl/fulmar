@@ -1,12 +1,14 @@
 #lang racket
 
+(require "debug.rkt")
+
 ;basic structures and contracts for fulmar
 ; fulmar is:
 ;  - a rich code generation/macro system for C++ that uses S-expressions
 ;  - the name of two species (Northern and Southern) of seabirds of the family Procellariidae
 
 ;basic helper functions
-(define/contract (flatten* . lst)
+(define/debug (flatten* . lst)
   (->* () #:rest (listof any/c) (listof any/c))
   (flatten lst))
 (provide flatten*)
@@ -53,31 +55,31 @@
 (define nullable-chunk-list/c (or/c chunk/c
                                     null/c
                                     (non-empty-listof (recursive-contract nullable-chunk-list/c))))
-(provide/contract (struct s-chunk ([name sc-name/c]
-                                   [body sc-body/c])))
+(provide-struct-out/debug s-chunk ([name sc-name/c]
+                                   [body sc-body/c]))
 (provide s-chunk/c chunk/c chunk-list/c nullable-chunk-list/c)
 
 ;environment Structure
 (struct environment (description initial-position) #:transparent)
 (define environment/c (struct/c environment environment-description/c optional-position/c))
 (define optional-environment/c (or/c environment/c #false))
-(provide/contract (struct environment ([description environment-description/c]
-                                       [initial-position optional-position/c])))
+(provide-struct-out/debug environment ([description environment-description/c]
+                                       [initial-position optional-position/c]))
 (provide environment/c optional-environment/c)
 
 ;empty environment
-(define/contract empty-env empty-env/c #false)
-(define/contract (empty-env? env)
+(define/debug empty-env empty-env/c #false)
+(define/debug (empty-env? env)
   (-> any/c boolean?)
   (not env))
 (provide empty-env/c empty-env empty-env?)
 
 ;comment block environment
 (define comment-env/c (struct/c environment 'comment position/c))
-(define/contract (comment-env indent)
+(define/debug (comment-env indent)
   (-> indent/c comment-env/c)
   (environment 'comment indent))
-(define/contract (comment-env? env)
+(define/debug (comment-env? env)
   (-> any/c boolean?)
   (and (environment/c env)
        (eq? (environment-description env) 'comment)))
@@ -85,10 +87,10 @@
 
 ;macro definition environment
 (define macro-env/c (struct/c environment 'macro #false))
-(define/contract macro-env
+(define/debug macro-env
   macro-env/c
   (environment 'macro #false))
-(define/contract (macro-env? env)
+(define/debug (macro-env? env)
   (-> any/c boolean?)
   (and (environment/c env)
        (eq? (environment-description env) 'macro)))
@@ -96,10 +98,10 @@
 
 ;commented macro defintion environment
 (define comment-macro-env/c (struct/c environment 'comment-macro position/c))
-(define/contract (comment-macro-env indent)
+(define/debug (comment-macro-env indent)
   (-> indent/c comment-macro-env/c)
   (environment 'comment-macro indent))
-(define/contract (comment-macro-env? env)
+(define/debug (comment-macro-env? env)
   (-> any/c boolean?)
   (and (environment/c env)
        (eq? (environment-description env) 'comment-macro)))
@@ -107,10 +109,10 @@
 
 ;macro definition with embedded comment block environment
 (define macro-comment-env/c (struct/c environment 'macro-comment position/c))
-(define/contract (macro-comment-env indent)
+(define/debug (macro-comment-env indent)
   (-> indent/c macro-comment-env/c)
   (environment 'macro-comment indent))
-(define/contract (macro-comment-env? env)
+(define/debug (macro-comment-env? env)
   (-> any/c boolean?)
   (and (environment/c env)
        (eq? (environment-description env) 'macro-comment)))
@@ -119,7 +121,7 @@
 ;build resulting environment of old and new environments
 (define user-env/c (or/c empty-env/c comment-env/c macro-env/c))
 (define possible-env/c (or/c user-env/c comment-macro-env/c macro-comment-env/c))
-(define/contract (combine-env old new)
+(define/debug (combine-env old new)
   (-> possible-env/c user-env/c possible-env/c)
   (cond [(empty-env? old) ;was in empty env
          new]
@@ -143,13 +145,13 @@
 ;context Structure
 (struct context (indent line-length env) #:transparent)
 (define context/c (struct/c context indent/c line-length/c optional-environment/c))
-(provide/contract (struct context ([indent indent/c]
+(provide-struct-out/debug context ([indent indent/c]
                                    [line-length line-length/c]
-                                   [env optional-environment/c])))
+                                   [env optional-environment/c]))
 (provide context/c)
 
 ;construct context
-(define/contract (construct-context line-length)
+(define/debug (construct-context line-length)
   (-> line-length/c context/c)
   (context 0
            line-length
@@ -157,19 +159,19 @@
 (provide construct-context)
 
 ;new environment context
-(define/contract (enter-env new-env obj)
+(define/debug (enter-env new-env obj)
   (-> user-env/c context/c context/c)
   (struct-copy context obj [env (combine-env (context-env obj) new-env)]))
 (provide enter-env)
 
 ;context accessors
-(define/contract (context-description context)
+(define/debug (context-description context)
   (-> context/c optional-environment-description/c)
   (let ([env (context-env context)])
     (if env
         (environment-description env)
         #false)))
-(define/contract (context-initial-position context)
+(define/debug (context-initial-position context)
   (-> context/c optional-position/c)
   (let* ([env (context-env context)])
     (if env (environment-initial-position env) #false)))
@@ -177,27 +179,27 @@
          context-initial-position)
 
 ;increase indent level context
-(define/contract (reindent new-indent obj)
+(define/debug (reindent new-indent obj)
   (-> indent/c context/c context/c)
   (struct-copy context obj [indent (+ new-indent
                                       (context-indent obj))]))
 (provide reindent)
 
 ;reset indent level context
-(define/contract (reset-indent new-indent obj)
+(define/debug (reset-indent new-indent obj)
   (-> indent/c context/c context/c)
   (struct-copy context obj [indent new-indent]))
 (provide reset-indent)
 
 ;new comment block
-(define/contract (enter-comment-env context)
+(define/debug (enter-comment-env context)
   (-> context/c context/c)
   (enter-env (comment-env (context-indent context))
              context))
 (provide enter-comment-env)
 
 ;new macro definition
-(define/contract (enter-macro-env context)
+(define/debug (enter-macro-env context)
   (-> context/c context/c)
   (enter-env macro-env
              context))
@@ -206,7 +208,7 @@
 ;nekot Structure (reverse token - token spelled backwards)
 (struct nekot (name body context) #:transparent)
 (define nekot/c (struct/c nekot nekot-name/c nekot-body/c context/c))
-(provide/contract (struct nekot ([name nekot-name/c]
+(provide-struct-out/debug nekot ([name nekot-name/c]
                                  [body nekot-body/c]
-                                 [context context/c])))
+                                 [context context/c]))
 (provide nekot/c)
