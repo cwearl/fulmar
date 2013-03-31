@@ -105,6 +105,13 @@
         [else (error "Unknown chunk subtype; given: " chunk)]))
 (provide chunk-transform)
 
+;transform-chunks
+(define (transform-chunks chunks context)
+  (chunk-transform (concat-chunk (add-between (flatten* chunks)
+                                              (concat-chunk new-line-chunk new-line-chunk)))
+                   context))
+(provide transform-chunks)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot-building chunks;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

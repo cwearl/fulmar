@@ -1,5 +1,5 @@
 #lang racket
 
 (define version-number
-  '0.7.6.1)
+  '0.8)
 (provide version-number)

@@ -12,9 +12,17 @@
 
 ;basic contracts
 
-;chunk Contract
+;structure chunk definition
 (struct s-chunk (name body) #:transparent)
 (provide (struct-out s-chunk))
+
+;chunk predicate
+(define (chunk? chunk)
+  (or (string? chunk)
+      (symbol? chunk)
+      (exact-nonnegative-integer? chunk)
+      (s-chunk? chunk)))
+(provide chunk?)
 
 ;environment Structure
 (struct environment (description initial-position) #:transparent)
