@@ -98,3 +98,21 @@
     (parameterize ([current-directory alt-location])
       (reverse (clean-input (map fulmar-eval source))))))
 (provide read-eval-chunks!)
+
+;copy file directly from a port
+(define (copy-file-from-port! port)
+  (let ([input (read-line port)])
+    (if (eof-object? input)
+        null
+        (cons input
+              (copy-file-from-port! port)))))
+;(provide copy-file-from-port!)
+
+;copy file
+(define (copy-file! port/location)
+  (concat-chunk (manage-port/location! port/location
+                                       input-port?
+                                       copy-file-from-port!
+                                       open-input!
+                                       close-input-port)))
+(provide copy-file!)

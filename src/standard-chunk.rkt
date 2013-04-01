@@ -468,25 +468,33 @@
                   chunks))
 (provide template-list-chunk)
 
-;statement line list of chunks
-; each chunk is expanded on its own line
-; - each chunk put on it's own line
+;list of chunks
+; blank line added between each chunk
+(define (top-list-chunk chunks)
+  (if (empty? (flatten chunks))
+      empty-chunk
+      (between-chunk blank-line-chunk
+                     chunks)))
+(provide top-list-chunk)
+
+;statement list of chunks
+; semi-colon and spacing-chunk aded between each chunk
 (define (smt-list-chunk spacing-chunk . chunks)
   (between/attach-chunk semi-colon-chunk
                         spacing-chunk
                         chunks))
 (provide smt-list-chunk)
 
-;statement line list of chunks with last semi-colon
-; each chunk is expanded on its own line
-; - each chunk put on it's own line
-(define (top-smt-list-chunk spacing-chunk . chunks)
+;statement list of chunks
+; semi-colon and spacing-chunk aded between each chunk
+;  and a semi-colon added after last chunk
+(define (cmn-smt-list-chunk spacing-chunk . chunks)
   (if (empty? (flatten chunks))
       empty-chunk
       (concat-chunk (smt-list-chunk spacing-chunk
                                     chunks)
                     imm-semi-colon-chunk)))
-(provide top-smt-list-chunk)
+(provide cmn-smt-list-chunk)
 
 ;constructor assignment list chunk
 ; each assignment is separated by a comma
@@ -515,7 +523,7 @@
 ;   close curly bracket is on it's own line
 (define (body-chunk . chunks)
   (let ([build (λ (spacing-chunk)
-                 (top-smt-list-chunk spacing-chunk
+                 (cmn-smt-list-chunk spacing-chunk
                                      chunks))])
     (concat-chunk imm-open-crbr-chunk ; open body
                   (if (empty? (flatten chunks)) ; if nothing in body
@@ -635,14 +643,11 @@
 (provide pp-conditional-ifndef-chunk)
 
 ;preprocessor h file wrapper chunk
-(define (pp-header-file-chunk file-name file-setup . chunks)
+(define (pp-header-file-chunk file-name . chunks)
   (pp-conditional-ifndef-chunk file-name
                                (concat-chunk (pp-define-chunk file-name)
                                              blank-line-chunk
-                                             file-setup
-                                             blank-line-chunk
-                                             (top-smt-list-chunk blank-line-chunk
-                                                                 chunks)
+                                             (top-list-chunk chunks)
                                              new-line-chunk)))
 (provide pp-header-file-chunk)
 
