@@ -24,6 +24,21 @@
 ;character chunks;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
+;if empty
+; returns then, if given is null (or a list that flattens to null)
+; returns else, otherwise
+(define (if-empty given then else)
+  (if (empty? (flatten given))
+      then
+      else))
+(provide if-empty)
+
+;surround/before and after chunk
+; adds surround before and after chunk
+(define (surround-chunk surround chunk)
+  (concat-chunk surround chunk surround))
+(provide surround-chunk)
+
 ;space chunk
 ; adds a space
 (define space-chunk
@@ -74,6 +89,13 @@
   (immediate-chunk close-paren-chunk))
 (provide imm-close-paren-chunk)
 
+;surround parenthesis chunk
+(define (sur-paren-chunk . chunks)
+  (concat-chunk imm-open-paren-chunk
+                chunks
+                imm-close-paren-chunk))
+(provide sur-paren-chunk)
+
 ;open curly bracket chunk
 ; adds "{"
 (define open-crbr-chunk
@@ -98,6 +120,13 @@
   (immediate-chunk close-crbr-chunk))
 (provide imm-close-crbr-chunk)
 
+;surround curly bracket chunk
+(define (sur-crbr-chunk . chunks)
+  (concat-chunk imm-open-crbr-chunk
+                chunks
+                imm-close-crbr-chunk))
+(provide sur-crbr-chunk)
+
 ;open angle-bracket chunk
 ; adds "<"
 (define open-anbr-chunk
@@ -121,6 +150,13 @@
 (define imm-close-anbr-chunk
   (immediate-chunk close-anbr-chunk))
 (provide imm-close-anbr-chunk)
+
+;surround angle bracket chunk
+(define (sur-anbr-chunk . chunks)
+  (concat-chunk imm-open-anbr-chunk
+                chunks
+                imm-close-anbr-chunk))
+(provide sur-anbr-chunk)
 
 ;comma chunk
 ; adds ","
@@ -401,22 +437,19 @@
 ; adds to-add-chunk immediately after each of the given chunks
 ; except: to-add-chunk is NOT added to the final chunk
 (define (attach-list-separator to-attach-chunk . chunk-lists)
-  (let ([chunks (flatten chunk-lists)])
-    (if (empty? chunks)
-        null
-        (flatten* (map (λ (chunk) (concat-chunk chunk (immediate-chunk to-attach-chunk)))
-                       (take chunks (- (length chunks) 1)))
-                  (last chunks)))))
+  (define chunks (flatten chunk-lists))
+  (if (empty? chunks) ; can't use if-empty here - take will complain
+      null
+      (flatten* (map (λ (chunk) (concat-chunk chunk (immediate-chunk to-attach-chunk)))
+                     (take chunks (- (length chunks) 1)))
+                (last chunks))))
 (provide attach-list-separator)
 
 ;insert a chunk between other chunks
 ; concatenates given chunks with add-between-chunk between given chunks
-(define (between-chunk add-between-chunk . chunk-lists)
-  (let ([chunks (flatten chunk-lists)])
-    (if (empty? chunks)
-        empty-chunk
-        (concat-chunk (add-between chunks
-                                   add-between-chunk)))))
+(define (between-chunk add-between-chunk . chunks)
+  (concat-chunk (add-between (flatten chunks)
+                             add-between-chunk)))
 (provide between-chunk)
 
 ; combine between and attach functionality
@@ -431,116 +464,124 @@
 ;argument list chunk
 ; attempts to put chunks on a single line with a space between each chunk
 ; if that fails, puts chunks on their own lines
-(define (arg-list-chunk open-chunk attach-chunk close-chunk . chunk-lists)
-  (let ([chunks (flatten chunk-lists)])
-    (concat-chunk (immediate-chunk open-chunk)
-                  (cond [;no parameters
-                         (empty? chunks)
-                         empty-chunk]
-                        [;one parameter - no commas
-                         (= 1 (length chunks))
-                         (position-indent-chunk (first chunks))]
-                        [;more than one parameter - commas and possibly more than one line
-                         else
-                         (speculative-chunk (between/attach-chunk attach-chunk
-                                                                  space-chunk
-                                                                  chunks)
-                                            length-equals-one
-                                            (position-indent-chunk (between/attach-chunk attach-chunk
-                                                                                         new-line-chunk
-                                                                                         chunks)))])
-                (immediate-chunk close-chunk))))
+(define (arg-list-chunk sur-chunk attach-chunk . chunks)
+  (define (build spacing-chunk)
+    (between/attach-chunk attach-chunk
+                          spacing-chunk
+                          chunks))
+  (sur-chunk (if-empty chunks
+                       empty-chunk
+                       (speculative-chunk (build space-chunk)
+                                          length-equals-one
+                                          (position-indent-chunk (build new-line-chunk))))))
 (provide arg-list-chunk)
 
 ;parenthesis argument list chunk
 (define (paren-list-chunk . chunks)
-  (arg-list-chunk open-paren-chunk
+  (arg-list-chunk sur-paren-chunk
                   comma-chunk
-                  close-paren-chunk
                   chunks))
 (provide paren-list-chunk)
 
 ;template argument list chunk
 (define (template-list-chunk . chunks)
-  (arg-list-chunk open-anbr-chunk
+  (arg-list-chunk sur-anbr-chunk
                   comma-chunk
-                  close-anbr-chunk
                   chunks))
 (provide template-list-chunk)
 
+;body list chunk
+(define (body-list-chunk attach-chunk . chunks)
+  (arg-list-chunk sur-crbr-chunk
+                  attach-chunk
+                  chunks))
+(provide body-list-chunk)
+
 ;list of chunks
 ; blank line added between each chunk
-(define (top-list-chunk chunks)
-  (if (empty? (flatten chunks))
-      empty-chunk
-      (between-chunk blank-line-chunk
-                     chunks)))
+(define (top-list-chunk . chunks)
+  (between-chunk blank-line-chunk chunks))
 (provide top-list-chunk)
 
-;statement list of chunks
-; semi-colon and spacing-chunk aded between each chunk
-(define (smt-list-chunk spacing-chunk . chunks)
+;list of statement chunks without final semi-colon
+; adds spacing-chunk added between each chunk
+;  and attaches a semi-colon to the end of each chunk (except last)
+(define (internal-smt-list-chunk spacing-chunk . chunks)
   (between/attach-chunk semi-colon-chunk
                         spacing-chunk
                         chunks))
-(provide smt-list-chunk)
+(provide internal-smt-list-chunk)
 
-;statement list of chunks
-; semi-colon and spacing-chunk aded between each chunk
-;  and a semi-colon added after last chunk
-(define (cmn-smt-list-chunk spacing-chunk . chunks)
-  (if (empty? (flatten chunks))
-      empty-chunk
-      (concat-chunk (smt-list-chunk spacing-chunk
-                                    chunks)
-                    imm-semi-colon-chunk)))
-(provide cmn-smt-list-chunk)
+;list of statement chunks
+; adds spacing-chunk added between each chunk
+;  and attaches a semi-colon to the end of each chunk
+(define (smt-list-chunk spacing-chunk . chunks)
+  (if-empty chunks
+            empty-chunk
+            (concat-chunk (internal-smt-list-chunk spacing-chunk
+                                                   chunks)
+                          imm-semi-colon-chunk)))
+(provide smt-list-chunk)
 
 ;constructor assignment list chunk
 ; each assignment is separated by a comma
 ; - first line is indented 2 spaces and begun with a colon
-(define (constructor-assignment-list-chunk . assignment-lists)
-  (let* ([assigns (flatten assignment-lists)]
-         [build (λ (spacing-chunk)
-                  (indent-chunk 2
-                                (concat-chunk colon-chunk
-                                              imm-space-chunk
-                                              (position-indent-chunk (between/attach-chunk comma-chunk
-                                                                                           spacing-chunk
-                                                                                           assigns)))))])
-    (if (empty? assigns)
-        empty-chunk
-        (speculative-chunk (build space-chunk)
-                           length-equals-one
-                           (build new-line-chunk)))))
+(define (constructor-assignment-list-chunk . chunks)
+  (define (build spacing-chunk)
+    (indent-chunk 2
+                  (concat-chunk colon-chunk
+                                imm-space-chunk
+                                (position-indent-chunk (between/attach-chunk comma-chunk
+                                                                             spacing-chunk
+                                                                             chunks)))))
+  (if-empty chunks
+            empty-chunk
+            (speculative-chunk (build space-chunk)
+                               length-equals-one
+                               (build new-line-chunk))))
 (provide constructor-assignment-list-chunk)
+
+;general body chunk
+; surrounds chunks with curly brackets
+; - adds a semi-colon after each chunk, if use-semi-colons is true
+; - attempts to put chunks on a single line with a space between each chunk
+; - if that fails, puts chunks on their own lines with indented
+;   open curly bracket is immediately on current line
+;   close curly bracket is on it's own line
+(define (general-body-chunk use-semi-colons . chunks)
+  (define (build start/end-spacing-chunk spacing-chunk)
+    (surround-chunk start/end-spacing-chunk
+                    (if use-semi-colons
+                        (smt-list-chunk spacing-chunk chunks)
+                        (between-chunk spacing-chunk chunks))))
+  (sur-crbr-chunk (if-empty chunks
+                            empty-chunk
+                            (speculative-chunk (build space-chunk space-chunk)
+                                               length-equals-one
+                                               (indent-chunk 3 (build new-line-chunk blank-line-chunk))))))
+(provide general-body-chunk)
 
 ;body chunk
 ; surrounds chunks with curly brackets
+; - adds a semi-colon after each chunk
 ; - attempts to put chunks on a single line with a space between each chunk
 ; - if that fails, puts chunks on their own lines with indented
 ;   open curly bracket is immediately on current line
 ;   close curly bracket is on it's own line
 (define (body-chunk . chunks)
-  (let ([build (λ (spacing-chunk)
-                 (cmn-smt-list-chunk spacing-chunk
-                                     chunks))])
-    (concat-chunk imm-open-crbr-chunk ; open body
-                  (if (empty? (flatten chunks)) ; if nothing in body
-                      empty-chunk ; have no body
-                      (speculative-chunk (concat-chunk space-chunk          ; if body can fit on a single line, put it there
-                                                       (build space-chunk)
-                                                       space-chunk)
-                                         length-equals-one
-                                         (indent-chunk 3                    ; if not, increase indent
-                                                       (concat-chunk new-line-chunk ; and start a new line
-                                                                     (speculative-chunk (build blank-line-chunk)  ; if inner body fits on a single line, put it there
-                                                                                        length-equals-one
-                                                                                        (concat-chunk new-line-chunk ; if not, put a blank line between start of body and start of inner body
-                                                                                                      (build blank-line-chunk)))
-                                                                     new-line-chunk)))) ; start a new line after inner body has been printed
-                  imm-close-crbr-chunk))) ; close body
+  (general-body-chunk #true chunks))
 (provide body-chunk)
+
+;class body chunk
+; surrounds chunks with curly brackets
+; - does NOT add semi-colons after each chunk
+; - attempts to put chunks on a single line with a space between each chunk
+; - if that fails, puts chunks on their own lines with indented
+;   open curly bracket is immediately on current line
+;   close curly bracket is on it's own line
+(define (class-body-chunk . chunks)
+  (general-body-chunk #false chunks))
+(provide class-body-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;preprocessor chunks;;
@@ -654,17 +695,17 @@
 ;macro defintion chunk
 ; a macro definition
 (define (macro-define-chunk name params chunk)
-  (let ([macro-signature (concat-chunk (pp-define-chunk name)
-                                       (if (empty? (flatten params))
-                                           empty-chunk
-                                           (paren-list-chunk params)))])
-    (speculative-chunk (concat-chunk macro-signature
-                                     space-chunk
-                                     chunk)
-                       length-equals-one
-                       (macro-env-chunk (concat-chunk macro-signature
-                                                      new-line-chunk
-                                                      (indent-chunk 3 chunk))))))
+  (define macro-signature (concat-chunk (pp-define-chunk name)
+                                        (if-empty params
+                                                  empty-chunk
+                                                  (paren-list-chunk params))))
+  (speculative-chunk (concat-chunk macro-signature
+                                   space-chunk
+                                   chunk)
+                     length-equals-one
+                     (macro-env-chunk (concat-chunk macro-signature
+                                                    new-line-chunk
+                                                    (indent-chunk 3 chunk)))))
 (provide macro-define-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -673,16 +714,16 @@
 
 ;namespace define chunk
 (define (namespace-define-chunk name . chunks)
-  (let ([chunk (concat-chunk imm-namespace-chunk
-                             imm-space-chunk
-                             (immediate-chunk name)
-                             imm-space-chunk
-                             (body-chunk chunks))])
-    (speculative-chunk chunk
-                       length-equals-one
-                       (concat-chunk chunk
-                                     space-chunk
-                                     (comment-env-chunk name)))))
+  (define chunk (concat-chunk imm-namespace-chunk
+                              imm-space-chunk
+                              (immediate-chunk name)
+                              imm-space-chunk
+                              (body-chunk chunks)))
+  (speculative-chunk chunk
+                     length-equals-one
+                     (concat-chunk chunk
+                                   space-chunk
+                                   (comment-env-chunk name))))
 (provide namespace-define-chunk)
 
 ;described statements chunk
@@ -710,34 +751,35 @@
   (concat-chunk template-chunk
                 (template-list-chunk params)
                 new-line-chunk
-                (indent-chunk 1
-                              chunk)))
+                (indent-chunk 1 chunk)))
 (provide template-define-chunk)
 
 ;make a use of a template
 (define (template-use-chunk name . args)
-  (concat-chunk name
-                (if (empty? (flatten args))
-                    empty-chunk
-                    (template-list-chunk args))))
+  (concat-chunk name (if-empty args empty-chunk (template-list-chunk args))))
 (provide template-use-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;function chunks;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
+;general function declaration
+(define (general-function-declare-chunk name return-type . params)
+  (concat-chunk return-type
+                space-chunk
+                name
+                (paren-list-chunk (if-empty params
+                                            imm-void-chunk
+                                            params))))
+(provide general-function-declare-chunk)
+
 ;function declaration
 (define (function-declare-chunk name return-type . params)
   (concat-chunk imm-inline-chunk
                 space-chunk
-                return-type
-                space-chunk
-                name
-                (if (empty? (flatten params))
-                    (concat-chunk imm-open-paren-chunk
-                                  imm-void-chunk
-                                  imm-close-paren-chunk)
-                    (paren-list-chunk params))))
+                (general-function-declare-chunk name
+                                                return-type
+                                                params)))
 (provide function-declare-chunk)
 
 ;static function declaration
@@ -758,9 +800,7 @@
 (define (function-define-chunk signature . body)
   (concat-chunk signature
                 imm-space-chunk
-                (if (empty? (flatten body))
-                    (body-chunk)
-                    (body-chunk body))))
+                (body-chunk body)))
 (provide function-define-chunk)
 
 ;void function defintion
@@ -782,22 +822,18 @@
 ;constructor assignment
 (define (constructor-assignment-chunk var val)
   (concat-chunk var
-                imm-open-paren-chunk
-                val
-                imm-close-paren-chunk))
+                (sur-paren-chunk (concat-chunk val))))
 (provide constructor-assignment-chunk)
 
 ;constructor defintion
 (define (constructor-chunk name params assigns . body)
   (concat-chunk name
                 (paren-list-chunk params)
-                (if (empty? (flatten assigns))
-                    (concat-chunk imm-space-chunk
-                                  (body-chunk body))
-                    (concat-chunk new-line-chunk
-                                  (constructor-assignment-list-chunk assigns)
-                                  new-line-chunk
-                                  (body-chunk body)))))
+                (if-empty assigns
+                          imm-space-chunk
+                          (surround-chunk new-line-chunk
+                                          (constructor-assignment-list-chunk assigns)))
+                (body-chunk body)))
 (provide constructor-chunk)
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -820,17 +856,34 @@
 
 ;struct section
 (define (section-define-chunk type . chunks)
-  (concat-chunk type
-                colon-chunk
-                new-line-chunk
-                (indent-chunk 1 (smt-list-chunk new-line-chunk chunks))))
+  (if-empty chunks
+            empty-chunk
+            (concat-chunk type
+                          colon-chunk
+                          new-line-chunk
+                          (indent-chunk 1 (between-chunk blank-line-chunk chunks)))))
 (provide section-define-chunk)
+
+;public section
+(define (public-section-chunk . chunks)
+  (section-define-chunk public-chunk chunks))
+(provide public-section-chunk)
+
+;private section
+(define (private-section-chunk . chunks)
+  (section-define-chunk private-chunk chunks))
+(provide private-section-chunk)
+
+;protected section
+(define (protected-section-chunk . chunks)
+  (section-define-chunk protected-chunk chunks))
+(provide protected-section-chunk)
 
 ;struct definition
 (define (struct-define-chunk signature . body)
   (concat-chunk signature
                 imm-space-chunk
-                (body-chunk body)))
+                (class-body-chunk body)))
 (provide struct-define-chunk)
 
 ;template struct definition
