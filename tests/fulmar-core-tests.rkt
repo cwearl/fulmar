@@ -47,36 +47,36 @@
    (check-equal? (combine-env empty-env empty-env) empty-env)
    (check-equal? (combine-env empty-env (comment-env 4)) (comment-env 4))
    (check-equal? (combine-env empty-env macro-env) macro-env)
-   (check-exn exn:fail:contract? (λ () (combine-env empty-env (comment-macro-env 4))))
-   (check-exn exn:fail:contract? (λ () (combine-env empty-env (macro-comment-env 4)))))
+   (check-exn exn:fail? (λ () (combine-env empty-env (comment-macro-env 4))))
+   (check-exn exn:fail? (λ () (combine-env empty-env (macro-comment-env 4)))))
   (test-case
    "Test procedure combine-env - combine _ into comment environment"
    (check-equal? (combine-env (comment-env 8) empty-env) (comment-env 8))
    (check-equal? (combine-env (comment-env 8) (comment-env 4)) (comment-env 8))
    (check-equal? (combine-env (comment-env 8) macro-env) (comment-macro-env 8))
-   (check-exn exn:fail:contract? (λ () (combine-env (comment-env 8) (comment-macro-env 8))))
-   (check-exn exn:fail:contract? (λ () (combine-env (comment-env 8) (macro-comment-env 8)))))
+   (check-exn exn:fail? (λ () (combine-env (comment-env 8) (comment-macro-env 8))))
+   (check-exn exn:fail? (λ () (combine-env (comment-env 8) (macro-comment-env 8)))))
   (test-case
    "Test procedure combine-env - combine _ into macro environment"
    (check-equal? (combine-env macro-env empty-env) macro-env)
    (check-equal? (combine-env macro-env (comment-env 4)) (macro-comment-env 4))
    (check-exn exn:fail? (λ () (combine-env macro-env macro-env)))
-   (check-exn exn:fail:contract? (λ () (combine-env macro-env (comment-macro-env 4))))
-   (check-exn exn:fail:contract? (λ () (combine-env macro-env (macro-comment-env 4)))))
+   (check-exn exn:fail? (λ () (combine-env macro-env (comment-macro-env 4))))
+   (check-exn exn:fail? (λ () (combine-env macro-env (macro-comment-env 4)))))
   (test-case
    "Test procedure combine-env - combine _ into comment-macro environment"
    (check-equal? (combine-env (comment-macro-env 8) empty-env) (comment-macro-env 8))
    (check-equal? (combine-env (comment-macro-env 8) (comment-env 4)) (comment-macro-env 8))
    (check-exn exn:fail? (λ () (combine-env (comment-macro-env 8) macro-env)))
-   (check-exn exn:fail:contract? (λ () (combine-env (comment-macro-env 8) (comment-macro-env 4))))
-   (check-exn exn:fail:contract? (λ () (combine-env (comment-macro-env 8) (macro-comment-env 4)))))
+   (check-exn exn:fail? (λ () (combine-env (comment-macro-env 8) (comment-macro-env 4))))
+   (check-exn exn:fail? (λ () (combine-env (comment-macro-env 8) (macro-comment-env 4)))))
   (test-case
    "Test procedure combine-env - combine _ into macro-comment environment"
    (check-equal? (combine-env (macro-comment-env 8) empty-env) (macro-comment-env 8))
    (check-equal? (combine-env (macro-comment-env 8) (comment-env 4)) (macro-comment-env 8))
    (check-exn exn:fail? (λ () (combine-env (macro-comment-env 8) macro-env)))
-   (check-exn exn:fail:contract? (λ () (combine-env (macro-comment-env 8) (comment-macro-env 4))))
-   (check-exn exn:fail:contract? (λ () (combine-env (macro-comment-env 8) (macro-comment-env 4))))))
+   (check-exn exn:fail? (λ () (combine-env (macro-comment-env 8) (comment-macro-env 4))))
+   (check-exn exn:fail? (λ () (combine-env (macro-comment-env 8) (macro-comment-env 4))))))
 
 (define/provide-test-suite test-construct-context
   (test-case

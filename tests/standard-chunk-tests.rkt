@@ -1023,31 +1023,27 @@
    "Test arg-list-chunk"
    (define test-context (construct-context 6))
    (define test-context-2 (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (arg-list-chunk open-paren-chunk
+   (check-equal? (write-nekot (chunk-transform (arg-list-chunk sur-paren-chunk
                                                                comma-chunk
-                                                               close-paren-chunk
                                                                'asdf)
                                                test-context))
                  '("(asdf)"))
-   (check-equal? (write-nekot (chunk-transform (arg-list-chunk open-paren-chunk
+   (check-equal? (write-nekot (chunk-transform (arg-list-chunk sur-paren-chunk
                                                                comma-chunk
-                                                               close-paren-chunk
                                                                (concat-chunk 'asdf
                                                                              'jkl))
                                                test-context))
                  '(" jkl)"
                    "(asdf"))
-   (check-equal? (write-nekot (chunk-transform (arg-list-chunk open-paren-chunk
+   (check-equal? (write-nekot (chunk-transform (arg-list-chunk sur-paren-chunk
                                                                comma-chunk
-                                                               close-paren-chunk
                                                                'asdf
                                                                empty-chunk
                                                                'jkl)
                                                test-context))
                  '(" jkl)" " ," "(asdf,"))
-   (check-equal? (write-nekot (chunk-transform (arg-list-chunk open-paren-chunk
+   (check-equal? (write-nekot (chunk-transform (arg-list-chunk sur-paren-chunk
                                                                comma-chunk
-                                                               close-paren-chunk
                                                                'asdf
                                                                empty-chunk
                                                                'jkl)
@@ -1095,30 +1091,14 @@
                                                                space-chunk
                                                                'jkl)
                                                test-context))
-                 '("jkl" "" " ;" "" "asdf;"))
+                 '("jkl;" "" " ;" "" "asdf;"))
    (check-equal? (write-nekot (chunk-transform (smt-list-chunk new-line-chunk
                                                                (spaces-chunk 4)
                                                                'asdf
                                                                empty-chunk)
                                                test-context))
-                 '("" "asdf;" "    ;"))))
-
-(define/provide-test-suite test-top-smt-list-chunk
-  (test-case
-   "Test top-smt-list-chunk"
-   (define test-context (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (top-smt-list-chunk blank-line-chunk
-                                                                   'asdf
-                                                                   space-chunk
-                                                                   'jkl)
-                                               test-context))
-                 '("jkl;" "" " ;" "" "asdf;"))
-   (check-equal? (write-nekot (chunk-transform (top-smt-list-chunk new-line-chunk
-                                                                   (spaces-chunk 4)
-                                                                   'asdf
-                                                                   empty-chunk)
-                                               test-context))
                  '(";" "asdf;" "    ;"))))
+
 
 (define/provide-test-suite test-constructor-assignment-list-chunk
   (test-case
@@ -1166,7 +1146,6 @@
                    "    ;"
                    ""
                    "   asdf;"
-                   ""
                    "{"))))
 
 ;preprocessor chunks
@@ -1230,10 +1209,10 @@
   (test-case
    "Test pp-endif-chunk"
    (define test-context (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (pp-endif-chunk 'condition) test-context)) '("#endif /* condition */"))
-   (check-equal? (write-nekot (chunk-transform (pp-endif-chunk (concat-chunk 'condition "2")) test-context)) '("#endif /* condition2 */"))
-   (check-equal? (write-nekot (chunk-transform (concat-chunk (spaces-chunk 3) (pp-endif-chunk 'condition)) test-context)) '("#  endif /* condition */"))
-   (check-equal? (write-nekot (chunk-transform (concat-chunk "/* " (pp-endif-chunk 'condition)) test-context)) '("/*#endif /* condition */"))))
+   (check-equal? (write-nekot (chunk-transform (pp-endif-chunk 'condition) test-context)) '("/* condition */" "#endif"))
+   (check-equal? (write-nekot (chunk-transform (pp-endif-chunk (concat-chunk 'condition "2")) test-context)) '("/* condition2 */" "#endif"))
+   (check-equal? (write-nekot (chunk-transform (concat-chunk (spaces-chunk 3) (pp-endif-chunk 'condition)) test-context)) '("/* condition */" "#  endif"))
+   (check-equal? (write-nekot (chunk-transform (concat-chunk "/* " (pp-endif-chunk 'condition)) test-context)) '("/* condition */" "/*#endif"))))
 
 (define/provide-test-suite test-pp-conditional-chunk
   (test-case
@@ -1243,7 +1222,8 @@
                                                                      'condition
                                                                      'then)
                                                test-context))
-                 '("#endif /* condition */"
+                 '("/* condition */"
+                   "#endif"
                    "   then"
                    "#ifdef condition"))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-chunk ifndef-chunk
@@ -1251,7 +1231,8 @@
                                                                      'then
                                                                      'else2)
                                                test-context))
-                 '("#endif /* condition */"
+                 '("/* condition */"
+                   "#endif"
                    "   else2"
                    "#else"
                    "   then"
@@ -1264,14 +1245,16 @@
    (check-equal? (write-nekot (chunk-transform (pp-conditional-ifdef-chunk 'condition
                                                                            'then)
                                                test-context))
-                 '("#endif /* condition */"
+                 '("/* condition */"
+                   "#endif"
                    "   then"
                    "#ifdef condition"))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-ifdef-chunk 'condition
                                                                            'then
                                                                            'else2)
                                                test-context))
-                 '("#endif /* condition */"
+                 '("/* condition */"
+                   "#endif"
                    "   else2"
                    "#else"
                    "   then"
@@ -1284,14 +1267,16 @@
    (check-equal? (write-nekot (chunk-transform (pp-conditional-ifndef-chunk 'condition
                                                                             'then)
                                                test-context))
-                 '("#endif /* condition */"
+                 '("/* condition */"
+                   "#endif"
                    "   then"
                    "#ifndef condition"))
    (check-equal? (write-nekot (chunk-transform (pp-conditional-ifndef-chunk 'condition
                                                                             'then
                                                                             'else2)
                                                test-context))
-                 '("#endif /* condition */"
+                 '("/* condition */"
+                   "#endif"
                    "   else2"
                    "#else"
                    "   then"
@@ -1306,11 +1291,12 @@
                                                                      'asdf
                                                                      'jkl)
                                                test-context))
-                 '("#endif /* header_file */"
+                 '("/* header_file */"
+                   "#endif"
                    ""
-                   "   jkl;"
+                   "   jkl"
                    ""
-                   "   asdf;"
+                   "   asdf"
                    ""
                    ""
                    ""
@@ -1323,11 +1309,12 @@
                                                                      'asdf
                                                                      'jkl)
                                                test-context))
-                 '("#endif /* header_file */"
+                 '("/* header_file */"
+                   "#endif"
                    ""
-                   "   jkl;"
+                   "   jkl"
                    ""
-                   "   asdf;"
+                   "   asdf"
                    ""
                    "#  include <algorithm>"
                    "#  include <iostream>"
@@ -1462,7 +1449,6 @@
                    "   jkl;"
                    ""
                    "   asdf;"
-                   ""
                    "namespace name {"))))
 
 (define/provide-test-suite test-described-smts-chunk
@@ -1668,7 +1654,6 @@
                    "   second;"
                    ""
                    "   first;"
-                   ""
                    "signature {"))))
 
 (define/provide-test-suite test-void-function-define-chunk
@@ -1702,7 +1687,6 @@
                    "   second;"
                    ""
                    "   first;"
-                   ""
                    "          second) {"
                    "void name(first,"
                    "inline"))))
@@ -1748,7 +1732,6 @@
                    "   second;"
                    ""
                    "   first;"
-                   ""
                    "name(first, second) {"
                    "inline return-type"))
    (check-equal? (write-nekot (chunk-transform (returning-function-define-chunk (function-declare-chunk 'name
@@ -1765,7 +1748,6 @@
                    "   second;"
                    ""
                    "   first;"
-                   ""
                    "     second) {"
                    "name(first,"
                    "return-type"
@@ -1860,7 +1842,8 @@
                                                                      'second)
                                                test-context))
                  '(" second"
-                   " first;"
+                   ""
+                   " first"
                    "name:"))))
 
 (define/provide-test-suite test-struct-define-chunk
@@ -1871,16 +1854,15 @@
                                                                     'first
                                                                     'second)
                                                test-context))
-                 '("signature { first; second; }"))
+                 '("signature { first second }"))
    (check-equal? (write-nekot (chunk-transform (struct-define-chunk 'signature
                                                                     'first
                                                                     'second)
                                                (construct-context 8)))
                  '("}"
-                   "   second;"
+                   "   second"
                    ""
-                   "   first;"
-                   ""
+                   "   first"
                    "signature {"))))
 
 (define/provide-test-suite test-template-struct-define-chunk
@@ -1894,7 +1876,7 @@
                                                                              'first
                                                                              'second)
                                                test-context))
-                 '(" struct name { first; second; }"
+                 '(" struct name { first second }"
                    "template<first, second>"))
    (check-equal? (write-nekot (chunk-transform (template-struct-define-chunk 'name
                                                                              (list 'first
@@ -1904,10 +1886,9 @@
                                                                              'second)
                                                (construct-context 12)))
                  '("}"
-                   "   second;"
+                   "   second"
                    ""
-                   "   first;"
-                   ""
+                   "   first"
                    " struct name {"
                    "         second>"
                    "template<first,"))))

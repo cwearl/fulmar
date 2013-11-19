@@ -81,7 +81,11 @@
 
 ;build resulting environment of old and new environments
 (define (combine-env old new)
-  (cond [(empty-env? old) ;was in empty env
+  (cond [(macro-comment-env? new)
+         (error "Cannot combine macro with comment environment with any environment")]
+        [(comment-macro-env? new)
+         (error "Cannot combine environment with macro environment with any environment")]
+        [(empty-env? old) ;was in empty env
          new]
         [(empty-env? new) ;entering empty env
          old]
