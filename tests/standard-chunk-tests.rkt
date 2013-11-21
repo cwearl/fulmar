@@ -8,31 +8,9 @@
 
 ;unit tests for standard-chunk.rkt
 
-;character chunks
+;basic chunks
 
-(define/provide-test-suite test-characters
-  (test-case
-   "Test space"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform space test-context))
-                 '(" "))
-   (check-equal? (write-nekot (chunk-transform (concat "1" space)
-                                               test-context))
-                 '("1 "))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" space)
-                                               test-context))
-                 '("" "123456")))
-  (test-case
-   "Test imm-space"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-space test-context))
-                 '(" "))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-space)
-                                               test-context))
-                 '("1 "))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-space)
-                                               test-context))
-                 '("123456 ")))
+(define/provide-test-suite test-basic-chunks
   (test-case
    "Test blank-lines"
    (define test-context (construct-context 6))
@@ -50,672 +28,7 @@
                  '("" "" "1"))
    (check-equal? (write-nekot (chunk-transform (concat "123" blank-line)
                                                test-context))
-                 '("" "" "123")))
-  (test-case
-   "Test open-paren"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform open-paren test-context))
-                 '("("))
-   (check-equal? (write-nekot (chunk-transform (concat "1" open-paren)
-                                               test-context))
-                 '("1("))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" open-paren)
-                                               test-context))
-                 '("(" "123456")))
-  (test-case
-   "Test imm-open-paren"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-open-paren test-context))
-                 '("("))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-open-paren)
-                                               test-context))
-                 '("1("))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-open-paren)
-                                               test-context))
-                 '("123456(")))
-  (test-case
-   "Test close-paren"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform close-paren test-context))
-                 '(")"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" close-paren)
-                                               test-context))
-                 '("1)"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" close-paren)
-                                               test-context))
-                 '(")" "123456")))
-  (test-case
-   "Test imm-close-paren"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-close-paren test-context))
-                 '(")"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-close-paren)
-                                               test-context))
-                 '("1)"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-close-paren)
-                                               test-context))
-                 '("123456)")))
-  (test-case
-   "Test open-crbr"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform open-crbr test-context))
-                 '("{"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" open-crbr)
-                                               test-context))
-                 '("1{"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" open-crbr)
-                                               test-context))
-                 '("{" "123456")))
-  (test-case
-   "Test imm-open-crbr"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-open-crbr test-context))
-                 '("{"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-open-crbr)
-                                               test-context))
-                 '("1{"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-open-crbr)
-                                               test-context))
-                 '("123456{")))
-  (test-case
-   "Test close-crbr"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform close-crbr test-context))
-                 '("}"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" close-crbr)
-                                               test-context))
-                 '("1}"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" close-crbr)
-                                               test-context))
-                 '("}" "123456")))
-  (test-case
-   "Test imm-close-crbr"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-close-crbr test-context))
-                 '("}"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-close-crbr)
-                                               test-context))
-                 '("1}"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-close-crbr)
-                                               test-context))
-                 '("123456}")))
-  (test-case
-   "Test open-anbr"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform open-anbr test-context))
-                 '("<"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" open-anbr)
-                                               test-context))
-                 '("1<"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" open-anbr)
-                                               test-context))
-                 '("<" "123456")))
-  (test-case
-   "Test imm-open-anbr"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-open-anbr test-context))
-                 '("<"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-open-anbr)
-                                               test-context))
-                 '("1<"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-open-anbr)
-                                               test-context))
-                 '("123456<")))
-  (test-case
-   "Test close-anbr"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform close-anbr test-context))
-                 '(">"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" close-anbr)
-                                               test-context))
-                 '("1>"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" close-anbr)
-                                               test-context))
-                 '(">" "123456")))
-  (test-case
-   "Test imm-close-anbr"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-close-anbr test-context))
-                 '(">"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-close-anbr)
-                                               test-context))
-                 '("1>"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-close-anbr)
-                                               test-context))
-                 '("123456>")))
-  (test-case
-   "Test comma"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform comma test-context))
-                 '(","))
-   (check-equal? (write-nekot (chunk-transform (concat "1" comma)
-                                               test-context))
-                 '("1,"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" comma)
-                                               test-context))
-                 '("," "123456")))
-  (test-case
-   "Test imm-comma"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-comma test-context))
-                 '(","))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-comma)
-                                               test-context))
-                 '("1,"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-comma)
-                                               test-context))
-                 '("123456,")))
-  (test-case
-   "Test period"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform period test-context))
-                 '("."))
-   (check-equal? (write-nekot (chunk-transform (concat "1" period)
-                                               test-context))
-                 '("1."))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" period)
-                                               test-context))
-                 '("." "123456")))
-  (test-case
-   "Test imm-period"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-period test-context))
-                 '("."))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-period)
-                                               test-context))
-                 '("1."))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-period)
-                                               test-context))
-                 '("123456.")))
-  (test-case
-   "Test colon"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform colon test-context))
-                 '(":"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" colon)
-                                               test-context))
-                 '("1:"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" colon)
-                                               test-context))
-                 '(":" "123456")))
-  (test-case
-   "Test imm-colon"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-colon test-context))
-                 '(":"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-colon)
-                                               test-context))
-                 '("1:"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-colon)
-                                               test-context))
-                 '("123456:")))
-  (test-case
-   "Test semi-colon"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform semi-colon test-context))
-                 '(";"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" semi-colon)
-                                               test-context))
-                 '("1;"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" semi-colon)
-                                               test-context))
-                 '(";" "123456")))
-  (test-case
-   "Test imm-semi-colon"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-semi-colon test-context))
-                 '(";"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-semi-colon)
-                                               test-context))
-                 '("1;"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-semi-colon)
-                                               test-context))
-                 '("123456;"))))
-
-;keyword chunks
-
-(define/provide-test-suite test-keywords
-  (test-case
-   "Test define"
-   (define test-context (construct-context 7))
-   (check-equal? (write-nekot (chunk-transform define-chunk test-context))
-                 '("define"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" define-chunk)
-                                               test-context))
-                 '("1define"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" define-chunk)
-                                               test-context))
-                 '("define" "123456")))
-  (test-case
-   "Test imm-define"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-define test-context))
-                 '("define"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-define)
-                                               test-context))
-                 '("1define"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-define)
-                                               test-context))
-                 '("123456define")))
-  (test-case
-   "Test include"
-   (define test-context (construct-context 8))
-   (check-equal? (write-nekot (chunk-transform include test-context))
-                 '("include"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" include)
-                                               test-context))
-                 '("1include"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" include)
-                                               test-context))
-                 '("include" "123456")))
-  (test-case
-   "Test imm-include"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-include test-context))
-                 '("include"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-include)
-                                               test-context))
-                 '("1include"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-include)
-                                               test-context))
-                 '("123456include")))
-  (test-case
-   "Test ifdef"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform ifdef test-context))
-                 '("ifdef"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" ifdef)
-                                               test-context))
-                 '("1ifdef"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" ifdef)
-                                               test-context))
-                 '("ifdef" "123456")))
-  (test-case
-   "Test imm-ifdef"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-ifdef test-context))
-                 '("ifdef"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-ifdef)
-                                               test-context))
-                 '("1ifdef"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-ifdef)
-                                               test-context))
-                 '("123456ifdef")))
-  (test-case
-   "Test ifndef"
-   (define test-context (construct-context 7))
-   (check-equal? (write-nekot (chunk-transform ifndef test-context))
-                 '("ifndef"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" ifndef)
-                                               test-context))
-                 '("1ifndef"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" ifndef)
-                                               test-context))
-                 '("ifndef" "123456")))
-  (test-case
-   "Test imm-ifndef"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-ifndef test-context))
-                 '("ifndef"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-ifndef)
-                                               test-context))
-                 '("1ifndef"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-ifndef)
-                                               test-context))
-                 '("123456ifndef")))
-  (test-case
-   "Test else"
-   (define test-context (construct-context 5))
-   (check-equal? (write-nekot (chunk-transform else test-context))
-                 '("else"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" else)
-                                               test-context))
-                 '("1else"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" else)
-                                               test-context))
-                 '("else" "123456")))
-  (test-case
-   "Test imm-else"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-else test-context))
-                 '("else"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-else)
-                                               test-context))
-                 '("1else"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-else)
-                                               test-context))
-                 '("123456else")))
-  (test-case
-   "Test endif"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform endif test-context))
-                 '("endif"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" endif)
-                                               test-context))
-                 '("1endif"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" endif)
-                                               test-context))
-                 '("endif" "123456")))
-  (test-case
-   "Test imm-endif"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-endif test-context))
-                 '("endif"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-endif)
-                                               test-context))
-                 '("1endif"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-endif)
-                                               test-context))
-                 '("123456endif")))
-  (test-case
-   "Test template"
-   (define test-context (construct-context 9))
-   (check-equal? (write-nekot (chunk-transform template test-context))
-                 '("template"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" template)
-                                               test-context))
-                 '("1template"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" template)
-                                               test-context))
-                 '("template" "123456")))
-  (test-case
-   "Test imm-template"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-template test-context))
-                 '("template"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-template)
-                                               test-context))
-                 '("1template"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-template)
-                                               test-context))
-                 '("123456template")))
-  (test-case
-   "Test typename"
-   (define test-context (construct-context 9))
-   (check-equal? (write-nekot (chunk-transform typename test-context))
-                 '("typename"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" typename)
-                                               test-context))
-                 '("1typename"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" typename)
-                                               test-context))
-                 '("typename" "123456")))
-  (test-case
-   "Test imm-typename"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-typename test-context))
-                 '("typename"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-typename)
-                                               test-context))
-                 '("1typename"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-typename)
-                                               test-context))
-                 '("123456typename")))
-  (test-case
-   "Test typedef"
-   (define test-context (construct-context 8))
-   (check-equal? (write-nekot (chunk-transform typedef test-context))
-                 '("typedef"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" typedef)
-                                               test-context))
-                 '("1typedef"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" typedef)
-                                               test-context))
-                 '("typedef" "123456")))
-  (test-case
-   "Test imm-typedef"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-typedef test-context))
-                 '("typedef"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-typedef)
-                                               test-context))
-                 '("1typedef"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-typedef)
-                                               test-context))
-                 '("123456typedef")))
-  (test-case
-   "Test void"
-   (define test-context (construct-context 5))
-   (check-equal? (write-nekot (chunk-transform void test-context))
-                 '("void"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" void)
-                                               test-context))
-                 '("1void"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" void)
-                                               test-context))
-                 '("void" "123456")))
-  (test-case
-   "Test imm-void"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-void test-context))
-                 '("void"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-void)
-                                               test-context))
-                 '("1void"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-void)
-                                               test-context))
-                 '("123456void")))
-  (test-case
-   "Test inline"
-   (define test-context (construct-context 7))
-   (check-equal? (write-nekot (chunk-transform inline test-context))
-                 '("inline"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" inline)
-                                               test-context))
-                 '("1inline"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" inline)
-                                               test-context))
-                 '("inline" "123456")))
-  (test-case
-   "Test imm-inline"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-inline test-context))
-                 '("inline"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-inline)
-                                               test-context))
-                 '("1inline"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-inline)
-                                               test-context))
-                 '("123456inline")))
-  (test-case
-   "Test static"
-   (define test-context (construct-context 7))
-   (check-equal? (write-nekot (chunk-transform static test-context))
-                 '("static"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" static)
-                                               test-context))
-                 '("1static"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" static)
-                                               test-context))
-                 '("static" "123456")))
-  (test-case
-   "Test imm-static"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-static test-context))
-                 '("static"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-static)
-                                               test-context))
-                 '("1static"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-static)
-                                               test-context))
-                 '("123456static")))
-  (test-case
-   "Test return"
-   (define test-context (construct-context 7))
-   (check-equal? (write-nekot (chunk-transform return
-                                               test-context))
-                 '("return"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" return)
-                                               test-context))
-                 '("1return"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" return)
-                                               test-context))
-                 '("return" "123456")))
-  (test-case
-   "Test imm-return"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-return test-context))
-                 '("return"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-return)
-                                               test-context))
-                 '("1return"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-return)
-                                               test-context))
-                 '("123456return")))
-  (test-case
-   "Test const"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform const test-context))
-                 '("const"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" const)
-                                               test-context))
-                 '("1const"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" const)
-                                               test-context))
-                 '("const" "123456")))
-  (test-case
-   "Test imm-const"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-const test-context))
-                 '("const"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-const)
-                                               test-context))
-                 '("1const"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-const)
-                                               test-context))
-                 '("123456const")))
-  (test-case
-   "Test struct"
-   (define test-context (construct-context 7))
-   (check-equal? (write-nekot (chunk-transform struct test-context))
-                 '("struct"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" struct)
-                                               test-context))
-                 '("1struct"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" struct)
-                                               test-context))
-                 '("struct" "123456")))
-  (test-case
-   "Test imm-struct"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-struct test-context))
-                 '("struct"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-struct)
-                                               test-context))
-                 '("1struct"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-struct)
-                                               test-context))
-                 '("123456struct")))
-  (test-case
-   "Test class"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform class test-context))
-                 '("class"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" class)
-                                               test-context))
-                 '("1class"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" class)
-                                               test-context))
-                 '("class" "123456")))
-  (test-case
-   "Test imm-class"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-class test-context))
-                 '("class"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-class)
-                                               test-context))
-                 '("1class"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-class)
-                                               test-context))
-                 '("123456class")))
-  (test-case
-   "Test public"
-   (define test-context (construct-context 7))
-   (check-equal? (write-nekot (chunk-transform public test-context))
-                 '("public"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" public)
-                                               test-context))
-                 '("1public"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" public)
-                                               test-context))
-                 '("public" "123456")))
-  (test-case
-   "Test imm-public"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-public test-context))
-                 '("public"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-public)
-                                               test-context))
-                 '("1public"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-public)
-                                               test-context))
-                 '("123456public")))
-  (test-case
-   "Test protected"
-   (define test-context (construct-context 10))
-   (check-equal? (write-nekot (chunk-transform protected test-context))
-                 '("protected"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" protected)
-                                               test-context))
-                 '("1protected"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" protected)
-                                               test-context))
-                 '("protected" "123456")))
-  (test-case
-   "Test imm-protected"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-protected test-context))
-                 '("protected"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-protected)
-                                               test-context))
-                 '("1protected"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-protected)
-                                               test-context))
-                 '("123456protected")))
-  (test-case
-   "Test private"
-   (define test-context (construct-context 8))
-   (check-equal? (write-nekot (chunk-transform private test-context))
-                 '("private"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" private)
-                                               test-context))
-                 '("1private"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" private)
-                                               test-context))
-                 '("private" "123456")))
-  (test-case
-   "Test imm-private"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-private test-context))
-                 '("private"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-private)
-                                               test-context))
-                 '("1private"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-private)
-                                               test-context))
-                 '("123456private")))
-  (test-case
-   "Test namespace"
-   (define test-context (construct-context 10))
-   (check-equal? (write-nekot (chunk-transform namespace test-context))
-                 '("namespace"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" namespace)
-                                               test-context))
-                 '("1namespace"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" namespace)
-                                               test-context))
-                 '("namespace" "123456")))
-  (test-case
-   "Test imm-namespace"
-   (define test-context (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform imm-namespace test-context))
-                 '("namespace"))
-   (check-equal? (write-nekot (chunk-transform (concat "1" imm-namespace)
-                                               test-context))
-                 '("1namespace"))
-   (check-equal? (write-nekot (chunk-transform (concat "123456" imm-namespace)
-                                               test-context))
-                 '("123456namespace"))))
+                 '("" "" "123"))))
 
 ;list chunks
 
@@ -723,18 +36,18 @@
   (test-case
    "Test attach-list-separator"
    (define test-context (construct-context 80))
-   (check-equal? (attach-list-separator comma)
+   (check-equal? (attach-list-separator ",")
                  null)
-   (check-equal? (write-nekot (chunk-transform (concat (attach-list-separator comma 'asdf 'jkl))
+   (check-equal? (write-nekot (chunk-transform (concat (attach-list-separator "," 'asdf 'jkl))
                                                test-context))
                  '("asdf,jkl"))
-   (check-equal? (write-nekot (chunk-transform (concat (attach-list-separator comma 'asdf))
+   (check-equal? (write-nekot (chunk-transform (concat (attach-list-separator "," 'asdf))
                                                test-context))
                  '("asdf"))
-   (check-equal? (write-nekot (chunk-transform (concat (attach-list-separator comma 'asdf 'jkl "12345"))
+   (check-equal? (write-nekot (chunk-transform (concat (attach-list-separator "," 'asdf 'jkl "12345"))
                                                test-context))
                  '("asdf,jkl,12345"))
-   (check-equal? (write-nekot (chunk-transform (concat (attach-list-separator comma 'asdf "123" "12345" "1"))
+   (check-equal? (write-nekot (chunk-transform (concat (attach-list-separator "," 'asdf "123" "12345" "1"))
                                                (construct-context 4)))
                  '("1" "12345," "123," "asdf,"))))
 
@@ -742,16 +55,16 @@
   (test-case
    "Test between"
    (define test-context (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (between space)
+   (check-equal? (write-nekot (chunk-transform (between 1)
                                                test-context))
                  '(""))
-   (check-equal? (write-nekot (chunk-transform (between space 'asdf 'jkl)
+   (check-equal? (write-nekot (chunk-transform (between 1 'asdf 'jkl)
                                                test-context))
                  '("asdf jkl"))
-   (check-equal? (write-nekot (chunk-transform (between space 'asdf)
+   (check-equal? (write-nekot (chunk-transform (between 1 'asdf)
                                                test-context))
                  '("asdf"))
-   (check-equal? (write-nekot (chunk-transform (between space 'asdf 'jkl "12345")
+   (check-equal? (write-nekot (chunk-transform (between 1 'asdf 'jkl "12345")
                                                test-context))
                  '("asdf jkl 12345"))
    (check-equal? (write-nekot (chunk-transform (between new-line 'asdf "123" "12345" "1")
@@ -762,25 +75,25 @@
   (test-case
    "Test between/attach"
    (define test-context (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (between/attach comma space)
+   (check-equal? (write-nekot (chunk-transform (between/attach "," 1)
                                                test-context))
                  '(""))
-   (check-equal? (write-nekot (chunk-transform (between/attach comma space 'asdf 'jkl)
+   (check-equal? (write-nekot (chunk-transform (between/attach "," 1 'asdf 'jkl)
                                                test-context))
                  '("asdf, jkl"))
-   (check-equal? (write-nekot (chunk-transform (between/attach comma space 'asdf)
+   (check-equal? (write-nekot (chunk-transform (between/attach "," 1 'asdf)
                                                test-context))
                  '("asdf"))
-   (check-equal? (write-nekot (chunk-transform (between/attach comma space 'asdf 'jkl "12345")
+   (check-equal? (write-nekot (chunk-transform (between/attach "," 1 'asdf 'jkl "12345")
                                                test-context))
                  '("asdf, jkl, 12345"))
-   (check-equal? (write-nekot (chunk-transform (between/attach comma space 'asdf "123" "12345" "1")
+   (check-equal? (write-nekot (chunk-transform (between/attach "," 1 'asdf "123" "12345" "1")
                                                test-context))
                  '("asdf, 123, 12345, 1"))
-   (check-equal? (write-nekot (chunk-transform (between/attach comma new-line 'asdf "123" "12345" "1")
+   (check-equal? (write-nekot (chunk-transform (between/attach "," new-line 'asdf "123" "12345" "1")
                                                test-context))
                  '("1" "12345," "123," "asdf,"))
-   (check-equal? (write-nekot (chunk-transform (between/attach comma space 'asdf "123" "12345" "1")
+   (check-equal? (write-nekot (chunk-transform (between/attach "," 1 'asdf "123" "12345" "1")
                                                (construct-context 4)))
                  '("1" "12345," "123," "asdf,"))))
 
@@ -789,17 +102,17 @@
    "Test arg-list"
    (define test-context (construct-context 6))
    (define test-context-2 (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (arg-list sur-paren comma 'asdf)
+   (check-equal? (write-nekot (chunk-transform (arg-list sur-paren "," 'asdf)
                                                test-context))
                  '("(asdf)"))
-   (check-equal? (write-nekot (chunk-transform (arg-list sur-paren comma (concat 'asdf 'jkl))
+   (check-equal? (write-nekot (chunk-transform (arg-list sur-paren "," (concat 'asdf 'jkl))
                                                test-context))
                  '(" jkl)"
                    "(asdf"))
-   (check-equal? (write-nekot (chunk-transform (arg-list sur-paren comma 'asdf empty 'jkl)
+   (check-equal? (write-nekot (chunk-transform (arg-list sur-paren "," 'asdf empty 'jkl)
                                                test-context))
                  '(" jkl)" " ," "(asdf,"))
-   (check-equal? (write-nekot (chunk-transform (arg-list sur-paren comma 'asdf empty 'jkl)
+   (check-equal? (write-nekot (chunk-transform (arg-list sur-paren "," 'asdf empty 'jkl)
                                                test-context-2))
                  '("(asdf, , jkl)"))))
 
@@ -831,7 +144,7 @@
   (test-case
    "Test smt-list"
    (define test-context (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (smt-list blank-line 'asdf space 'jkl)
+   (check-equal? (write-nekot (chunk-transform (smt-list blank-line 'asdf 1 'jkl)
                                                test-context))
                  '("jkl;" "" " ;" "" "asdf;"))
    (check-equal? (write-nekot (chunk-transform (smt-list new-line
@@ -866,7 +179,7 @@
    "Test body"
    (define test-context (construct-context 80))
    (define test-context-2 (construct-context 6))
-   (check-equal? (write-nekot (chunk-transform (body 'asdf space 'jkl)
+   (check-equal? (write-nekot (chunk-transform (body 'asdf 1 'jkl)
                                                test-context))
                  '("{ asdf;  ; jkl; }"))
    (check-equal? (write-nekot (chunk-transform (body "123456")
@@ -874,7 +187,7 @@
                  '("}"
                    "   123456;"
                    "{"))
-   (check-equal? (write-nekot (chunk-transform (body 'asdf space 'jkl)
+   (check-equal? (write-nekot (chunk-transform (body 'asdf 1 'jkl)
                                                test-context-2))
                  '("}"
                    "   jkl;"
@@ -953,13 +266,13 @@
   (test-case
    "Test pp-conditional"
    (define test-context (construct-context 80))
-   (check-equal? (write-nekot (chunk-transform (pp-conditional ifdef 'condition 'then)
+   (check-equal? (write-nekot (chunk-transform (pp-conditional 'ifdef 'condition 'then)
                                                test-context))
                  '("/* condition */"
                    "#endif"
                    "   then"
                    "#ifdef condition"))
-   (check-equal? (write-nekot (chunk-transform (pp-conditional ifndef 'condition 'then 'else2)
+   (check-equal? (write-nekot (chunk-transform (pp-conditional 'ifndef 'condition 'then 'else2)
                                                test-context))
                  '("/* condition */"
                    "#endif"
@@ -1053,17 +366,17 @@
                  '("#define name asdf"))
    (check-equal? (write-nekot (chunk-transform (macro-define 'name
                                                              (list 'first)
-                                                             (concat 'asdf space 'first))
+                                                             (concat 'asdf 1 'first))
                                                test-context))
                  '("#define name(first) asdf first"))
    (check-equal? (write-nekot (chunk-transform (macro-define 'name
                                                              (list 'first)
-                                                             (concat 'asdf space 'first))
+                                                             (concat 'asdf 1 'first))
                                                test-context-2))
                  '("   asdf first" "#define name(first) \\"))
    (check-equal? (write-nekot (chunk-transform (macro-define 'name
                                                              (list 'first 'second)
-                                                             (concat 'asdf space 'first space 'second))
+                                                             (concat 'asdf 1 'first 1 'second))
                                                test-context))
                  '("#define name(first, second) asdf first second"))
    (check-equal? (write-nekot (chunk-transform (macro-define 'name

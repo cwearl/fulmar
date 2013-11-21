@@ -104,8 +104,7 @@
 ;standard chunk tests:
 (define/contract standard-core-tests
   (listof test-suite?)
-  (list test-characters
-        test-keywords
+  (list test-basic-chunks
         test-attach-list-separator
         test-between
         test-between/attach
