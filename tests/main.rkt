@@ -1,7 +1,6 @@
 #lang racket
 
 (require rackunit)
-(require rackunit/gui)
 (require rackunit/text-ui)
 (require "fulmar-core-tests.rkt")
 (require "core-chunk-tests.rkt")
@@ -35,20 +34,6 @@
   (andmap (λ (test) (= 0 (run-tests test 'quiet)))
           tests))
 
-;check if any tests fail
-; if any of the given tests fail,
-;    - run gui on all the tests
-;    - return true
-; else
-;    - return false
-(define/contract (test-fail-with-gui? . tests)
-  (->* () #:rest (listof test-suite?) boolean?)
-  (let ([result (apply test-fail? tests)])
-    (begin (if (not result)
-               (apply (make-gui-runner) tests)
-               (void))
-           result)))
-
 ;fulmar-core tests:
 (define/contract fulmar-core-tests
   (listof test-suite?)
@@ -67,8 +52,7 @@
         test-enter-comment
         test-enter-macro))
 
-(apply test-fail-with-gui? fulmar-core-tests)
-;(apply run-tests-text fulmar-core-tests)
+(apply run-tests-text fulmar-core-tests)
 
 ;writer tests:
 (define/contract writer-tests
@@ -92,8 +76,7 @@
         test-unknown-nekot-type
         test-write-nekot))
 
-(apply test-fail-with-gui? writer-tests)
-;(apply run-tests-text writer-tests)
+(apply run-tests-text writer-tests)
 
 ;core chunk tests:
 (define/contract core-chunk-tests
@@ -102,71 +85,69 @@
         test-combine-strings
         test-length-equals-one
         test-chunk-transform
-        test-literal-chunk
-        test-spaces-chunk
-        test-new-line-chunk
-        test-pp-directive-chunk
-        test-empty-chunk
-        test-concat-chunk
-        test-immediate-chunk
-        test-speculative-chunk
-        test-position-indent-chunk
-        test-modify-context-chunk
-        test-indent-chunk
+        test-literal
+        test-spaces
+        test-new-line
+        test-pp-directive
+        test-empty
+        test-concat
+        test-immediate
+        test-speculative
+        test-position-indent
+        test-modify-context
+        test-indent
         test-comment-env-chunk
         test-macro-env-chunk))
 
-(apply test-fail-with-gui? core-chunk-tests)
-;(apply run-tests-text core-chunk-tests)
+(apply run-tests-text core-chunk-tests)
 
 ;standard chunk tests:
 (define/contract standard-core-tests
   (listof test-suite?)
-  (list test-character-chunks
-        test-keyword-chunks
+  (list test-characters
+        test-keywords
         test-attach-list-separator
-        test-between-chunk
-        test-between/attach-chunk
-        test-arg-list-chunk
-        test-paren-list-chunk
-        test-template-list-chunk
-        test-constructor-assignment-list-chunk
-        test-body-chunk
-        test-smt-list-chunk
-        test-pp-define-chunk
-        test-pp-include-chunk
-        test-pp-includes-chunk
-        test-pp-ifdef-chunk
-        test-pp-ifndef-chunk
-        test-pp-else-chunk
-        test-pp-endif-chunk
-        test-pp-conditional-chunk
-        test-pp-conditional-ifdef-chunk
-        test-pp-conditional-ifndef-chunk
-        test-pp-header-file-chunk
-        test-macro-define-chunk
-        test-namespace-define-chunk
-        test-described-smts-chunk
-        test-constize-chunk
-        test-template-define-chunk
-        test-template-use-chunk
-        test-function-declare-chunk
-        test-static-function-declare-chunk
-        test-void-function-declare-chunk
-        test-function-define-chunk
-        test-void-function-define-chunk
-        test-returning-function-define-chunk
-        test-constructor-assignment-chunk
-        test-constructor-chunk
-        test-struct-declare-chunk
-        test-template-struct-declare-chunk
-        test-section-define-chunk
-        test-struct-define-chunk
-        test-template-struct-define-chunk
-        test-scope-resolution-operator-chunk
-        test-typedef-smt-chunk
-        test-function-call-chunk
-        test-member-function-call-chunk))
+        test-between
+        test-between/attach
+        test-arg-list
+        test-paren-list
+        test-template-list
+        test-constructor-assignment-list
+        test-body
+        test-smt-list
+        test-pp-define
+        test-pp-include
+        test-pp-includes
+        test-pp-ifdef
+        test-pp-ifndef
+        test-pp-else
+        test-pp-endif
+        test-pp-conditional
+        test-pp-conditional-ifdef
+        test-pp-conditional-ifndef
+        test-pp-header-file
+        test-macro-define
+        test-namespace-define
+        test-described-smts
+        test-constize
+        test-template-define
+        test-template-use
+        test-function-declare
+        test-static-function-declare
+        test-void-function-declare
+        test-function-define
+        test-void-function-define
+        test-returning-function-define
+        test-constructor-assignment
+        test-constructor
+        test-struct-declare
+        test-template-struct-declare
+        test-section-define
+        test-struct-define
+        test-template-struct-define
+        test-scope-resolution-operator
+        test-typedef-smt
+        test-function-call
+        test-member-function-call))
 
-(apply test-fail-with-gui? standard-core-tests)
-;(apply run-tests-text standard-core-tests)
+(apply run-tests-text standard-core-tests)

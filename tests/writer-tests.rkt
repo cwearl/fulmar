@@ -704,20 +704,17 @@
    "Test change-indent-to-current (sets indent to length of current line - normal mode"
    (define test-context (context 0 6 #false))
    (check-equal? (change-indent-to-current 'normal
-                                           (concat-chunk new-line-chunk
-                                                         'asdf)
+                                           (concat new-line 'asdf)
                                            test-context
                                            "")
                  '("asdf" ""))
    (check-equal? (change-indent-to-current 'normal
-                                           (concat-chunk new-line-chunk
-                                                         'asdf)
+                                           (concat new-line 'asdf)
                                            test-context
                                            "jkl")
                  '("   asdf" "jkl"))
    (check-equal? (change-indent-to-current 'normal
-                                           (concat-chunk new-line-chunk
-                                                         'asdf)
+                                           (concat new-line 'asdf)
                                            (context 5 6 #false)
                                            "jkl")
                  '("     asdf" "jkl")))
@@ -725,20 +722,17 @@
    "Test change-indent-to-current (sets indent to length of current line - immediate mode"
    (define test-context (context 0 6 #false))
    (check-equal? (change-indent-to-current 'immediate
-                                           (concat-chunk new-line-chunk
-                                                         'asdf)
+                                           (concat new-line 'asdf)
                                            test-context
                                            "")
                  '("asdf" ""))
    (check-equal? (change-indent-to-current 'immediate
-                                           (concat-chunk new-line-chunk
-                                                         'asdf)
+                                           (concat new-line 'asdf)
                                            test-context
                                            "jkl")
                  '("   asdf" "jkl"))
    (check-equal? (change-indent-to-current 'immediate
-                                           (concat-chunk new-line-chunk
-                                                         'asdf)
+                                           (concat new-line 'asdf)
                                            (context 5 6 #false)
                                            "jkl")
                  '("     asdf" "jkl"))))
