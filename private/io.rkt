@@ -1,7 +1,7 @@
 #lang racket
 
 (require "fulmar-core.rkt")
-(require "standard-chunk.rkt") ; for eval
+(require "../standard-chunk.rkt") ; for eval
 
 ;input/output structures, procedures, and contracts for fulmar
 
@@ -78,7 +78,7 @@
                 chunks))
          null
          (flatten* input)))
-;(provide clean-input)
+(provide clean-input)
 
 ;TODO: change this namespace (and/or namespace-anchor) to only include standard chunks
 ;defintions needed for eval in read-chunks
