@@ -1,8 +1,8 @@
 #lang racket
 
 (require rackunit)
-(require "../src/fulmar-core.rkt")
-(require "../src/io.rkt")
+(require "../private/fulmar-core.rkt")
+(require "../private/io.rkt")
 
 ;unit tests for io.rkt
 

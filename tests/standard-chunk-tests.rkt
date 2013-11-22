@@ -1,10 +1,10 @@
 #lang racket
 
 (require rackunit)
-(require "../src/fulmar-core.rkt")
-(require "../src/core-chunk.rkt")
-(require "../src/standard-chunk.rkt")
-(require "../src/writer.rkt")
+(require "../private/fulmar-core.rkt")
+(require "../private/core-chunk.rkt")
+(require "../standard-chunk.rkt")
+(require "../private/writer.rkt")
 
 ;unit tests for standard-chunk.rkt
 

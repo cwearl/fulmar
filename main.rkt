@@ -5,10 +5,14 @@
          "private/io.rkt"
          "version.rkt"
          "standard-chunk.rkt"
+         "doc.rkt"
+         (rename-in at-exp/lang/reader
+                    (read at-read)
+                    (read-syntax at-read-syntax))
          (for-syntax '#%kernel))
 
 (provide (except-out (all-from-out racket/base) #%module-begin #%top-interaction )
-         (all-from-out "standard-chunk.rkt")
+         (all-from-out "standard-chunk.rkt" "doc.rkt")
          (rename-out 
           [module-begin2 #%module-begin]
           [top-interaction #%top-interaction])
@@ -17,7 +21,15 @@
 (define (compile chunks)
   (write-nekot (transform-chunks (clean-input chunks) (construct-context 80))))
 
-(module reader syntax/module-reader #:language 'fulmar)
+(module reader syntax/module-reader
+  #:language 'fulmar
+  #:wrapper1 (lambda (t)
+               (parameterize ([current-readtable at-readtable])
+                 (t)))
+  
+  (require (only-in scribble/reader make-at-readtable))
+  (define at-readtable (make-at-readtable))
+  )
 
 (define-values (print-values)
   (lambda vs
