@@ -5,7 +5,7 @@ Fulmar is a C++ code generation framework. It was originally created to generate
 The goal is to make Fulmar generally useful, though at present it is still very specialized to Nebo.
 Fulmar is being developed by a team of computer science researchers at the University of Utah. See AUTHORS for more details.
 
-Indended Audience
+Intended Audience
 -----------------
 
 (Who should use Fulmar?)
@@ -38,14 +38,14 @@ Currently, Fulmar has no automated way to install itself. Fortunately, it's fair
 
  1. Place a copy of the Fulmar source tree where you want it to live on your system.
 
-    If you're the only one using Fulmar on this computer, you can probably just stuff it somewhere in your home directory. (Mine is in ~/heap/projects/fulmar)
+    If you're the only one using Fulmar on this computer, you can probably just stuff it somewhere in your home directory. (For example, ~/projects/fulmar or ~/src/fulmar)
     If you want a system-wide install, this has to be a location that can be read by everyone who should be able to use Fulmar. (For example, on Linux it might be a good idea to create /usr/local/share/fulmar or /opt/fulmar and put the Fulmar source tree there.)
 
  2. Create a symbolic link from the Racket collections directory to the Fulmar source tree.
 
     If you're doing a single-user setup, you can just make a link in ~/.racket/x.y.z/collects where x.y.z is the version number of your Racket installation.
 
-This link was helpful for figuring out where my symbolic link to Fulmar needed to go in order for the #lang fulmar directive to work:
+The following link contains more information about how and where to set up the symbolic link to get Fulmar working:
 http://docs.racket-lang.org/guide/language-collection.html
 
 Use
@@ -61,6 +61,9 @@ If you run tests/main.rkt, it will generate a Fulmar script called test.fmr that
 
 Known Issues, Caveats, Notes
 ----------------------------
+
+Because Fulmar is implemented in Racket, and because Fulmar scripts are essentially an extension of Racket, the following link to the Racket documentation has been included in this README. If you have little to no experience with Racket and/or you're having trouble writing a useful Fulmar script, this is an excellent resource to begin with:
+http://docs.racket-lang.org/guide/
 
 **TODO** Write this section
 
