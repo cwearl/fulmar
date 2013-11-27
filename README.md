@@ -48,6 +48,8 @@ Currently, Fulmar has no automated way to install itself. Fortunately, it's fair
 The following link contains more information about how and where to set up the symbolic link to get Fulmar working:
 http://docs.racket-lang.org/guide/language-collection.html
 
+There's a suite of pseudo-unit/regression tests in the tests/ directory. Currently, you can run tests/main.rkt to test Fulmar.
+
 Use
 ---
 
@@ -55,7 +57,7 @@ Once you've gone through the installation above, you should be able to run Fulma
 
     racket myscript.fmr
 
-If you run tests/main.rkt, it will generate a Fulmar script called test.fmr that you can try out.
+There is a Fulmar script in tests/ called test.fmr that you can try out.
 
 **TODO** Expand this section
 
