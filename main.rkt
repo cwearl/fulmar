@@ -9,12 +9,12 @@
          (rename-in at-exp/lang/reader
                     (read at-read)
                     (read-syntax at-read-syntax))
-         (for-syntax '#%kernel))
+         (for-syntax racket/base))
 
 (provide (except-out (all-from-out racket/base) #%module-begin #%top-interaction )
          (all-from-out "standard-chunk.rkt" "doc.rkt")
          (rename-out 
-          [module-begin2 #%module-begin]
+          [module-begin3 #%module-begin]
           [top-interaction #%top-interaction])
          )
 
@@ -39,6 +39,19 @@
 (define-syntax-rule (top-interaction f ...)
   (print-code! (compile (f ...)) (current-output-port))
   )
+
+(define-syntax (module-begin3 stx)
+  (syntax-case stx ()
+    [(_ a ...)
+     (with-syntax ([racket/base (datum->syntax stx 'racket/base)]
+                   [scribble/manual (datum->syntax stx 'scribble/manual)])
+       #'(module-begin2
+          (require
+           (for-doc
+            racket/base
+            scribble/manual))
+          a
+          ...))]))
 
 (define-syntax-rule (module-begin2 a ...)
   (module-begin
