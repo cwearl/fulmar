@@ -19,7 +19,11 @@
  ; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  ; IN THE SOFTWARE.
 
-(define l literal)
+(define/doc l
+  (-> any/c any/c)
+  @{Rename for built in @racket[literal]}
+  literal)
+
 (define c concat)
 (define b between)
 (define b/a between/attach)

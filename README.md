@@ -61,6 +61,42 @@ There is a Fulmar script in tests/ called test.fmr that you can try out.
 
 **TODO** Expand this section
 
+
+
+Documenting Defined Forms
+-------------------------
+
+Fulmar provides a define/doc macro that allows for documentation inline with function and variable definition. The supported forms are:
+
+(define/doc
+ (id args ...)
+ contract
+ doc
+ body)
+
+for functions and
+
+(define/doc
+ id
+ contract
+ doc
+ body)
+
+for general bindings.
+
+contract is as defined at http://docs.racket-lang.org/scribble/srcdoc.html#%28form._%28%28lib._scribble%2Fsrcdoc..rkt%29._proc-doc%29%29
+
+doc is a description expression in racket's at-expression
+format. See here for details: http://docs.racket-lang.org/scribble/reader.html
+
+An example from tests/test.fmr:
+
+(define/doc l
+  (-> any/c any/c)
+  @{Rename for built in @racket[literal]}
+  literal)
+
+
 Known Issues, Caveats, Notes
 ----------------------------
 

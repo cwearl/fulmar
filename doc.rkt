@@ -7,15 +7,15 @@
           scribble/manual)
  )
 
-(provide define/fmr
+(provide define/doc
          (all-from-out racket/contract
                        scribble/srcdoc 
                        )
          )
 
-(define-syntax define/fmr
+(define-syntax define/doc
   (syntax-rules ()
-    [(define/fmr (id a ...) contract doc body)
+    [(define/doc (id a ...) contract doc body)
      (begin
        (provide
         (proc-doc/names
@@ -28,7 +28,7 @@
        (define (id a ...)
          body)
        )]
-    [(define/fmr id contract doc body)
+    [(define/doc id contract doc body)
      (begin
        (provide
         (thing-doc
