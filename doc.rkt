@@ -15,7 +15,7 @@
 
 (define-syntax define/fmr
   (syntax-rules ()
-    [(define/doc (id a ...) contract doc body)
+    [(define/fmr (id a ...) contract doc body)
      (begin
        (provide
         (proc-doc/names
@@ -28,7 +28,7 @@
        (define (id a ...)
          body)
        )]
-    [(define/doc id contract doc body)
+    [(define/fmr id contract doc body)
      (begin
        (provide
         (thing-doc
