@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket
 (require "private/writer.rkt"
          "private/core-chunk.rkt"
          "private/fulmar-core.rkt"
@@ -11,7 +11,7 @@
                     (read-syntax at-read-syntax))
          (for-syntax racket/base))
 
-(provide (except-out (all-from-out racket/base) #%module-begin #%top-interaction )
+(provide (except-out (all-from-out racket) #%module-begin #%top-interaction )
          (all-from-out "standard-chunk.rkt" "doc.rkt")
          (rename-out 
           [module-begin3 #%module-begin]
