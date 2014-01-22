@@ -59,9 +59,15 @@ Once you've gone through the installation above, you should be able to run Fulma
 
 There is a Fulmar script in tests/ called test.fmr that you can try out.
 
-**TODO** Expand this section
+When run, a Fulmar script produces formatted C++ code on standard out. Assuming your terminal shell supports output redirection (most do), you can redirect the C++ code to a file:
 
+    racket myscript.fmr > myscript.C
 
+You can then compile the resulting file with your favorite C++ compiler. If your compiler supports reading from standard input, you can skip the intermediate C++ file altogether. For example, if you are using the GCC C++ compiler:
+
+    racket myscript.fmr | g++ -x c++ -c -o myscript.o -
+
+Of course, this would make it difficult to track down any compile errors, but it could potentially be useful when compiling a large number of Fulmar scripts.
 
 Documenting Defined Forms
 -------------------------
@@ -108,4 +114,4 @@ http://docs.racket-lang.org/guide/
 License and Copyright
 ---------------------
 
-**TODO** Write this section
+Fulmar is Copyright (c) 2014 University of Utah. It is licensed under the terms of the MIT License. A copy of the full text of this license is included in the LICENSE file.
