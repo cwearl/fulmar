@@ -130,8 +130,6 @@ Known Issues, Caveats, Notes
 Because Fulmar is implemented in Racket, and because Fulmar scripts are essentially an extension of Racket, the following link to the Racket documentation has been included in this README. If you have little to no experience with Racket and/or you're having trouble writing a useful Fulmar script, this is an excellent resource to begin with:
 http://docs.racket-lang.org/guide/
 
-**TODO** Write this section
-
 License and Copyright
 ---------------------
 
