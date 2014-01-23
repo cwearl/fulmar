@@ -95,19 +95,19 @@ Documenting Defined Forms
 
 Fulmar provides a define/doc macro that allows for documentation inline with function and variable definition. The supported forms are:
 
-(define/doc
- (id args ...)
- contract
- doc
- body)
+    (define/doc
+     (id args ...)
+     contract
+     doc
+     body)
 
 for functions and
 
-(define/doc
- id
- contract
- doc
- body)
+    (define/doc
+     id
+     contract
+     doc
+     body)
 
 for general bindings.
 
@@ -118,10 +118,10 @@ format. See here for details: http://docs.racket-lang.org/scribble/reader.html
 
 An example from tests/test.fmr:
 
-(define/doc l
-  (-> any/c any/c)
-  @{Rename for built in @racket[literal]}
-  literal)
+    (define/doc l
+      (-> any/c any/c)
+      @{Rename for built in @racket[literal]}
+      literal)
 
 
 Known Issues, Caveats, Notes
