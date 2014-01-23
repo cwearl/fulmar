@@ -25,7 +25,9 @@ https://github.com/cwearl/fulmar.git
 Dependencies
 ------------
 
-Fulmar requires a decently modern version of Racket. We've not yet pinned down a hard version requirement, but Fulmar is known to work with Racket 5.3.6. Of course, the code Fulmar generates is pretty useless without a C++ compiler, unless you intend to turn it into abstract art.
+Fulmar requires Racket version 6 or greater.
+Of course, the code Fulmar generates is pretty useless without a C++ compiler, unless you intend to turn it into abstract art.
+The compiler compatibility of the C++ code Fulmar generates depends entirely on what code gets generated. Fulmar should be quite capable of generating code that any C++ compiler can handle, so no specific compiler dependencies are necessary.
 
 Installation
 ------------
