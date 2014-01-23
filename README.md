@@ -71,6 +71,25 @@ You can then compile the resulting file with your favorite C++ compiler. If your
 
 Of course, this would make it difficult to track down any compile errors, but it could potentially be useful when compiling a large number of Fulmar scripts.
 
+Trivial Example Script
+----------------------
+
+A full tutorial on creating Fulmar scripts is beyond the scope of this humble README. There will be separate documentation detailing Fulmar's semantics and how to leverage it.
+
+The following is a very simple Fulmar script:
+
+    #lang fulmar
+
+    (returning-function-define (constize (function-declare 'eval 'double))
+                               null
+                               'value_)
+
+When run, this script produces the following output:
+
+    inline double eval(void) const { return value_; }
+
+The first argument of returning-function-define is a function signature, the second is the body of the function, and the third argument is the return value of the function.
+
 Documenting Defined Forms
 -------------------------
 
