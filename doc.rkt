@@ -2,7 +2,6 @@
 (require
  racket/contract
  scribble/srcdoc
- scribble/manual
  (for-doc racket/base 
           scribble/manual)
  )
