@@ -22,7 +22,12 @@
 
 ;remove whitespace from the end of a line
 (define (remove-whitespace line)
-  (string-trim line #:left? #f))
+  (or (let ((length (string-length line)))
+        (for/first ([i (in-range (- length 1) -1 -1)]
+                    #:when (not (equal? #\space (string-ref line i))))
+          (substring line 0 (+ i 1))
+          )) 
+      ""))
 (provide remove-whitespace)
 
 ;build indentation for new line given current context
