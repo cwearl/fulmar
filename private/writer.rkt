@@ -22,15 +22,7 @@
 
 ;remove whitespace from the end of a line
 (define (remove-whitespace line)
-  (list->string (reverse (second (foldl (λ (char result) (if (equal? char #\ )
-                                                             (list (cons #\  (first result))
-                                                                   (second result))
-                                                             (list null
-                                                                   (flatten* char
-                                                                             (first result)
-                                                                             (second result)))))
-                                        (list null null)
-                                        (string->list line))))))
+  (string-trim line #:left? #f))
 (provide remove-whitespace)
 
 ;build indentation for new line given current context
