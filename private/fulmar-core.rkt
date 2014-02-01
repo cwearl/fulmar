@@ -10,19 +10,9 @@
   (flatten lst))
 (provide flatten*)
 
-;basic contracts
-
 ;structure chunk definition
 (struct s-chunk (name body) #:transparent)
 (provide (struct-out s-chunk))
-
-;chunk predicate
-(define (chunk? chunk)
-  (or (string? chunk)
-      (symbol? chunk)
-      (exact-nonnegative-integer? chunk)
-      (s-chunk? chunk)))
-(provide chunk?)
 
 ;environment Structure
 (struct environment (description initial-position) #:transparent)
@@ -120,28 +110,16 @@
   (struct-copy context obj [env (combine-env (context-env obj) new-env)]))
 (provide enter-env)
 
-;context accessors
-(define (context-description context)
-  (let ([env (context-env context)])
-    (if env
-        (environment-description env)
-        #false)))
 (define (context-initial-position context)
   (let* ([env (context-env context)])
     (if env (environment-initial-position env) #false)))
-(provide context-description
-         context-initial-position)
+(provide context-initial-position)
 
 ;increase indent level context
 (define (reindent new-indent obj)
   (struct-copy context obj [indent (+ new-indent
                                       (context-indent obj))]))
 (provide reindent)
-
-;reset indent level context
-(define (reset-indent new-indent obj)
-  (struct-copy context obj [indent new-indent]))
-(provide reset-indent)
 
 ;new comment block
 (define (enter-comment-env context)
