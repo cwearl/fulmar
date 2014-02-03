@@ -3,22 +3,15 @@
 (require "fulmar-core.rkt")
 (require "core-chunk.rkt")
 
+(provide (all-defined-out))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;helper functions;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
-;checks if given string is just spaces
-(define (is-whitespace? string)
-  (letrec ([is-whitespace-list? (λ (lst) (cond [(empty? lst) #true]
-                                               [(eq? #\  (car lst)) (is-whitespace-list? (cdr lst))]
-                                               [else #false]))])
-    (is-whitespace-list? (string->list string))))
-(provide is-whitespace?)
-
 ;give n spaces
 (define (make-whitespace n)
-  (make-string n #\ ))
-(provide make-whitespace)
+  (make-string n #\space))
 
 ;remove whitespace from the end of a line
 (define (remove-whitespace line)
@@ -28,23 +21,24 @@
           (substring line 0 (+ i 1))
           )) 
       ""))
-(provide remove-whitespace)
+
+;checks if given string is just spaces
+(define (is-whitespace? line)
+  (zero? (string-length (remove-whitespace line))))
 
 ;build indentation for new line given current context
-(define (build-indentation context [char #\ ])
-  (if (or (empty-env? (context-env context))
-          (macro-env? (context-env context)))
-      (make-whitespace (context-indent context))
-      ;environment has to have comment in it somewhere: comment, comment-macro, or macro-comment
-      (string-append (make-whitespace (context-initial-position context))
-                     "/*"
-                     (string char)
-                     (let ([remaining (- (context-indent context)
-                                         (context-initial-position context))])
-                       (if (< 0 remaining)
-                           (make-whitespace remaining)
-                           "")))))
-(provide build-indentation)
+(define (build-indentation context [char #\space])
+  (match (environment-description (context-env context))
+    [(or 'empty 'macro)
+     (make-whitespace (context-indent context))]
+    [_ 
+     (string-append 
+      (make-whitespace (context-initial-position context))
+      "/*"
+      (string char)
+      (let ([remaining (- (context-indent context)
+                          (context-initial-position context))])
+        (make-whitespace (max 0 remaining))))]))
 
 ;finish line
 (define (finish-line given-line context)
@@ -52,39 +46,25 @@
          [length (string-length line)]
          [max (context-line-length context)]
          [env (context-env context)]
-         [env-spaces (cond [;empty environment
-                            (empty-env? env)
-                            0]
-                           [;comment environment
-                            (comment-env? env)
-                            2]
-                           [;macro environment
-                            (macro-env? env)
-                            1]
-                           [;comment-macro or macro-comment environment
-                            (or (comment-macro-env? env)
-                                (macro-comment-env? env))
-                            4]
-                           [;unknown environment
-                            else
-                            (error "Contract for finish-line should prevent this case from coming up; good luck! Given: " given-line context)])])
+         [env-spaces (match (environment-description env)
+                       ['empty 0]
+                       ['comment 2]
+                       ['macro 1]
+                       [(or 'comment-macro 'macro-comment) 4]
+                       [_ (error "Contract for finish-line should prevent this case from coming up; good luck! Given: " given-line context)])])
     (cond [;empty environment
-           (empty-env? env)
+           (equal? 'empty (environment-description env))
            line]
           [;empty line
            (equal? (remove-whitespace (build-indentation context))
                    line)
-           (cond [;comment or comment-macro line
-                  (or (comment-env? env)
-                      (comment-macro-env? env))
-                  ""]
-                 [; macro or macro-comment line
-                  (or (macro-env? env)
-                      (macro-comment-env? env))
-                  (string-append (make-whitespace (- max 1))
-                                 "\\")])]
+           (match (environment-description env) 
+             [(or 'comment 'comment-macro) ""]
+             [(or 'macro 'macro-comment)
+              (string-append (make-whitespace (- max 1))
+                             "\\")])]
           [;comment environment
-           (comment-env? env)
+           (equal? 'comment (environment-description env))
            (string-append line
                           (if (equal? #\  (last (string->list line)))
                               "*/"
@@ -95,27 +75,16 @@
                           (if (< (+ length env-spaces) max)
                               (make-whitespace (- max length env-spaces))
                               " ")
-                          (cond [(macro-env? env) "\\"]
-                                [(comment-macro-env? env) "\\ */"]
-                                [(macro-comment-env? env) "*/ \\"]))])))
-(provide finish-line)
+                          (match (environment-description env)
+                            ['macro "\\"]
+                            ['comment-macro "\\ */"]
+                            ['macro-comment "*/ \\"]))])))
 
 ;check speculative line
 (define (check-speculative-line-length first-part second-part context)
-  (<= (+ (if (string? first-part)
-             (string-length first-part)
-             first-part)
+  (<= (+ (string-length first-part)
          (string-length second-part))
       (context-line-length context)))
-(provide check-speculative-line-length)
-
-;check if lengths match
-(define (match-lengths first-line second-line)
-  (= (if (string? first-line)
-         (string-length first-line)
-         first-line)
-     (string-length second-line)))
-(provide match-lengths)
 
 ;add '#' to proper place in given line
 (define (add-hash-character line)
@@ -126,7 +95,6 @@
         [else
          (string-append (substring line 0 (- (string-length line) 1))
                         "#")]))
-(provide add-hash-character)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot handlers;;;;;;;;
@@ -144,42 +112,29 @@
                    [else
                     (list (string-append (build-indentation context) string)
                           (finish-line line context))])]
-    ['immediate (list (string-append line string))]
-    [_ (error "Unknown printing mode - Contract for add-literal should prevent this case from coming up; good luck! Given: "
-              mode
-              string
-              context
-              line)]))
-(provide add-literal)
+    ['immediate (list (string-append line string))]))
 
 ;add spaces to current line
 (define (add-spaces mode count context line)
+  (define whitespace (make-whitespace count))
   (match mode
     ['normal (cond [(= 0 count)
                     (list line)]
-                   [(check-speculative-line-length count line context)
-                    (list (string-append line (make-whitespace count)))]
+                   [(check-speculative-line-length whitespace line context)
+                    (list (string-append line whitespace))]
                    [else
                     (list ""
                           (finish-line line context))])]
-    ['immediate (list (string-append line (make-whitespace count)))]
-    [_ (error "Unknown printing mode - Contract for add-spaces should prevent this case from coming up; good luck! Given: "
-              mode
-              count
-              context
-              line)]))
-(provide add-spaces)
+    ['immediate (list (string-append line whitespace))]))
 
 ;add new line
 (define (add-new-line mode body context line)
   (list ""
         (finish-line line context)))
-(provide add-new-line)
 
 ;add preprocessor directive
 (define (add-pp-directive mode body context line)
   (list (add-hash-character line)))
-(provide add-pp-directive)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;meta-nekot handlers;;;
@@ -192,49 +147,37 @@
                     line)
             ""
             line)))
-(provide add-empty)
 
 ;add concatenated nekots
 (define (add-concatenated mode nekots context line)
   (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
     (append (write-nekot mode nekot (car lines))
             (cdr lines))))
-(provide add-concatenated)
 
 ;add nekot immediately
 (define (add-immediate mode nekot context line)
   (write-nekot 'immediate nekot line))
-(provide add-immediate)
 
 ;add nekot(s) speculatively
 (define (add-speculative mode body context line)
-  (let* ([attempt (first body)]
-         [success? (second body)]
-         [backup (third body)]
-         [attempted (write-nekot mode attempt line)])
+  (match-let* ([(list attempt success? backup) body]
+               [attempted (write-nekot mode attempt line)])
     (if (success? attempted)
         attempted
         (write-nekot mode backup line))))
-(provide add-speculative)
 
 ;change indent to length of current line
 (define (change-indent-to-current mode chunk context line)
-  (let* ([diff (- (string-length line)
-                  (context-indent context))]
-         [new-indent (if (< 0 diff)
-                         diff
-                         0)])
-    (write-nekot mode
-                 (chunk-transform chunk (reindent new-indent
-                                                  context))
-                 line)))
-(provide change-indent-to-current)
+  (let* ([new-indent (max 0 (- (string-length line)
+                               (context-indent context)))]
+         [new-context (reindent new-indent context)]
+         [transformed-chunk (chunk-transform chunk new-context)])
+    (write-nekot mode transformed-chunk line)))
 
 ;error nekot...
 (define (unknown-nekot-type name)
   (λ (mode body context line)
     (error "Unrecognized nekot/chunk; given: " name mode body context line)))
-(provide unknown-nekot-type)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot writer;;;;;;;;;
@@ -269,4 +212,3 @@
                                      (build-indentation context-obj)
                                      line)])
                   (nekot-writer mode (nekot-body nekot) context-obj new-line))]))
-(provide write-nekot)

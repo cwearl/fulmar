@@ -11,28 +11,19 @@
 ;fulmar-core definitions
 (provide flatten*)
 
-;TODO: increase tests to handle new contracts for combine-lengths and combine-strings (and a good number of chunks: ones that contain "*-list/c")
 ;combine lengths of given values
 (define (combine-lengths . values)
-  (foldl (λ (value total)
-            (+ total
-               (cond [(integer? value) value]
-                     [(string? value) (string-length value)]
-                     [(symbol? value) (string-length (symbol->string value))]
-                     [(pair? value) (apply combine-lengths value)])))
-         0
-         values))
+  (apply + (flatten values)))
 (provide combine-lengths)
 
 ;combine strings
 (define (combine-strings . values)
-  (foldl (λ (str total)
-            (string-append total
-                           (cond [(string? str) str]
-                                 [(symbol? str) (symbol->string str)]
-                                 [(pair? str) (apply combine-strings str)])))
-         ""
-         values))
+  (apply string-append 
+         (map (λ (s) 
+                (match s 
+                  [(? symbol?) (symbol->string s)] 
+                   [_ s])) 
+              (flatten values))))
 (provide combine-strings)
 
 ;helper for speculative
@@ -42,75 +33,51 @@
        (= 1 (length lst))))
 (provide length-equals-one)
 
+; helper for chunk-transform to handle 'comment-env
+(define (build-comment-env-nekot chunk char context)
+  (define middle 
+    (list
+     (string char)
+     (modify-context chunk enter-comment-env)))
+  
+  (concat 
+   (match (context-env context) 
+     [(or (environment 'comment _) (environment 'macro _) (environment 'macro-comment _))
+      (list "//" middle)]
+     [_
+      (list "/*" middle " */")])))
+
 ;chunk transformer
 ; transforms chunks into nekots
 (define (chunk-transform chunk context)
-  (cond [(string? chunk) (nekot 'literal
-                                chunk
-                                context)]
-        [(symbol? chunk) (nekot 'literal
-                                (symbol->string chunk)
-                                context)]
-        [(exact-nonnegative-integer? chunk) (nekot 'spaces
-                                                   chunk
-                                                   context)]
-        [(s-chunk? chunk) (let ([name (s-chunk-name chunk)]
-                                [body (s-chunk-body chunk)])
-                            (match name
-                                   ['new-line       (nekot 'new-line
-                                                           null
-                                                           context)]
-                                   ['pp-directive   (nekot 'pp-directive
-                                                           null
-                                                           context)]
-                                   ['empty          (nekot 'empty
-                                                           null
-                                                           context)]
-                                   ['concat         (nekot 'concat
-                                                           (map (λ (chunk)
-                                                                   (chunk-transform chunk
-                                                                                    context))
-                                                                body)
-                                                           context)]
-                                   ['immediate      (nekot 'immediate
-                                                           (chunk-transform body context)
-                                                           context)]
-                                   ['speculative    (nekot 'speculative
-                                                           (list (chunk-transform (first body)
-                                                                                  context)
-                                                                 (second body)
-                                                                 (chunk-transform (third body)
-                                                                                  context))
-                                                           context)]
-                                   ['position-indent (nekot 'position-indent
-                                                            body
-                                                            context)]
-                                   ['modify-context  (chunk-transform (first body)
-                                                                      ((second body) context))]
-                                   ['comment-env   (chunk-transform (let ([env (context-env context)])
-                                                                      (concat (if (or (comment-env? env)
-                                                                                      (comment-macro-env? env)
-                                                                                      (macro-comment-env? env))
-                                                                                  (list "//"
-                                                                                        (string (second body))
-                                                                                        (modify-context (first body)
-                                                                                                        enter-comment-env))
-                                                                                  (list "/*"
-                                                                                        (string (second body))
-                                                                                        (modify-context (first body)
-                                                                                                        enter-comment-env)
-                                                                                        " */"))))
-                                                                    context)]
-                                   [_ (error "Unknown type of s-chunk; given: " chunk)]))]
-        [else (error "Unknown chunk subtype; given: " chunk)]))
+  (define nekot-ctx ((curryr nekot) context))
+  (define chunk-transform-ctx ((curryr chunk-transform) context))
+  
+  (match chunk
+    [(? string?) 
+     (nekot-ctx 'literal chunk)]
+    [(? symbol?) 
+     (nekot-ctx 'literal (symbol->string chunk))]
+    [(? exact-nonnegative-integer?) 
+     (nekot-ctx 'spaces chunk)]
+    [(s-chunk (and sym (or 'new-line 'pp-directive 'empty)) _) 
+     (nekot-ctx sym null)]    
+    [(s-chunk 'concat body) 
+     (nekot-ctx 'concat (map chunk-transform-ctx body))]
+    [(s-chunk 'immediate body) 
+     (nekot-ctx 'immediate (chunk-transform-ctx body))]
+    [(s-chunk 'speculative (list attempt check backup)) 
+     (nekot-ctx 'speculative (list (chunk-transform-ctx attempt) check (chunk-transform-ctx backup)))]
+    [(s-chunk 'position-indent body) 
+     (nekot-ctx 'position-indent body)]
+    [(s-chunk 'modify-context (list chunk modify)) 
+     (chunk-transform chunk (modify context))]
+    [(s-chunk 'comment-env (list chunk char)) 
+     (chunk-transform-ctx (build-comment-env-nekot chunk char context))]
+    [_ (error "Unknown chunk subtype; given: " chunk)]))
+
 (provide chunk-transform)
 
-;transform-chunks
-(define (transform-chunks chunks context)
-  (chunk-transform (concat (add-between (flatten* chunks)
-                                        (concat new-line new-line)))
-                   context))
-(provide transform-chunks)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot-building chunks;;;;;;;
@@ -194,8 +161,8 @@
 (define (indent length chunk)
   (modify-context chunk
                   (λ (context)
-                     (reindent (combine-lengths length)
-                               context))))
+                    (reindent (combine-lengths length)
+                              context))))
 (provide indent)
 
 ;comment env chunk
