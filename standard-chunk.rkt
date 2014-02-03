@@ -26,10 +26,12 @@
 ;if empty
 ; returns then, if given is null (or a list that flattens to null)
 ; returns else, otherwise
-(define (if-empty given then else)
-  (if (empty? (flatten given))
-      then
-      else))
+(define-syntax if-empty
+  (syntax-rules (flatten)
+    [(if-empty given then else)
+     (if (empty? (flatten given))
+         then
+         else)]))
 
 ;surround/before and after chunk
 ; adds surround before and after chunk
@@ -73,11 +75,11 @@
 ; except: to-add is NOT added to the final chunk
 (define (attach-list-separator to-attach . chunk-lists)
   (define chunks (flatten chunk-lists))
-  (if (empty? chunks) ; can't use if-empty here - take will complain
-      null
-      (flatten* (map (λ (chunk) (concat chunk (immediate to-attach)))
-                     (take chunks (- (length chunks) 1)))
-                (last chunks))))
+  (if-empty chunks
+            null
+            (flatten* (map (λ (chunk) (concat chunk (immediate to-attach)))
+                           (take chunks (- (length chunks) 1)))
+                      (last chunks))))
 
 ;insert a chunk between other chunks
 ; concatenates given chunks with add-between between given chunks
