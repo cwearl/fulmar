@@ -41,7 +41,7 @@
   
   (concat 
    (match (context-env context) 
-     [(or (environment 'comment _) (environment 'macro _) (environment 'macro-comment _))
+     [(or (environment 'comment _) (environment 'comment-macro _) (environment 'macro-comment _))
       (list "//" middle)]
      [_
       (list "/*" middle " */")])))
