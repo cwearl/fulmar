@@ -363,73 +363,7 @@
    (define test-context-2 (construct-context 20))
    (check-equal? (write-nekot (chunk-transform (macro-define 'name null 'asdf)
                                                test-context))
-                 '("#define name asdf"))
-   (check-equal? (write-nekot (chunk-transform (macro-define 'name
-                                                             (list 'first)
-                                                             (concat 'asdf 1 'first))
-                                               test-context))
-                 '("#define name(first) asdf first"))
-   (check-equal? (write-nekot (chunk-transform (macro-define 'name
-                                                             (list 'first)
-                                                             (concat 'asdf 1 'first))
-                                               test-context-2))
-                 '("   asdf first" "#define name(first) \\"))
-   (check-equal? (write-nekot (chunk-transform (macro-define 'name
-                                                             (list 'first 'second)
-                                                             (concat 'asdf 1 'first 1 'second))
-                                               test-context))
-                 '("#define name(first, second) asdf first second"))
-   (check-equal? (write-nekot (chunk-transform (macro-define 'name
-                                                             (list 'first 'second)
-                                                             (concat 'asdf new-line 'first new-line 'second))
-                                               test-context-2))
-                 '("   second"
-                   "   first           \\"
-                   "   asdf            \\"
-                   "             second) \\"
-                   "#define name(first, \\"))
-   (check-equal? (write-nekot (chunk-transform (macro-define 'name
-                                                             (list (concat (comment-env-chunk 't)
-                                                                           new-line
-                                                                           'first)
-                                                                   'second)
-                                                             (concat 'asdf new-line 'first new-line 'second))
-                                               test-context-2))
-                 '("   second"
-                   "   first           \\"
-                   "   asdf            \\"
-                   "             second) \\"
-                   "             first, \\"
-                   "#define name(/* t */ \\"))
-   (check-equal? (write-nekot (chunk-transform (macro-define 'name
-                                                             (list 'first
-                                                                   (concat (comment-env-chunk 't)
-                                                                           new-line
-                                                                           'second))
-                                                             (concat 'asdf new-line 'first new-line 'second))
-                                               test-context-2))
-                 '("   second"
-                   "   first           \\"
-                   "   asdf            \\"
-                   "             second) \\"
-                   "             /* t */ \\"
-                   "#define name(first, \\"))
-   (check-equal? (write-nekot (chunk-transform (macro-define 'name
-                                                             (list (concat (comment-env-chunk 't)
-                                                                           new-line
-                                                                           'first)
-                                                                   (concat (comment-env-chunk 'T)
-                                                                           new-line
-                                                                           'second))
-                                                             (concat 'asdf new-line 'first new-line 'second))
-                                               test-context-2))
-                 '("   second"
-                   "   first           \\"
-                   "   asdf            \\"
-                   "             second) \\"
-                   "             /* T */ \\"
-                   "             first, \\"
-                   "#define name(/* t */ \\"))))
+                 '("#define name asdf"))))
 
 ;general chunks
 

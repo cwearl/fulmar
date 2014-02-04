@@ -29,7 +29,7 @@
 ;build indentation for new line given current context
 (define (build-indentation context [char #\space])
   (match (environment-description (context-env context))
-    [(or 'empty 'macro)
+    ['empty
      (make-whitespace (context-indent context))]
     [_ 
      (string-append 
@@ -42,43 +42,12 @@
 
 ;finish line
 (define (finish-line given-line context)
-  (let* ([line (remove-whitespace given-line)]
-         [length (string-length line)]
-         [max (context-line-length context)]
-         [env (context-env context)]
-         [env-spaces (match (environment-description env)
-                       ['empty 0]
-                       ['comment 2]
-                       ['macro 1]
-                       [(or 'comment-macro 'macro-comment) 4]
-                       [_ (error "Contract for finish-line should prevent this case from coming up; good luck! Given: " given-line context)])])
-    (cond [;empty environment
-           (equal? 'empty (environment-description env))
-           line]
-          [;empty line
-           (equal? (remove-whitespace (build-indentation context))
-                   line)
-           (match (environment-description env) 
-             [(or 'comment 'comment-macro) ""]
-             [(or 'macro 'macro-comment)
-              (string-append (make-whitespace (- max 1))
-                             "\\")])]
-          [;comment environment
-           (equal? 'comment (environment-description env))
-           (string-append line
-                          (if (equal? #\  (last (string->list line)))
-                              "*/"
-                              " */"))]
-          [else
-           ;non-empty line
-           (string-append line
-                          (if (< (+ length env-spaces) max)
-                              (make-whitespace (- max length env-spaces))
-                              " ")
-                          (match (environment-description env)
-                            ['macro "\\"]
-                            ['comment-macro "\\ */"]
-                            ['macro-comment "*/ \\"]))])))
+  (define line (remove-whitespace given-line))
+  (if (equal? line (remove-whitespace (build-indentation context)))
+      ""
+      (match (environment-description (context-env context))
+        ['empty line]
+        ['comment (string-append line " */")])))
 
 ;check speculative line
 (define (check-speculative-line-length first-part second-part context)

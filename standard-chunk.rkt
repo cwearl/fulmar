@@ -267,13 +267,7 @@
 ;macro defintion chunk
 ; a macro definition
 (define (macro-define name params chunk)
-  (define macro-signature (concat (pp-define name)
-                                  (if-empty params
-                                            empty
-                                            (paren-list params))))
-  (speculative (concat macro-signature 1 chunk)
-               length-equals-one
-               (macro-env-chunk (concat macro-signature new-line (indent 3 chunk)))))
+  (immediate (concat (pp-define name) 1 chunk)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;general chunks;;;;;;;

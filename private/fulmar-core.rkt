@@ -25,38 +25,14 @@
 (define (comment-env indent)
   (environment 'comment indent))
 
-;macro definition environment
-(define macro-env
-  (environment 'macro #false))
-
-;commented macro defintion environment
-(define (comment-macro-env indent)
-  (environment 'comment-macro indent))
-
-;macro definition with embedded comment block environment
-(define (macro-comment-env indent)
-  (environment 'macro-comment indent))
-
 ;build resulting environment of old and new environments
 (define (combine-env old new)
   (match/values 
    (values (environment-description old) 
            (environment-description new))
-   [(_ 'macro-comment)
-    (error "Cannot combine macro with comment environment with any environment")]
-   [(_ 'comment-macro)
-    (error "Cannot combine environment with macro environment with any environment")]
-   [('empty _)
-    new]
-   [(_ 'empty)
-    old]
-   [((or 'comment 'comment-macro 'macro-comment) 'comment)
-    old]
-   [('comment 'macro)
-    (comment-macro-env (environment-initial-position old))]
-   [('macro 'comment)
-    (macro-comment-env (environment-initial-position new))]
-   [(_ _) (error "Incompatible environments combined; given: " old new)]))
+   [('empty _) new]
+   [(_ 'empty) old]
+   [('comment 'comment) old]))
 
 ;context Structure
 (struct context (indent line-length env) #:transparent)
@@ -83,11 +59,6 @@
 ;new comment block
 (define (enter-comment-env context)
   (enter-env (comment-env (context-indent context))
-             context))
-
-;new macro definition
-(define (enter-macro-env context)
-  (enter-env macro-env
              context))
 
 ;nekot Structure (reverse token - token spelled backwards)

@@ -154,8 +154,3 @@
 ; puts chunks in a comment env environment
 (define (comment-env-chunk chunk [char #\ ])
   (s-chunk 'comment-env (list chunk char)))
-
-;macro environment chunk
-; puts chunks in a macro environment
-(define (macro-env-chunk chunk)
-  (modify-context chunk enter-macro-env))
