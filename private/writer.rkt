@@ -27,15 +27,14 @@
   (zero? (string-length (remove-whitespace line))))
 
 ;build indentation for new line given current context
-(define (build-indentation context [char #\space])
+(define (build-indentation context)
   (match (environment-description (context-env context))
     ['empty
      (make-whitespace (context-indent context))]
     [_ 
      (string-append 
       (make-whitespace (context-initial-position context))
-      "/*"
-      (string char)
+      "/* "
       (let ([remaining (- (context-indent context)
                           (context-initial-position context))])
         (make-whitespace (max 0 remaining))))]))
