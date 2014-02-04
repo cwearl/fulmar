@@ -22,7 +22,7 @@
 ; Compile and print the passed chunks.
 (define (print-values vs)
   (for-each displayln
-   (reverse (write-nekot (transform-chunks vs (construct-context 80))))))
+   (reverse (write-nekot (chunk-transform vs (construct-context 80))))))
 
 ; This macro manipulates expressions entered in the REPL
 (define-syntax-rule (fulmar-top-interaction f ...)

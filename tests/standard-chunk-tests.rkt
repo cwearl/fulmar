@@ -439,7 +439,7 @@
    (define test-context (construct-context 80))
    (check-equal? (write-nekot (chunk-transform (namespace-define 'name 'asdf)
                                                test-context))
-                 '("namespace name { asdf; }"))
+                 '("namespace name { asdf; } /* name */"))
    (check-equal? (write-nekot (chunk-transform (namespace-define 'name 'asdf)
                                                (construct-context 12)))
                  '("} /* name */"

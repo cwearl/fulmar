@@ -6,7 +6,6 @@
 (require "core-chunk-tests.rkt")
 (require "writer-tests.rkt")
 (require "standard-chunk-tests.rkt")
-(require "io-tests.rkt")
 
 ;sequentially check if any tests fail
 ; returns true if all given tests pass
@@ -38,17 +37,17 @@
 (define/contract fulmar-core-tests
   (listof test-suite?)
   (list test-flatten*
-        test-empty-env
-        test-comment-env
-        test-macro-env
-        test-comment-macro-env
-        test-macro-comment-env
+        
+        
+        
+        
+        
         test-combine-env
         test-construct-context
         test-enter-env
-        test-context-accessors
+        
         test-reindent
-        test-reset-indent
+        
         test-enter-comment
         test-enter-macro))
 
