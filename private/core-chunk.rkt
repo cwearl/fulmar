@@ -32,48 +32,6 @@
   (and (pair? lst)
        (= 1 (length lst))))
 
-; helper for chunk-transform to handle 'comment-env
-(define (build-comment-env-nekot chunk char context)
-  (define middle 
-    (list
-     (string char)
-     (modify-context chunk enter-comment-env)))
-  
-  (concat 
-   (match (context-env context) 
-     [(or (environment 'comment _) (environment 'comment-macro _) (environment 'macro-comment _))
-      (list "//" middle)]
-     [_
-      (list "/*" middle " */")])))
-
-;chunk transformer
-; transforms chunks into nekots
-(define (chunk-transform chunk context)
-  (define nekot-ctx ((curryr nekot) context))
-  (define chunk-transform-ctx ((curryr chunk-transform) context))
-  
-  (match chunk
-    [(? string?) 
-     (nekot-ctx 'literal chunk)]
-    [(? symbol?) 
-     (nekot-ctx 'literal (symbol->string chunk))]
-    [(? exact-nonnegative-integer?) 
-     (nekot-ctx 'spaces chunk)]
-    [(s-chunk (and sym (or 'new-line 'pp-directive 'empty)) _) 
-     (nekot-ctx sym null)]    
-    [(s-chunk 'concat body) 
-     (nekot-ctx 'concat (map chunk-transform-ctx body))]
-    [(s-chunk 'immediate body) 
-     (nekot-ctx 'immediate (chunk-transform-ctx body))]
-    [(s-chunk 'speculative (list attempt check backup)) 
-     (nekot-ctx 'speculative (list (chunk-transform-ctx attempt) check (chunk-transform-ctx backup)))]
-    [(s-chunk 'position-indent body) 
-     (nekot-ctx 'position-indent body)]
-    [(s-chunk 'modify-context (list chunk modify)) 
-     (chunk-transform chunk (modify context))]
-    [(s-chunk 'comment-env (list chunk char)) 
-     (chunk-transform-ctx (build-comment-env-nekot chunk char context))]
-    [_ (error "Unknown chunk subtype; given: " chunk)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot-building chunks;;;;;;;
@@ -102,7 +60,7 @@
 ;empty (no-op) chunk
 ; only real uses of this chunk are for testing and filing in stubs/empty parameters
 (define empty
-  (s-chunk 'empty null))
+  "")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;meta-nekot-building chunks;;
@@ -133,24 +91,12 @@
 (define (position-indent chunk)
   (s-chunk 'position-indent chunk))
 
-;modify context chunk
-; changes context for given chunk
-(define (modify-context chunk modify)
-  (s-chunk 'modify-context (list chunk modify)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;context-aware chunks;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;indent chunk
 ; increases current indent
 (define (indent length chunk)
-  (modify-context chunk
-                  (λ (context)
-                    (reindent (combine-lengths length)
-                              context))))
+  (s-chunk 'indent (list chunk length)))
 
 ;comment env chunk
 ; puts chunks in a comment env environment
-(define (comment-env-chunk chunk [char #\ ])
-  (s-chunk 'comment-env (list chunk char)))
+(define (comment-env-chunk chunk)
+  (s-chunk 'comment-env (list chunk)))

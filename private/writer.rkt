@@ -3,17 +3,17 @@
 (require "fulmar-core.rkt")
 (require "core-chunk.rkt")
 
-(provide (all-defined-out))
+(provide (except-out (all-defined-out) mode environment context-indent initial-position line-length))
 
-;;;;;;;;;;;;;;;;;;;;;;;;
-;;helper functions;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;
+(define mode (make-parameter 'normal))
+(define environment (make-parameter 'empty))
+(define context-indent (make-parameter 0))
+(define initial-position (make-parameter 0))
+(define line-length (make-parameter 80))
 
-;give n spaces
 (define (make-whitespace n)
   (make-string n #\space))
 
-;remove whitespace from the end of a line
 (define (remove-whitespace line)
   (or (let ((length (string-length line)))
         (for/first ([i (in-range (- length 1) -1 -1)]
@@ -22,161 +22,120 @@
           )) 
       ""))
 
-;checks if given string is just spaces
 (define (is-whitespace? line)
   (zero? (string-length (remove-whitespace line))))
 
-;build indentation for new line given current context
-(define (build-indentation context)
-  (match (environment-description (context-env context))
+(define (build-indentation)
+  (match (environment)
     ['empty
-     (make-whitespace (context-indent context))]
+     (make-whitespace (context-indent))]
     [_ 
      (string-append 
-      (make-whitespace (context-initial-position context))
+      (make-whitespace (initial-position))
       "/* "
-      (let ([remaining (- (context-indent context)
-                          (context-initial-position context))])
+      (let ([remaining (- (context-indent)
+                          (initial-position))])
         (make-whitespace (max 0 remaining))))]))
 
-;finish line
-(define (finish-line given-line context)
+(define (finish-line given-line)
   (define line (remove-whitespace given-line))
-  (if (equal? line (remove-whitespace (build-indentation context)))
+  (if (equal? line (remove-whitespace (build-indentation)))
       ""
-      (match (environment-description (context-env context))
+      (match (environment)
         ['empty line]
         ['comment (string-append line " */")])))
 
-;check speculative line
-(define (check-speculative-line-length first-part second-part context)
-  (<= (+ (string-length first-part)
-         (string-length second-part))
-      (context-line-length context)))
+(define (add-literal string line)
+  (let* ((stringl (string-length string))
+         (linel (string-length line)))
+    (cond [(= 0 stringl)
+           (list line)]
+          [(or (equal? 'immediate (mode)) 
+               (<= (+ stringl linel)
+                   (line-length))
+               (>= (string-length (build-indentation))
+                   linel))
+           (list (string-append line string))]
+          [else
+           (list (string-append (build-indentation) string)
+                 (finish-line line))])))
 
-;add '#' to proper place in given line
-(define (add-hash-character line)
-  (cond [(= 0 (string-length line)) "#"]
-        [(is-whitespace? line)
-         (string-append "#"
-                        (substring line 1))]
-        [else
-         (string-append (substring line 0 (- (string-length line) 1))
-                        "#")]))
+(define (add-space line)
+  (if (or (equal? (mode) 'immediate)
+          (< (string-length line) (line-length)))
+      (list (string-append line " "))
+      (list "" (finish-line line))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;
-;;nekot handlers;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;
+(define (add-pp-directive line)
+  (list (cond [(= 0 (string-length line)) "#"]
+              [(is-whitespace? line)
+               (string-append "#" (substring line 1))]
+              [else
+               (string-append (substring line 0 (- (string-length line) 1))
+                              "#")])))
 
-;add a literal string to current line
-(define (add-literal mode string context line)
-  (match mode
-    ['normal (cond [(= 0 (string-length string))
-                    (list line)]
-                   [(or (check-speculative-line-length string line context)
-                        (>= (string-length (build-indentation context))
-                            (string-length line)))
-                    (list (string-append line string))]
-                   [else
-                    (list (string-append (build-indentation context) string)
-                          (finish-line line context))])]
-    ['immediate (list (string-append line string))]))
-
-;add spaces to current line
-(define (add-spaces mode count context line)
-  (define whitespace (make-whitespace count))
-  (match mode
-    ['normal (cond [(= 0 count)
-                    (list line)]
-                   [(check-speculative-line-length whitespace line context)
-                    (list (string-append line whitespace))]
-                   [else
-                    (list ""
-                          (finish-line line context))])]
-    ['immediate (list (string-append line whitespace))]))
-
-;add new line
-(define (add-new-line mode body context line)
-  (list ""
-        (finish-line line context)))
-
-;add preprocessor directive
-(define (add-pp-directive mode body context line)
-  (list (add-hash-character line)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;
-;;meta-nekot handlers;;;
-;;;;;;;;;;;;;;;;;;;;;;;;
-
-;add empty nekot
-; - equivalent to identity function...
-(define (add-empty mode body context line)
-  (list (if (equal? (build-indentation context)
-                    line)
-            ""
-            line)))
-
-;add concatenated nekots
-(define (add-concatenated mode nekots context line)
+(define (add-concatenated nekots line)
   (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
-    (append (write-nekot mode nekot (car lines))
+    (append (write-chunk nekot (car lines))
             (cdr lines))))
 
-;add nekot immediately
-(define (add-immediate mode nekot context line)
-  (write-nekot 'immediate nekot line))
-
-;add nekot(s) speculatively
-(define (add-speculative mode body context line)
+(define (add-speculative body line)
   (match-let* ([(list attempt success? backup) body]
-               [attempted (write-nekot mode attempt line)])
+               [attempted (write-chunk attempt line)])
     (if (success? attempted)
         attempted
-        (write-nekot mode backup line))))
+        (write-chunk backup line))))
 
-;change indent to length of current line
-(define (change-indent-to-current mode chunk context line)
-  (let* ([new-indent (max 0 (- (string-length line)
-                               (context-indent context)))]
-         [new-context (reindent new-indent context)]
-         [transformed-chunk (chunk-transform chunk new-context)])
-    (write-nekot mode transformed-chunk line)))
+(define (add-comment chunk line)
+  (define middle 
+    (list
+     (string #\space)
+     (s-chunk 'real-comment-env chunk)))
+  
+  (write-chunk 
+   (concat 
+    (match (environment) 
+      ['comment (list "//" middle)]
+      [_ (list "/*" middle " */")])) 
+   line))
 
-;error nekot...
-(define (unknown-nekot-type name)
-  (λ (mode body context line)
-    (error "Unrecognized nekot/chunk; given: " name mode body context line)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;
-;;nekot writer;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;
-
-;write nekot
-; mode determines if pretty-printing is on or not
-; - normal: pretty-printing ON
-; - immediate: pretty-printing OFF
-(define write-nekot
-  (case-lambda [(nekot)
-                (write-nekot 'normal nekot "")]
-               [(mode nekot line)
-                (let* ([name (nekot-name nekot)]
-                       [context-obj (nekot-context nekot)]
-                       [nekot-writer (match name
-                                       ;normal nekots
-                                       ['literal         add-literal]
-                                       ['spaces          add-spaces]
-                                       ['new-line        add-new-line]
-                                       ['pp-directive    add-pp-directive]
-                                       ;meta nekots
-                                       ['empty           add-empty]
-                                       ['concat          add-concatenated]
-                                       ['immediate       add-immediate]
-                                       ['speculative     add-speculative]
-                                       ['position-indent change-indent-to-current]
-                                       ;unknown nekot
-                                       [_             (unknown-nekot-type name)])]
-                       ;TODO: Determine if new-line should be indented in immediate mode
-                       [new-line (if (equal? line "")
-                                     (build-indentation context-obj)
-                                     line)])
-                  (nekot-writer mode (nekot-body nekot) context-obj new-line))]))
+(define write-chunk
+  (case-lambda 
+    [(chunk)
+     (write-chunk chunk "")]
+    [(chunk line)
+     (define new-line (if (equal? line "")
+                          (build-indentation)
+                          line))
+     
+     (match chunk
+       [(? string?)
+        (add-literal chunk new-line)]
+       [(? symbol?)
+        (add-literal (symbol->string chunk) new-line)]
+       [(? exact-nonnegative-integer?)
+        (add-space new-line)]
+       [(s-chunk 'new-line _)
+        (list "" (finish-line line))]
+       [(s-chunk 'pp-directive _)
+        (add-pp-directive new-line)]
+       [(s-chunk 'concat body) 
+        (add-concatenated body new-line)]
+       [(s-chunk 'immediate body) 
+        (parameterize ([mode 'immediate])
+          (write-chunk body line))]
+       [(s-chunk 'speculative body) 
+        (add-speculative body new-line)]
+       [(s-chunk 'position-indent body) 
+        (parameterize ([context-indent (string-length line)])
+          (write-chunk body line))]
+       [(s-chunk 'indent (list body length))
+        (parameterize ([context-indent (+ length (context-indent))])
+          (write-chunk body line))]
+       [(s-chunk 'real-comment-env body)
+        (parameterize ([environment 'comment]
+                       [initial-position (context-indent)])
+          (write-chunk body line))]
+       [(s-chunk 'comment-env (list body))
+        (add-comment body line)]
+       )]))
