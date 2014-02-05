@@ -3,12 +3,10 @@
 (require "fulmar-core.rkt")
 (require "core-chunk.rkt")
 
-(provide (except-out (all-defined-out) mode environment context-indent initial-position line-length))
+(provide (except-out (all-defined-out) mode indention line-length))
 
 (define mode (make-parameter 'normal))
-(define environment (make-parameter 'empty))
-(define context-indent (make-parameter 0))
-(define initial-position (make-parameter 0))
+(define indention (make-parameter ""))
 (define line-length (make-parameter 80))
 
 (define (make-whitespace n)
@@ -25,25 +23,10 @@
 (define (is-whitespace? line)
   (zero? (string-length (remove-whitespace line))))
 
-(define (build-indentation)
-  (match (environment)
-    ['empty
-     (make-whitespace (context-indent))]
-    [_ 
-     (string-append 
-      (make-whitespace (initial-position))
-      "/* "
-      (let ([remaining (- (context-indent)
-                          (initial-position))])
-        (make-whitespace (max 0 remaining))))]))
-
 (define (finish-line given-line)
-  (define line (remove-whitespace given-line))
-  (if (equal? line (remove-whitespace (build-indentation)))
+  (if (equal? given-line (indention))
       ""
-      (match (environment)
-        ['empty line]
-        ['comment (string-append line " */")])))
+      (remove-whitespace given-line)))
 
 (define (add-literal string line)
   (let* ((stringl (string-length string))
@@ -53,11 +36,11 @@
           [(or (equal? 'immediate (mode)) 
                (<= (+ stringl linel)
                    (line-length))
-               (>= (string-length (build-indentation))
+               (>= (string-length (indention))
                    linel))
            (list (string-append line string))]
           [else
-           (list (string-append (build-indentation) string)
+           (list (string-append (indention) string)
                  (finish-line line))])))
 
 (define (add-space line)
@@ -87,17 +70,7 @@
         (write-chunk backup line))))
 
 (define (add-comment chunk line)
-  (define middle 
-    (list
-     (string #\space)
-     (s-chunk 'real-comment-env chunk)))
-  
-  (write-chunk 
-   (concat 
-    (match (environment) 
-      ['comment (list "//" middle)]
-      [_ (list "/*" middle " */")])) 
-   line))
+  (write-chunk (concat (list "/* " chunk " */")) line))
 
 (define write-chunk
   (case-lambda 
@@ -105,7 +78,7 @@
      (write-chunk chunk "")]
     [(chunk line)
      (define new-line (if (equal? line "")
-                          (build-indentation)
+                          (indention)
                           line))
      
      (match chunk
@@ -127,14 +100,10 @@
        [(s-chunk 'speculative body) 
         (add-speculative body new-line)]
        [(s-chunk 'position-indent body) 
-        (parameterize ([context-indent (string-length line)])
+        (parameterize ([indention (make-whitespace (string-length line))])
           (write-chunk body line))]
        [(s-chunk 'indent (list body length))
-        (parameterize ([context-indent (+ length (context-indent))])
-          (write-chunk body line))]
-       [(s-chunk 'real-comment-env body)
-        (parameterize ([environment 'comment]
-                       [initial-position (context-indent)])
+        (parameterize ([indention (string-append (indention) (make-whitespace length))])
           (write-chunk body line))]
        [(s-chunk 'comment-env (list body))
         (add-comment body line)]
