@@ -54,8 +54,7 @@
 
 ;preprocessor directive chunk
 ; correctly adds # to line
-(define pp-directive
-  (s-chunk 'pp-directive null))
+(define pp-directive "#")
 
 ;empty (no-op) chunk
 ; only real uses of this chunk are for testing and filing in stubs/empty parameters
@@ -99,4 +98,4 @@
 ;comment env chunk
 ; puts chunks in a comment env environment
 (define (comment-env-chunk chunk)
-  (s-chunk 'comment-env (list chunk)))
+  (concat (list "/* " chunk " */")))

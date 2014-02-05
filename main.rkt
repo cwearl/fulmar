@@ -1,7 +1,6 @@
 #lang racket
 
-(require "private/writer.rkt"
-         "private/core-chunk.rkt"
+(require "private/core-chunk.rkt"
          "private/fulmar-core.rkt"
          "version.rkt"
          "standard-chunk.rkt"
