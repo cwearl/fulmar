@@ -31,6 +31,7 @@ The compiler compatibility of the C++ code Fulmar generates depends entirely on 
 
 Installation
 ------------
+**Fulmar requires Racket 5.92 or later. Being just recently released, it may not yet be packaged by your distro yet.**
 
 (or, "Ooookay, I've got the code. Now what?")
 
