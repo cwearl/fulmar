@@ -37,19 +37,11 @@
 (define/contract fulmar-core-tests
   (listof test-suite?)
   (list test-flatten*
-        
-        
-        
-        
-        
         test-combine-env
         test-construct-context
         test-enter-env
-        
         test-reindent
-        
-        test-enter-comment
-        test-enter-macro))
+        test-enter-comment))
 
 (apply run-tests-text fulmar-core-tests)
 
@@ -95,8 +87,7 @@
         test-position-indent
         test-modify-context
         test-indent
-        test-comment-env-chunk
-        test-macro-env-chunk))
+        test-comment-env-chunk))
 
 (apply run-tests-text core-chunk-tests)
 

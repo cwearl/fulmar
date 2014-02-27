@@ -290,14 +290,3 @@
                                                test-context))
                  '("/* jkl */"
                    "/* asdf */"))))
-
-(define/provide-test-suite test-macro-env-chunk
-  (test-case
-   "Test macro-env-chunk"
-   (define test-context (construct-context 8))
-   (define mac-context (context 0 80 macro-env))
-   (check-equal? (write-nekot (chunk-transform (macro-env-chunk (concat 'asdf new-line 'jkl))
-                                               test-context))
-                 '("jkl"
-                   "asdf   \\"))
-   (check-exn exn:fail? (λ () (chunk-transform (macro-env-chunk 'asdf) mac-context)))))

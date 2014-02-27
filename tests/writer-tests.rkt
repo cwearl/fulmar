@@ -56,22 +56,7 @@
    (check-equal? (build-indentation (context 0 80 (comment-env 0))) "/* ")
    (check-equal? (build-indentation (context 4 80 (comment-env 4))) "    /* ")
    (check-equal? (build-indentation (context 6 80 (comment-env 4))) "    /*   ")
-   (check-equal? (build-indentation (context 2 80 (comment-env 4))) "    /* "))
-  (test-case
-   "Test build-indentation (begins a new line correctly) - macro environment"
-   (check-equal? (build-indentation (context 3 80 macro-env)) "   "))
-  (test-case
-   "Test build-indentation (begins a new line correctly) - comment-macro environment"
-   (check-equal? (build-indentation (context 4 80 (comment-macro-env 4))) "    /* ")
-   (check-equal? (build-indentation (context 0 80 (comment-macro-env 0))) "/* ")
-   (check-equal? (build-indentation (context 6 80 (comment-macro-env 4))) "    /*   ")
-   (check-equal? (build-indentation (context 2 80 (comment-macro-env 4))) "    /* "))
-  (test-case
-   "Test build-indentation (begins a new line correctly) - macro-comment environment"
-   (check-equal? (build-indentation (context 4 80 (macro-comment-env 4))) "    /* ")
-   (check-equal? (build-indentation (context 0 80 (macro-comment-env 0))) "/* ")
-   (check-equal? (build-indentation (context 6 80 (macro-comment-env 4))) "    /*   ")
-   (check-equal? (build-indentation (context 2 80 (macro-comment-env 4))) "    /* ")))
+   (check-equal? (build-indentation (context 2 80 (comment-env 4))) "    /* ")))
 
 (define/provide-test-suite test-finish-line
   (test-case
@@ -97,43 +82,7 @@
    (check-equal? (finish-line " 234 " test-context) " 234 */")
    (check-equal? (finish-line " 234567" test-context) " 234567 */")
    (check-equal? (finish-line " 234567 " test-context) " 234567 */")
-   (check-equal? (finish-line " 234567  " test-context) " 234567 */"))
-  (test-case
-   "Test finish-line (ends a line correctly) - macro environment"
-   (define test-context (context 0 6 macro-env))
-   (check-equal? (finish-line "" test-context) "     \\")
-   (check-equal? (finish-line "  " test-context) "     \\")
-   (check-equal? (finish-line "1" test-context) "1    \\")
-   (check-equal? (finish-line " 2" test-context) " 2   \\")
-   (check-equal? (finish-line " 234" test-context) " 234 \\")
-   (check-equal? (finish-line " 234 " test-context) " 234 \\")
-   (check-equal? (finish-line " 234567" test-context) " 234567 \\")
-   (check-equal? (finish-line " 234567 " test-context) " 234567 \\")
-   (check-equal? (finish-line " 234567  " test-context) " 234567 \\"))
-  (test-case
-   "Test finish-line (ends a line correctly) - comment-macro environment"
-   (define test-context (context 0 6 (comment-macro-env 0)))
-   (check-equal? (finish-line "/* " test-context) "")
-   (check-equal? (finish-line "/*" test-context) "")
-   (check-equal? (finish-line "1" test-context) "1 \\ */")
-   (check-equal? (finish-line " 2" test-context) " 2 \\ */")
-   (check-equal? (finish-line " 234" test-context) " 234 \\ */")
-   (check-equal? (finish-line " 234 " test-context) " 234 \\ */")
-   (check-equal? (finish-line " 234567" test-context) " 234567 \\ */")
-   (check-equal? (finish-line " 234567 " test-context) " 234567 \\ */")
-   (check-equal? (finish-line " 234567  " test-context) " 234567 \\ */"))
-  (test-case
-   "Test finish-line (ends a line correctly) - macro-comment environment"
-   (define test-context (context 0 6 (macro-comment-env 0)))
-   (check-equal? (finish-line "/* " test-context) "     \\")
-   (check-equal? (finish-line "/*" test-context) "     \\")
-   (check-equal? (finish-line "1" test-context) "1 */ \\")
-   (check-equal? (finish-line " 2" test-context) " 2 */ \\")
-   (check-equal? (finish-line " 234" test-context) " 234 */ \\")
-   (check-equal? (finish-line " 234 " test-context) " 234 */ \\")
-   (check-equal? (finish-line " 234567" test-context) " 234567 */ \\")
-   (check-equal? (finish-line " 234567 " test-context) " 234567 */ \\")
-   (check-equal? (finish-line " 234567  " test-context) " 234567 */ \\")))
+   (check-equal? (finish-line " 234567  " test-context) " 234567 */")))
 
 ; contract changed to accept only string and not an int length
 (define (check-speculative-line-length-old cnt line context)

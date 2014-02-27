@@ -2,93 +2,97 @@
 
 (provide (all-defined-out))
 
-;basic structures and contracts for fulmar
-; fulmar is:
-;  - a rich code generation/macro system for C++ that uses S-expressions
-;  - the name of two species (Northern and Southern) of seabirds of the family Procellariidae
-
-;basic helper functions
 (define (flatten* . lst)
   (flatten lst))
 
-;structure chunk definition
 (struct s-chunk (name body) #:transparent)
 
-;environment Structure
-(struct environment (description initial-position) #:transparent)
+(provide (except-out (all-defined-out) mode indention line-length))
 
-;empty environment
-(define (empty-env)
-  (environment 'empty 0))
+(define mode (make-parameter 'normal))
+(define indention (make-parameter ""))
+(define line-length (make-parameter 80))
 
-;comment block environment
-(define (comment-env indent)
-  (environment 'comment indent))
+(define (make-whitespace n)
+  (make-string n #\space))
 
-;macro definition environment
-(define macro-env
-  (environment 'macro #false))
+(define (remove-whitespace line)
+  (or (let ((length (string-length line)))
+        (for/first ([i (in-range (- length 1) -1 -1)]
+                    #:when (not (equal? #\space (string-ref line i))))
+          (substring line 0 (+ i 1))
+          )) 
+      ""))
 
-;commented macro defintion environment
-(define (comment-macro-env indent)
-  (environment 'comment-macro indent))
+(define (is-whitespace? line)
+  (zero? (string-length (remove-whitespace line))))
 
-;macro definition with embedded comment block environment
-(define (macro-comment-env indent)
-  (environment 'macro-comment indent))
+(define (finish-line given-line)
+  (if (equal? given-line (indention))
+      ""
+      (remove-whitespace given-line)))
 
-;build resulting environment of old and new environments
-(define (combine-env old new)
-  (match/values 
-   (values (environment-description old) 
-           (environment-description new))
-   [(_ 'macro-comment)
-    (error "Cannot combine macro with comment environment with any environment")]
-   [(_ 'comment-macro)
-    (error "Cannot combine environment with macro environment with any environment")]
-   [('empty _)
-    new]
-   [(_ 'empty)
-    old]
-   [((or 'comment 'comment-macro 'macro-comment) 'comment)
-    old]
-   [('comment 'macro)
-    (comment-macro-env (environment-initial-position old))]
-   [('macro 'comment)
-    (macro-comment-env (environment-initial-position new))]
-   [(_ _) (error "Incompatible environments combined; given: " old new)]))
+(define (add-literal string line)
+  (let* ((stringl (string-length string))
+         (linel (string-length line)))
+    (cond [(= 0 stringl)
+           (list line)]
+          [(or (equal? 'immediate (mode)) 
+               (<= (+ stringl linel)
+                   (line-length))
+               (>= (string-length (indention))
+                   linel))
+           (list (string-append line string))]
+          [else
+           (list (string-append (indention) string)
+                 (finish-line line))])))
 
-;context Structure
-(struct context (indent line-length env) #:transparent)
+(define (add-space line)
+  (if (or (equal? (mode) 'immediate)
+          (< (string-length line) (line-length)))
+      (list (string-append line " "))
+      (list "" (finish-line line))))
 
-;construct context
-(define (construct-context line-length)
-  (context 0
-           line-length
-           (empty-env)))
+(define (add-concatenated nekots line)
+  (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
+    (append (write-chunk nekot (car lines))
+            (cdr lines))))
 
-;new environment context
-(define (enter-env new-env obj)
-  (struct-copy context obj [env (combine-env (context-env obj) new-env)]))
+(define (add-speculative body line)
+  (match-let* ([(list attempt success? backup) body]
+               [attempted (write-chunk attempt line)])
+    (if (success? attempted)
+        attempted
+        (write-chunk backup line))))
 
-(define (context-initial-position context)
-  (let* ([env (context-env context)])
-    (if env (environment-initial-position env) #false)))
-
-;increase indent level context
-(define (reindent new-indent obj)
-  (struct-copy context obj [indent (+ new-indent
-                                      (context-indent obj))]))
-
-;new comment block
-(define (enter-comment-env context)
-  (enter-env (comment-env (context-indent context))
-             context))
-
-;new macro definition
-(define (enter-macro-env context)
-  (enter-env macro-env
-             context))
-
-;nekot Structure (reverse token - token spelled backwards)
-(struct nekot (name body context) #:transparent)
+(define write-chunk
+  (case-lambda 
+    [(chunk)
+     (write-chunk chunk "")]
+    [(chunk line)
+     (define new-line (if (equal? line "")
+                          (indention)
+                          line))
+     (match chunk
+       [(? string?)
+        (add-literal chunk new-line)]
+       [(? symbol?)
+        (add-literal (symbol->string chunk) new-line)]
+       [(? exact-nonnegative-integer?)
+        (add-space new-line)]
+       [(s-chunk 'new-line _)
+        (list "" (finish-line line))]
+       [(s-chunk 'concat body) 
+        (add-concatenated body new-line)]
+       [(s-chunk 'immediate body) 
+        (parameterize ([mode 'immediate])
+          (write-chunk body line))]
+       [(s-chunk 'speculative body) 
+        (add-speculative body new-line)]
+       [(s-chunk 'position-indent body) 
+        (parameterize ([indention (make-whitespace (string-length line))])
+          (write-chunk body line))]
+       [(s-chunk 'indent (list body length))
+        (parameterize ([indention (string-append (indention) (make-whitespace length))])
+          (write-chunk body line))]
+       )]))

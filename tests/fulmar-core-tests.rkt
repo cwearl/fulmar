@@ -15,38 +15,11 @@
   (test-case
    "Test procedure combine-env - combine _ into empty environment"
    (check-equal? (combine-env (empty-env) (empty-env)) (empty-env))
-   (check-equal? (combine-env (empty-env) (comment-env 4)) (comment-env 4))
-   (check-equal? (combine-env (empty-env) macro-env) macro-env)
-   (check-exn exn:fail? (λ () (combine-env (empty-env) (comment-macro-env 4))))
-   (check-exn exn:fail? (λ () (combine-env (empty-env) (macro-comment-env 4)))))
+   (check-equal? (combine-env (empty-env) (comment-env 4)) (comment-env 4)))
   (test-case
    "Test procedure combine-env - combine _ into comment environment"
    (check-equal? (combine-env (comment-env 8) (empty-env)) (comment-env 8))
-   (check-equal? (combine-env (comment-env 8) (comment-env 4)) (comment-env 8))
-   (check-equal? (combine-env (comment-env 8) macro-env) (comment-macro-env 8))
-   (check-exn exn:fail? (λ () (combine-env (comment-env 8) (comment-macro-env 8))))
-   (check-exn exn:fail? (λ () (combine-env (comment-env 8) (macro-comment-env 8)))))
-  (test-case
-   "Test procedure combine-env - combine _ into macro environment"
-   (check-equal? (combine-env macro-env (empty-env)) macro-env)
-   (check-equal? (combine-env macro-env (comment-env 4)) (macro-comment-env 4))
-   (check-exn exn:fail? (λ () (combine-env macro-env macro-env)))
-   (check-exn exn:fail? (λ () (combine-env macro-env (comment-macro-env 4))))
-   (check-exn exn:fail? (λ () (combine-env macro-env (macro-comment-env 4)))))
-  (test-case
-   "Test procedure combine-env - combine _ into comment-macro environment"
-   (check-equal? (combine-env (comment-macro-env 8) (empty-env)) (comment-macro-env 8))
-   (check-equal? (combine-env (comment-macro-env 8) (comment-env 4)) (comment-macro-env 8))
-   (check-exn exn:fail? (λ () (combine-env (comment-macro-env 8) macro-env)))
-   (check-exn exn:fail? (λ () (combine-env (comment-macro-env 8) (comment-macro-env 4))))
-   (check-exn exn:fail? (λ () (combine-env (comment-macro-env 8) (macro-comment-env 4)))))
-  (test-case
-   "Test procedure combine-env - combine _ into macro-comment environment"
-   (check-equal? (combine-env (macro-comment-env 8) (empty-env)) (macro-comment-env 8))
-   (check-equal? (combine-env (macro-comment-env 8) (comment-env 4)) (macro-comment-env 8))
-   (check-exn exn:fail? (λ () (combine-env (macro-comment-env 8) macro-env)))
-   (check-exn exn:fail? (λ () (combine-env (macro-comment-env 8) (comment-macro-env 4))))
-   (check-exn exn:fail? (λ () (combine-env (macro-comment-env 8) (macro-comment-env 4))))))
+   (check-equal? (combine-env (comment-env 8) (comment-env 4)) (comment-env 8))))
 
 (define/provide-test-suite test-construct-context
   (test-case
@@ -60,8 +33,7 @@
   (test-case
    "Test enter-env"
    (define test-context-1 (construct-context 80))
-   (check-equal? (enter-env (comment-env 4) test-context-1) (context 0 80 (comment-env 4)))
-   (check-equal? (enter-env macro-env test-context-1) (context 0 80 macro-env))))
+   (check-equal? (enter-env (comment-env 4) test-context-1) (context 0 80 (comment-env 4)))))
 
 (define/provide-test-suite test-reindent
   (test-case
@@ -77,20 +49,6 @@
    (define test-context-1 (construct-context 80))
    (define test-context-2 (context 4 80 (comment-env 4)))
    (define test-context-3 (context 6 80 (comment-env 4)))
-   (define test-context-4 (context 0 80 macro-env))
-   (define test-context-5 (context 0 80 (macro-comment-env 0)))
    (check-equal? (enter-comment-env (reindent 4 test-context-1)) test-context-2)
-   (check-equal? (enter-comment-env (reindent 2 test-context-2)) test-context-3)
-   (check-equal? (enter-comment-env test-context-4) test-context-5)))
+   (check-equal? (enter-comment-env (reindent 2 test-context-2)) test-context-3)))
 
-(define/provide-test-suite test-enter-macro
-  (test-case
-   "Test enter-macro-env"
-   (define test-context-1 (construct-context 80))
-   (define test-context-2 (context 0 80 macro-env))
-   (define test-context-3 (context 4 80 (comment-env 4)))
-   (define test-context-4 (context 4 80 (comment-macro-env 4)))
-   (check-equal? (enter-macro-env test-context-1) test-context-2)
-   (check-exn exn:fail? (λ () (enter-macro-env test-context-2)))
-   (check-equal? (enter-macro-env test-context-3) test-context-4)))
-;   (check-equal? (enter-macro-env test-context-3) test-context-3))) ;Causes an intentional error - this line is used to test the testing framework
