@@ -1,11 +1,23 @@
-#lang racket
+#lang typed/racket
 
-(provide (all-defined-out))
+#;(provide (all-defined-out))
 
-(define (flatten* . lst)
-  (flatten lst))
+#;(define (flatten* . lst)
+    (flatten lst))
 
-(struct s-chunk (name body) #:transparent)
+(define-type Nekot (U String Symbol Integer S-chunk))
+
+(struct: S-chunk () #:transparent)
+(define new-line-chunk (S-chunk))
+
+(struct: Immediate       S-chunk ([body : Nekot]) #:transparent)
+(struct: Position-indent S-chunk ([body : Nekot]) #:transparent)
+(struct: Concat          S-chunk ([nekots : (Listof Nekot)]) #:transparent)
+(struct: Indent          S-chunk ([body : Nekot]
+                                  [length : Integer]) #:transparent)
+(struct: Speculative     S-chunk ([attempt : Nekot]
+                                  [success? : ((Listof String) -> Boolean)]
+                                  [backup : Nekot]) #:transparent)
 
 (provide (except-out (all-defined-out) mode indention line-length))
 
@@ -13,25 +25,26 @@
 (define indention (make-parameter ""))
 (define line-length (make-parameter 80))
 
+(: make-whitespace (Integer -> String))
 (define (make-whitespace n)
   (make-string n #\space))
 
+; Removes TRAILING whitespace from the end of a line
+(: remove-whitespace (String -> String))
 (define (remove-whitespace line)
-  (or (let ((length (string-length line)))
-        (for/first ([i (in-range (- length 1) -1 -1)]
-                    #:when (not (equal? #\space (string-ref line i))))
-          (substring line 0 (+ i 1))
-          )) 
-      ""))
+  (string-trim line #:left? #f))
 
+(: is-whitespace? (String -> Boolean))
 (define (is-whitespace? line)
   (zero? (string-length (remove-whitespace line))))
 
+(: finish-line (String -> String))
 (define (finish-line given-line)
   (if (equal? given-line (indention))
       ""
       (remove-whitespace given-line)))
 
+(: add-literal (String String -> (Listof String)))
 (define (add-literal string line)
   (let* ((stringl (string-length string))
          (linel (string-length line)))
@@ -47,17 +60,21 @@
            (list (string-append (indention) string)
                  (finish-line line))])))
 
+(: add-space (String -> (Listof String)))
 (define (add-space line)
   (if (or (equal? (mode) 'immediate)
           (< (string-length line) (line-length)))
       (list (string-append line " "))
       (list "" (finish-line line))))
 
+(: add-concatenated ((Listof Nekot) String -> (Listof String)))
 (define (add-concatenated nekots line)
-  (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
+  (for/fold: ([lines : (Listof String) (list line)])
+    ([nekot : Nekot (in-list nekots)])
     (append (write-chunk nekot (car lines))
             (cdr lines))))
 
+(: add-speculative ((List Nekot ((Listof String) -> Boolean) Nekot) String -> (Listof String)))
 (define (add-speculative body line)
   (match-let* ([(list attempt success? backup) body]
                [attempted (write-chunk attempt line)])
@@ -65,6 +82,9 @@
         attempted
         (write-chunk backup line))))
 
+(: write-chunk (case->
+                [Nekot -> (Listof String)]
+                [Nekot String -> (Listof String)]))
 (define write-chunk
   (case-lambda 
     [(chunk)
@@ -74,25 +94,25 @@
                           (indention)
                           line))
      (match chunk
-       [(? string?)
-        (add-literal chunk new-line)]
-       [(? symbol?)
-        (add-literal (symbol->string chunk) new-line)]
+       [(and (? string?) ch)
+        (add-literal ch new-line)]
+       [(and (? symbol?) ch)
+        (add-literal (symbol->string ch) new-line)]
        [(? exact-nonnegative-integer?)
         (add-space new-line)]
-       [(s-chunk 'new-line _)
-        (list "" (finish-line line))]
-       [(s-chunk 'concat body) 
-        (add-concatenated body new-line)]
-       [(s-chunk 'immediate body) 
-        (parameterize ([mode 'immediate])
-          (write-chunk body line))]
-       [(s-chunk 'speculative body) 
-        (add-speculative body new-line)]
-       [(s-chunk 'position-indent body) 
-        (parameterize ([indention (make-whitespace (string-length line))])
-          (write-chunk body line))]
-       [(s-chunk 'indent (list body length))
+       [(Speculative attempt success? backup) 
+        (add-speculative `(,attempt ,success? ,backup) new-line)]
+       [(Indent body length)
         (parameterize ([indention (string-append (indention) (make-whitespace length))])
           (write-chunk body line))]
+       [(Position-indent body) 
+        (parameterize ([indention (make-whitespace (string-length line))])
+          (write-chunk body line))]
+       [(Concat nekots) 
+        (add-concatenated nekots new-line)]
+       [(Immediate body) 
+        (parameterize ([mode 'immediate])
+          (write-chunk body line))]
+       [(S-chunk)
+        (list "" (finish-line line))]
        )]))
