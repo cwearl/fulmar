@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket #:no-optimize
 
 (require "fulmar-core.rkt")
 
@@ -9,22 +9,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;fulmar-core definitions
-#;(provide flatten*)
+(provide flatten*)
 
 (provide (all-defined-out))
 
 ;combine lengths of given values
-(: combine-lengths (Number * -> Number))
-(define (combine-lengths . values)
-  (apply + values))
+#;(: combine-lengths ((Rec T (U (Listof T) Integer)) * -> Integer))
+#;(define (combine-lengths . values)
+  (apply + (flatten* values)))
 
 ;combine strings
 (: combine-strings ((U Symbol String) * -> String))
 (define (combine-strings . values)
   (apply string-append 
          (map (λ: ([s : (U Symbol String)]) 
-                (if (symbol? s) (symbol->string s)
-                    s)) 
+                (cond
+                  [(symbol? s) (symbol->string s)]
+                  ;[(integer? s) ""]
+                  ;[(S-chunk? s) ""]
+                  [else s]))
               values)))
 
 ;helper for speculative
@@ -47,9 +50,9 @@
 
 ;sequence of spaces chunk
 ; adds some number of spaces
-(: spaces (Number * -> Number))
+(: spaces (Integer * -> Integer))
 (define (spaces . lengths)
-  (apply combine-lengths lengths))
+  (apply + lengths))
 
 ;new line chunk
 ; adds a new line
@@ -73,9 +76,9 @@
 ; sets up a general concatenation chunks
 ; - attempts to put as many on the same line as possible
 ; - no spaces added
-(: concat (Nekot * -> Concat))
+(: concat ((Rec T (U (Listof T) Nekot)) * -> Concat))
 (define (concat . chunks)
-  (Concat chunks))
+  (Concat (flatten* chunks)))
 
 ;immediate chunk
 ; bypasses usual writing rules and writes chunk immediately after preceeding chunk

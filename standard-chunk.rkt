@@ -41,7 +41,7 @@
 ;blank lines chunk
 ; adds n blank lines
 (define (blank-lines . lengths)
-  (concat (make-list (combine-lengths 1 lengths)
+  (concat (make-list (apply +  (cons 1 lengths))
                      new-line)))
 
 ;blank line chunk

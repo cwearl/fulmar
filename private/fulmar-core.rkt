@@ -1,14 +1,11 @@
-#lang typed/racket
+#lang typed/racket #:no-optimize
 
 #;(provide (all-defined-out))
 
-#;(define (flatten* . lst)
-    (flatten lst))
-
-(define-type Nekot (U String Symbol Integer S-chunk))
-
 (struct: S-chunk () #:transparent)
 (define new-line-chunk (S-chunk))
+
+(define-type Nekot (U String Symbol Integer S-chunk))
 
 (struct: Immediate       S-chunk ([body : Nekot]) #:transparent)
 (struct: Position-indent S-chunk ([body : Nekot]) #:transparent)
@@ -18,6 +15,13 @@
 (struct: Speculative     S-chunk ([attempt : Nekot]
                                   [success? : ((Listof String) -> Boolean)]
                                   [backup : Nekot]) #:transparent)
+
+(require/typed typed/racket
+               [flatten ((Listof (Rec T (U (Listof T) Nekot))) -> (Listof Nekot))])
+
+(: flatten* ((Rec T (U (Listof T) Nekot)) * -> (Listof Nekot)))
+(define (flatten* . lst)
+    (flatten lst))
 
 (provide (except-out (all-defined-out) mode indention line-length))
 
