@@ -45,6 +45,11 @@
         [else (last-non-whitespace-index i)])))
   (let ([i (last-non-whitespace-index (string-length line))])
     (substring line 0 i)))
+; Another tested alternative:
+;  (let ([index (do: : Integer ([i (- (string-length line) 1) (- i 1)])
+;                 ((or (> 0 i) (not (equal? #\space (string-ref line i))))
+;                  (+ i 1)))])
+;    (substring line 0 index)))
 
 (: is-whitespace? (String -> Boolean))
 (define (is-whitespace? line)
