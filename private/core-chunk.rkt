@@ -1,4 +1,4 @@
-#lang typed/racket #:no-optimize
+#lang typed/racket
 
 (require "fulmar-core.rkt")
 

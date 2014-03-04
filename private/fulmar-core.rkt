@@ -1,4 +1,4 @@
-#lang typed/racket #:no-optimize
+#lang typed/racket
 
 #;(provide (all-defined-out))
 
@@ -36,7 +36,15 @@
 ; Removes TRAILING whitespace from the end of a line
 (: remove-whitespace (String -> String))
 (define (remove-whitespace line)
-  (string-trim line #:left? #f))
+;  (string-trim line #:left? #f))
+  (define: (last-non-whitespace-index [ii : Integer]) : Integer
+    (let ([i (- ii 1)])
+      (cond
+        [(> 0 i) 0]
+        [(not (equal? #\space (string-ref line i))) ii]
+        [else (last-non-whitespace-index i)])))
+  (let ([i (last-non-whitespace-index (string-length line))])
+    (substring line 0 i)))
 
 (: is-whitespace? (String -> Boolean))
 (define (is-whitespace? line)
