@@ -5,21 +5,22 @@
 (struct: S-chunk () #:transparent)
 (define new-line-chunk (S-chunk))
 
-(define-type Nekot (U String Symbol Integer S-chunk))
+(define-type Chunk (U String Symbol Integer S-chunk))
+(define-type NestofChunks (Rec T (U (Listof T) Chunk)))
 
-(struct: Immediate       S-chunk ([body : Nekot]) #:transparent)
-(struct: Position-indent S-chunk ([body : Nekot]) #:transparent)
-(struct: Concat          S-chunk ([nekots : (Listof Nekot)]) #:transparent)
-(struct: Indent          S-chunk ([body : Nekot]
+(struct: Immediate       S-chunk ([body : Chunk]) #:transparent)
+(struct: Position-indent S-chunk ([body : Chunk]) #:transparent)
+(struct: Concat          S-chunk ([chunks : (Listof Chunk)]) #:transparent)
+(struct: Indent          S-chunk ([body : Chunk]
                                   [length : Integer]) #:transparent)
-(struct: Speculative     S-chunk ([attempt : Nekot]
+(struct: Speculative     S-chunk ([attempt : Chunk]
                                   [success? : ((Listof String) -> Boolean)]
-                                  [backup : Nekot]) #:transparent)
+                                  [backup : Chunk]) #:transparent)
 
 (require/typed typed/racket
-               [flatten ((Listof (Rec T (U (Listof T) Nekot))) -> (Listof Nekot))])
+               [flatten ((Listof NestofChunks) -> (Listof Chunk))])
 
-(: flatten* ((Rec T (U (Listof T) Nekot)) * -> (Listof Nekot)))
+(: flatten* (NestofChunks * -> (Listof Chunk)))
 (define (flatten* . lst)
     (flatten lst))
 
@@ -84,14 +85,14 @@
       (list (string-append line " "))
       (list "" (finish-line line))))
 
-(: add-concatenated ((Listof Nekot) String -> (Listof String)))
-(define (add-concatenated nekots line)
+(: add-concatenated ((Listof Chunk) String -> (Listof String)))
+(define (add-concatenated chunks line)
   (for/fold: ([lines : (Listof String) (list line)])
-    ([nekot : Nekot (in-list nekots)])
-    (append (write-chunk nekot (car lines))
+    ([Chunk : Chunk (in-list chunks)])
+    (append (write-chunk Chunk (car lines))
             (cdr lines))))
 
-(: add-speculative ((List Nekot ((Listof String) -> Boolean) Nekot) String -> (Listof String)))
+(: add-speculative ((List Chunk ((Listof String) -> Boolean) Chunk) String -> (Listof String)))
 (define (add-speculative body line)
   (match-let* ([(list attempt success? backup) body]
                [attempted (write-chunk attempt line)])
@@ -100,8 +101,8 @@
         (write-chunk backup line))))
 
 (: write-chunk (case->
-                [Nekot -> (Listof String)]
-                [Nekot String -> (Listof String)]))
+                [Chunk -> (Listof String)]
+                [Chunk String -> (Listof String)]))
 (define write-chunk
   (case-lambda 
     [(chunk)
@@ -125,8 +126,8 @@
        [(Position-indent body) 
         (parameterize ([indention (make-whitespace (string-length line))])
           (write-chunk body line))]
-       [(Concat nekots) 
-        (add-concatenated nekots new-line)]
+       [(Concat chunks) 
+        (add-concatenated chunks new-line)]
        [(Immediate body) 
         (parameterize ([mode 'immediate])
           (write-chunk body line))]

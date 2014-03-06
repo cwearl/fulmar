@@ -9,14 +9,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;fulmar-core definitions
-(provide flatten*)
+(provide flatten*
+         Chunk
+         NestofChunks)
 
 (provide (all-defined-out))
-
-;combine lengths of given values
-#;(: combine-lengths ((Rec T (U (Listof T) Integer)) * -> Integer))
-#;(define (combine-lengths . values)
-  (apply + (flatten* values)))
 
 ;combine strings
 (: combine-strings ((U Symbol String) * -> String))
@@ -76,13 +73,13 @@
 ; sets up a general concatenation chunks
 ; - attempts to put as many on the same line as possible
 ; - no spaces added
-(: concat ((Rec T (U (Listof T) Nekot)) * -> Concat))
+(: concat (NestofChunks * -> Concat))
 (define (concat . chunks)
   (Concat (flatten* chunks)))
 
 ;immediate chunk
 ; bypasses usual writing rules and writes chunk immediately after preceeding chunk
-(define: (immediate [chunk : Nekot]) : Immediate
+(define: (immediate [chunk : Chunk]) : Immediate
   (Immediate chunk))
 
 ;speculative chunk
@@ -90,21 +87,21 @@
 ; run proc on first chunk
 ; if proc returns true, use results of first chunk
 ; otherwise,            use results of second chunk
-(: speculative (Nekot ((Listof String) -> Boolean) Nekot -> Speculative))
+(: speculative (Chunk ((Listof String) -> Boolean) Chunk -> Speculative))
 (define (speculative attempt success? backup)
   (Speculative attempt success? backup))
 
 ;position indent chunk
 ; sets indent to current position of line
-(define: (position-indent [chunk : Nekot]) : Position-indent
+(define: (position-indent [chunk : Chunk]) : Position-indent
   (Position-indent chunk))
 
 ;indent chunk
 ; increases current indent
-(define: (indent [length : Integer] [chunk : Nekot]) : Indent
+(define: (indent [length : Integer] [chunk : Chunk]) : Indent
   (Indent chunk length))
 
 ;comment env chunk
 ; puts chunks in a comment env environment
-(define: (comment-env-chunk [chunk : Nekot]) : Concat
+(define: (comment-env-chunk [chunk : Chunk]) : Concat
   (concat "/* " chunk " */"))
