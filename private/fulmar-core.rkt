@@ -88,8 +88,8 @@
 (: add-concatenated ((Listof Chunk) String -> (Listof String)))
 (define (add-concatenated chunks line)
   (for/fold: ([lines : (Listof String) (list line)])
-    ([Chunk : Chunk (in-list chunks)])
-    (append (write-chunk Chunk (car lines))
+    ([chunk : Chunk (in-list chunks)])
+    (append (write-chunk chunk (car lines))
             (cdr lines))))
 
 (: add-speculative ((List Chunk ((Listof String) -> Boolean) Chunk) String -> (Listof String)))
