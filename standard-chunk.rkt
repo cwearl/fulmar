@@ -87,19 +87,19 @@
 ; except: to-add is NOT added to the final chunk
 (: attach-list-separator (Chunk NestofChunks * -> (Listof Chunk)))
 (define (attach-list-separator to-attach . chunk-lists)
-  (define: chunks : (Listof Chunk) (flatten* chunk-lists))
+  (define chunks (flatten* chunk-lists))
+  (define lmap (inst map Chunk Chunk))
   (if-empty chunks
             null
-            (flatten* (ann (map (λ: ([chunk : Chunk]) (concat chunk (immediate to-attach)))
-                                (take chunks (- (length chunks) 1))) (Listof Chunk))
-                      (last chunks))))
+            (flatten* (lmap (λ: ([chunk : Chunk]) (concat chunk (immediate to-attach)))
+                            (take chunks (- (length chunks) 1))) (last chunks))))
 
 ;insert a chunk between other chunks
 ; concatenates given chunks with add-between between given chunks
 (: between (Chunk NestofChunks * -> Chunk))
 (define (between add-between-chunk . chunks)
-  (concat (ann (add-between (flatten* chunks)
-                            add-between-chunk) (Listof Chunk))))
+  (define ladd-between (inst add-between Chunk Chunk))
+  (concat (ladd-between (flatten* chunks) add-between-chunk)))
 
 ; combine between and attach functionality
 ;  adds to-add after each of the given chunks
