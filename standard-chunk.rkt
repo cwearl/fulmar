@@ -113,7 +113,8 @@
 ; if that fails, puts chunks on their own lines
 (: arg-list ((Chunk -> Chunk) Chunk NestofChunks * -> Chunk))
 (define (arg-list sur attach . chunks)
-  (define: (build [spacing : Chunk]) : Chunk
+  (: build (Chunk -> Chunk))
+  (define (build spacing)
     (apply between/attach attach spacing chunks))
   (sur (if-empty chunks
                  empty
@@ -164,7 +165,8 @@
 ; - first line is indented 2 spaces and begun with a colon
 (: constructor-assignment-list (NestofChunks * -> Chunk))
 (define (constructor-assignment-list . chunks)
-  (define: (build [spacing : Chunk]) : Chunk
+  (: build (Chunk -> Chunk))
+  (define (build spacing)
     (indent 2 (concat ":"
                       (immediate 1)
                       (position-indent (apply between/attach "," spacing chunks)))))
@@ -183,7 +185,8 @@
 ;   close curly bracket is on it's own line
 (: general-body (Boolean NestofChunks * -> Chunk))
 (define (general-body use-semi-colons . chunks)
-  (define: (build [start/end-spacing : Chunk] [spacing : Chunk]) : Chunk
+  (: build (Chunk Chunk -> Chunk))
+  (define (build start/end-spacing spacing)
     (surround start/end-spacing
               (if use-semi-colons
                   (apply smt-list spacing chunks)
