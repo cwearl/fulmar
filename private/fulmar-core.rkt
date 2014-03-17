@@ -12,6 +12,7 @@
 (define mode (make-parameter 'normal))
 (define indention (make-parameter ""))
 (define line-length (make-parameter 80))
+(define in-comment? (make-parameter #f))
 
 (define (make-whitespace n)
   (make-string n #\space))
@@ -90,9 +91,23 @@
        [(s-chunk 'speculative body) 
         (add-speculative body new-line)]
        [(s-chunk 'position-indent body) 
-        (parameterize ([indention (make-whitespace (string-length line))])
+        (parameterize ([indention (if (equal? line "")
+                                      (indention)
+                                      (make-whitespace (string-length line)))])
           (write-chunk body line))]
        [(s-chunk 'indent (list body length))
         (parameterize ([indention (string-append (indention) (make-whitespace length))])
           (write-chunk body line))]
+       
+       [(s-chunk 'comment (list body init-char))
+        (let ([was-in-comment (in-comment?)])
+          (parameterize ([in-comment? #t])
+            (write-chunk 
+             (s-chunk 'concat 
+                      (flatten (list "/*" 
+                            (string init-char) 
+                            body 
+                            (if was-in-comment 
+                                " **" 
+                                " */")))) line)))]
        )]))

@@ -4,7 +4,6 @@
 (require rackunit/text-ui)
 (require "fulmar-core-tests.rkt")
 (require "core-chunk-tests.rkt")
-(require "writer-tests.rkt")
 (require "standard-chunk-tests.rkt")
 
 ;sequentially check if any tests fail
@@ -37,37 +36,9 @@
 (define/contract fulmar-core-tests
   (listof test-suite?)
   (list test-flatten*
-        test-combine-env
-        test-construct-context
-        test-enter-env
-        test-reindent
-        test-enter-comment))
+     ))
 
 (apply run-tests-text fulmar-core-tests)
-
-;writer tests:
-(define/contract writer-tests
-  (listof test-suite?)
-  (list test-is-whitespace?
-        test-make-whitespace
-        test-remove-whitespace
-        test-build-indentation
-        test-finish-line
-        test-check-speculative-line-length
-        test-add-hash-character
-        test-add-literal
-        test-add-spaces
-        test-add-new-line
-        test-add-pp-directive
-        test-add-empty
-        test-add-concatenated
-        test-add-immediate
-        test-add-speculative
-        test-change-indent-to-current
-        test-unknown-nekot-type
-        test-write-nekot))
-
-(apply run-tests-text writer-tests)
 
 ;core chunk tests:
 (define/contract core-chunk-tests
@@ -85,7 +56,6 @@
         test-immediate
         test-speculative
         test-position-indent
-        test-modify-context
         test-indent
         test-comment-env-chunk))
 
