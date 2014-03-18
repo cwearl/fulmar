@@ -1,7 +1,6 @@
 #lang racket
 
-(require "private/writer.rkt"
-         "private/core-chunk.rkt"
+(require "private/core-chunk.rkt"
          "private/fulmar-core.rkt"
          "version.rkt"
          "standard-chunk.rkt"
@@ -22,7 +21,7 @@
 ; Compile and print the passed chunks.
 (define (print-values vs)
   (for-each displayln
-   (reverse (write-nekot (chunk-transform vs (construct-context 80))))))
+            (reverse (write-chunk vs))))
 
 ; This macro manipulates expressions entered in the REPL
 (define-syntax-rule (fulmar-top-interaction f ...)
