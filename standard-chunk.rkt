@@ -1,7 +1,7 @@
 #lang racket
 
 (require "private/core-chunk.rkt")
- 
+
 ; from core-chunk
 (provide
  flatten*
@@ -317,8 +317,8 @@
 ;general function declaration
 (define (general-function-declare name return-type . params)
   (concat return-type (spaces) name (paren-list (if-empty params
-                                                   'void
-                                                   params))))
+                                                          'void
+                                                          params))))
 
 ;function declaration
 (define (function-declare name return-type . params)

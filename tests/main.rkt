@@ -35,8 +35,7 @@
 ;fulmar-core tests:
 (define/contract fulmar-core-tests
   (listof test-suite?)
-  (list test-flatten*
-     ))
+  (list test-flatten*))
 
 (apply run-tests-text fulmar-core-tests)
 

@@ -108,33 +108,27 @@
    (check-equal? (write-chunk empty)
                  '(""))
    (check-equal? (write-chunk (concat empty
-                              "asdf"))
+                                      "asdf"))
                  '("asdf"))))
 
 (define/provide-test-suite test-concat
   (test-case
    "Test concat"
-   (check-equal? (write-chunk (concat 'asdf 'jkl)
-                                               )
+   (check-equal? (write-chunk (concat 'asdf 'jkl))
                  '("asdfjkl"))
-   (check-equal? (write-chunk (concat (list 'asdf 'jkl))
-                                               )
+   (check-equal? (write-chunk (concat (list 'asdf 'jkl)))
                  '("asdfjkl"))
-   (check-equal? (write-chunk (concat 'asdf 4 'jkl)
-                                               )
+   (check-equal? (write-chunk (concat 'asdf 4 'jkl))
                  '("asdf4jkl"))))
 
 (define/provide-test-suite test-immediate
   (test-case
    "Test immediate"
-   (check-equal? (write-chunk (immediate 'asdf)
-                                              )
+   (check-equal? (write-chunk (immediate 'asdf))
                  '("asdf"))
-   (check-equal? (write-chunk (immediate 4)
-                                              )
+   (check-equal? (write-chunk (immediate 4))
                  '("4"))
-   (check-equal? (write-chunk (immediate (concat 4 'asdf))
-                                              )
+   (check-equal? (write-chunk (immediate (concat 4 'asdf)))
                  '("4asdf"))))
 
 (define/provide-test-suite test-speculative
@@ -142,11 +136,9 @@
    "Test speculative"
    (define test-success? (λ (any) #false))
    (define check-length (λ (lst) (= 1 (length lst))))
-   (check-equal? (write-chunk (speculative 'asdf test-success? 'jkl)
-                                              )
+   (check-equal? (write-chunk (speculative 'asdf test-success? 'jkl))
                  '("jkl"))
-   (check-equal? (write-chunk (speculative new-line check-length 4)
-                                              )
+   (check-equal? (write-chunk (speculative new-line check-length 4))
                  '("4"))))
 
 (define/provide-test-suite test-position-indent
@@ -154,11 +146,9 @@
    "Test position-indent"
    (define test 'asdf)
    (define test-2 'jkl)
-   (check-equal? (write-chunk (position-indent 'asdf)
-                                              )
+   (check-equal? (write-chunk (position-indent 'asdf))
                  '("asdf"))
-   (check-equal? (write-chunk (concat 'asdf (position-indent (concat new-line 'jkl)))
-                                              )
+   (check-equal? (write-chunk (concat 'asdf (position-indent (concat new-line 'jkl))))
                  '("    jkl"
                    "asdf"))))
 
@@ -168,71 +158,53 @@
 (define/provide-test-suite test-indent
   (test-case
    "Test indent"
-   (check-equal? (write-chunk (indent 0
-                                                       (concat 'asdf new-line 'jkl))
-                                              )
+   (check-equal? (write-chunk (indent 0 (concat 'asdf new-line 'jkl)))
                  '("jkl"
                    "asdf"))
-   (check-equal? (write-chunk (indent 2 (concat 'asdf new-line 'jkl))
-                                              )
+   (check-equal? (write-chunk (indent 2 (concat 'asdf new-line 'jkl)))
                  '("  jkl"
                    "  asdf"))
-   (check-equal? (write-chunk (indent 3 (concat 'asdf new-line 'jkl))
-                                              )
+   (check-equal? (write-chunk (indent 3 (concat 'asdf new-line 'jkl)))
                  '("   jkl"
                    "   asdf"))
-   (check-equal? (write-chunk (indent 5 (concat 'asdf new-line 'jkl))
-                                              )
+   (check-equal? (write-chunk (indent 5 (concat 'asdf new-line 'jkl)))
                  '("     jkl"
                    "     asdf"))
-   (check-equal? (write-chunk (indent 2
-                                                       (concat 'asdf new-line 'jkl))
-                                              )
+   (check-equal? (write-chunk (indent 2 (concat 'asdf new-line 'jkl)))
                  '("  jkl"
                    "  asdf"))
-   (check-equal? (write-chunk (indent 3
-                                                       (concat 'asdf new-line 'jkl))
-                                              )
+   (check-equal? (write-chunk (indent 3 (concat 'asdf new-line 'jkl)))
                  '("   jkl"
                    "   asdf"))
-   (check-equal? (write-chunk (indent 5
-                                                       (concat 'asdf new-line 'jkl))
-                                              )
+   (check-equal? (write-chunk (indent 5 (concat 'asdf new-line 'jkl)))
                  '("     jkl"
                    "     asdf"))
-   (check-equal? (write-chunk (indent 2 (indent 1 (concat 'asdf new-line 'jkl)))
-                                              )
+   (check-equal? (write-chunk (indent 2 (indent 1 (concat 'asdf new-line 'jkl))))
                  '("   jkl"
                    "   asdf"))
-   (check-equal? (write-chunk (indent 3 (indent 2 (concat 'asdf new-line 'jkl)))
-                                              )
+   (check-equal? (write-chunk (indent 3 (indent 2 (concat 'asdf new-line 'jkl))))
                  '("     jkl"
                    "     asdf")))
   (test-case
    "Test indent - interaction with position-indent tests"
-   (check-equal? (write-chunk (indent 3 (position-indent (concat 'asdf new-line 'jkl)))
-                                              )
+   (check-equal? (write-chunk (indent 3 (position-indent (concat 'asdf new-line 'jkl))))
                  '("   jkl"
                    "   asdf"))
-   (check-equal? (write-chunk (indent 3 (concat 'asdf (position-indent (concat new-line 'jkl))))
-                                              )
+   (check-equal? (write-chunk (indent 3 (concat 'asdf (position-indent (concat new-line 'jkl)))))
                  '("       jkl"
                    "   asdf"))
-   (check-equal? (write-chunk (indent 3 (concat 'asdf (position-indent (concat new-line 'jkl new-line "123"))))
-                                              )
+   (check-equal? (write-chunk (indent 3 (concat 'asdf (position-indent (concat new-line 'jkl new-line "123")))))
                  '("       123"
                    "       jkl"
                    "   asdf"))
-   (check-equal? (write-chunk (indent 3 (concat 'asdf (position-indent (concat new-line 'jkl new-line (indent 1 "123")))))
-                                              )
+   (check-equal? (write-chunk (indent 3 (concat 'asdf (position-indent (concat new-line 'jkl new-line (indent 1 "123"))))))
                  '("        123"
                    "       jkl"
                    "   asdf"))
    (check-equal? (write-chunk (indent 3 (concat 'asdf (position-indent (concat new-line
-                                                                                                (indent 1 'jkl)
-                                                                                                new-line
-                                                                                                "123"))))
-                                              )
+                                                                               (indent 1 'jkl)
+                                                                               new-line
+                                                                               "123")))))
                  '("       123"
                    "        jkl"
                    "   asdf"))))

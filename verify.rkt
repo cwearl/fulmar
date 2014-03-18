@@ -16,9 +16,7 @@
   (let* ((relative-paths (map ((curry find-relative-path) root-dir)
                               (sequence->list (in-directory root-dir))))
          (non-hidden-paths (filter (negate hidden?) relative-paths)))
-    (filter (λ (path) (equal? (filename-extension path) #"fmr")) non-hidden-paths)
-    )
-  )
+    (filter (λ (path) (equal? (filename-extension path) #"fmr")) non-hidden-paths)))
 
 (define (find-generated fmr-path)
   (let ((trimmed (string->path (string-trim (path->string fmr-path) ".fmr"))))
@@ -43,8 +41,7 @@
       #:program "verify"
       #:usage-help "apply fulmar to all .fmr files in a directory (recursing through non-hidden subdirectories) and compare the output to corresponding .h and .cpp files for testing."
       #:args (filename)
-      filename)
-     ))
+      filename)))
   
   (define fmr-files (map ((curry build-path) root-dir) (find-fmr root-dir)))
   (define top-fmr-files (filter find-generated fmr-files))
@@ -55,5 +52,4 @@
            (comparison (file->string comparison-file))
            (output (evaluate-fmr fmr fmr-files))
            (matched (equal? output comparison)))
-      
       (displayln (format "~a: ~a" (if matched "matched" "FAILED") relative-fmr-string)))))

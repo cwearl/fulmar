@@ -21,8 +21,7 @@
   (or (let ((length (string-length line)))
         (for/first ([i (in-range (- length 1) -1 -1)]
                     #:when (not (equal? #\space (string-ref line i))))
-          (substring line 0 (+ i 1))
-          )) 
+          (substring line 0 (+ i 1))))
       ""))
 
 (define (is-whitespace? line)
@@ -100,7 +99,6 @@
        [(s-chunk 'indent (list body length))
         (parameterize ([indention (string-append (indention) (make-whitespace length))])
           (write-chunk body line))]
-       
        [(s-chunk 'comment (list body init-char))
         (let ([was-in-comment (in-comment?)])
           (parameterize ([in-comment? #t])
@@ -111,5 +109,4 @@
                             (s-chunk 'position-indent body)
                             (if was-in-comment 
                                 " **" 
-                                " */")))) line)))]
-       )]))
+                                " */")))) line)))])]))

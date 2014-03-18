@@ -12,8 +12,7 @@
       #:program "apply"
       #:usage-help "apply fulmar to all .fmr files in a directory (recursing through non-hidden subdirectories) and write the output to corresponding .h and .cpp files."
       #:args (filename)
-      filename)
-     ))
+      filename)))
   
   (define fmr-files (map ((curry build-path) root-dir) (find-fmr root-dir)))
   (define top-fmr-files (filter find-generated fmr-files))
