@@ -51,10 +51,10 @@
                  '("asdf"))
    (check-equal? (write-chunk 'asdf)
                  '("asdf"))
-   (check-equal? (write-chunk 0)
-                 '(" "))
+   (check-equal? (write-chunk 1)
+                 '("1"))
    (check-equal? (write-chunk 4)
-                 '(" "))))
+                 '("4"))))
 
 ;nekot-building chunks
 
@@ -122,7 +122,7 @@
                  '("asdfjkl"))
    (check-equal? (write-chunk (concat 'asdf 4 'jkl)
                                                )
-                 '("asdf jkl"))))
+                 '("asdf4jkl"))))
 
 (define/provide-test-suite test-immediate
   (test-case
@@ -132,10 +132,10 @@
                  '("asdf"))
    (check-equal? (write-chunk (immediate 4)
                                               )
-                 '(" "))
+                 '("4"))
    (check-equal? (write-chunk (immediate (concat 4 'asdf))
                                               )
-                 '(" asdf"))))
+                 '("4asdf"))))
 
 (define/provide-test-suite test-speculative
   (test-case
@@ -147,7 +147,7 @@
                  '("jkl"))
    (check-equal? (write-chunk (speculative new-line check-length 4)
                                               )
-                 '(" "))))
+                 '("4"))))
 
 (define/provide-test-suite test-position-indent
   (test-case
@@ -249,8 +249,8 @@
    (check-equal? (write-chunk (comment-env-chunk (indent 2 (comment-env-chunk 'asdf))))
                  '("/* /* asdf ** */"))
    (check-equal? (write-chunk (comment-env-chunk (concat new-line (indent 2 (comment-env-chunk 'asdf)))))
-                 '("  /* asdf ** */"
+                 '("     /* asdf ** */"
                    "/*"))
    (check-equal? (write-chunk (comment-env-chunk (concat 'asdf new-line 'jkl)))
-                 '("jkl */" 
+                 '("   jkl */" 
                    "/* asdf"))))

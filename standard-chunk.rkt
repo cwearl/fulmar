@@ -101,7 +101,7 @@
     (between/attach attach spacing chunks))
   (sur (if-empty chunks
                  empty
-                 (speculative (build 1)
+                 (speculative (build (spaces))
                               length-equals-one
                               (position-indent (build new-line))))))
 
@@ -143,11 +143,11 @@
 (define (constructor-assignment-list . chunks)
   (define (build spacing)
     (indent 2 (concat ":"
-                      (immediate 1)
+                      (immediate (spaces))
                       (position-indent (between/attach "," spacing chunks)))))
   (if-empty chunks
             empty
-            (speculative (build 1)
+            (speculative (build (spaces))
                          length-equals-one
                          (build new-line))))
 
@@ -168,7 +168,7 @@
                       empty
                       (if (= 1 (length chunks))
                           (speculative 
-                           (build 1 1)
+                           (build (spaces) (spaces))
                            length-equals-one
                            (indent 3 (build new-line blank-line)))
                           (indent 3 (build new-line blank-line))))))
@@ -200,17 +200,17 @@
 ;preprocessor define chunk
 ; #define chunk
 (define (pp-define name)
-  (concat pp-directive 'define 1 name))
+  (concat pp-directive 'define (spaces) name))
 
 ;preprocessor include chunk
 ; #include<...> chunk
 (define (pp-include included)
-  (concat pp-directive 'include 1 (template-list included)))
+  (concat pp-directive 'include (spaces) (template-list included)))
 
 ;alternate preprocessor include chunk
 ; #include<...> chunk
 (define (pp-alt-include included)
-  (concat pp-directive 'include 1 "\"" included "\""))
+  (concat pp-directive 'include (spaces) "\"" included "\""))
 
 ;multiple includes
 (define (pp-includes . chunks)
@@ -218,11 +218,11 @@
 
 ;preprocessor if-not-defined chunk
 (define (pp-ifdef condition)
-  (concat pp-directive 'ifdef 1 condition))
+  (concat pp-directive 'ifdef (spaces) condition))
 
 ;preprocessor if-not-defined chunk
 (define (pp-ifndef condition)
-  (concat pp-directive 'ifndef 1 condition))
+  (concat pp-directive 'ifndef (spaces) condition))
 
 ;preprocessor if-not-defined chunk
 (define pp-else (concat pp-directive 'else))
@@ -235,7 +235,7 @@
 (define (pp-conditional directive condition then [else #false])
   (concat pp-directive
           directive
-          1
+          (spaces)
           condition
           new-line
           (indent 3 then)
@@ -267,7 +267,7 @@
 ;macro defintion chunk
 ; a macro definition
 (define (macro-define name params chunk)
-  (immediate (concat (pp-define name) 1 chunk)))
+  (immediate (concat (pp-define name) (spaces) chunk)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;general chunks;;;;;;;
@@ -276,12 +276,12 @@
 ;namespace define chunk
 (define (namespace-define name . chunks)
   (define chunk (concat 'namespace
-                        (immediate 1)
+                        (immediate (spaces))
                         (immediate name)
-                        (immediate 1)
+                        (immediate (spaces))
                         (body chunks)))
   
-  (concat chunk 1 (comment-env-chunk name)))
+  (concat chunk (spaces) (comment-env-chunk name)))
 
 ;described statements chunk
 (define (described-smts comment . chunks)
@@ -292,7 +292,7 @@
 ;make constant
 (define (constize chunk)
   (concat chunk
-          (immediate 1)
+          (immediate (spaces))
           (immediate 'const)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -316,17 +316,17 @@
 
 ;general function declaration
 (define (general-function-declare name return-type . params)
-  (concat return-type 1 name (paren-list (if-empty params
+  (concat return-type (spaces) name (paren-list (if-empty params
                                                    'void
                                                    params))))
 
 ;function declaration
 (define (function-declare name return-type . params)
-  (concat 'inline 1 (general-function-declare name return-type params)))
+  (concat 'inline (spaces) (general-function-declare name return-type params)))
 
 ;static function declaration
 (define (static-function-declare name return-type . params)
-  (concat 'static 1 (function-declare name return-type params)))
+  (concat 'static (spaces) (function-declare name return-type params)))
 
 ;void function declaration
 (define (void-function-declare name params)
@@ -335,7 +335,7 @@
 ;function defintion
 (define (function-define signature . chunks)
   (concat signature
-          (immediate 1)
+          (immediate (spaces))
           (body chunks)))
 
 ;void function defintion
@@ -346,7 +346,7 @@
 ;returning function defintion
 (define (returning-function-define signature body return-expr)
   (function-define signature (flatten* body (concat 'return
-                                                    (immediate 1)
+                                                    (immediate (spaces))
                                                     (position-indent return-expr)))))
 
 ;constructor assignment
@@ -358,7 +358,7 @@
   (concat name 
           (paren-list params)
           (if-empty assigns
-                    (immediate 1)
+                    (immediate (spaces))
                     (surround new-line (constructor-assignment-list assigns)))
           (body chunks)))
 
@@ -368,7 +368,7 @@
 
 ;struct declaration
 (define (struct-declare name)
-  (concat 'struct 1 name))
+  (concat 'struct (spaces) name))
 
 ;template struct declaration
 (define (template-struct-declare name params . args)
@@ -396,7 +396,7 @@
 ;struct definition
 (define (struct-define signature . body)
   (concat signature
-          (immediate 1)
+          (immediate (spaces))
           (class-body body)))
 
 ;template struct definition
@@ -417,7 +417,7 @@
 
 ;typedef statement chunk
 (define (typedef-smt lhs rhs)
-  (concat lhs 1 'typedef 1 rhs))
+  (concat lhs (spaces) 'typedef (spaces) rhs))
 
 ;function call
 (define (function-call fcn . args)

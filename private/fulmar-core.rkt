@@ -80,6 +80,8 @@
        [(? symbol?)
         (add-literal (symbol->string chunk) new-line)]
        [(? exact-nonnegative-integer?)
+        (add-literal (number->string chunk) new-line)]
+       [(s-chunk 'space _)
         (add-space new-line)]
        [(s-chunk 'new-line _)
         (list "" (finish-line line))]
@@ -106,7 +108,7 @@
              (s-chunk 'concat 
                       (flatten (list "/*" 
                             (string init-char) 
-                            body 
+                            (s-chunk 'position-indent body)
                             (if was-in-comment 
                                 " **" 
                                 " */")))) line)))]
