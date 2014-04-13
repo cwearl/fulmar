@@ -23,7 +23,7 @@
          (map (λ (s) 
                 (match s 
                   [(? symbol?) (symbol->string s)] 
-                   [_ s])) 
+                  [_ s])) 
               (flatten values))))
 
 ;helper for speculative
@@ -45,7 +45,7 @@
 ;sequence of spaces chunk
 ; adds some number of spaces
 (define (spaces . lengths)
-  (combine-lengths lengths))
+  (s-chunk 'space null))
 
 ;new line chunk
 ; adds a new line
@@ -97,5 +97,5 @@
 
 ;comment env chunk
 ; puts chunks in a comment env environment
-(define (comment-env-chunk chunk)
-  (concat (list "/* " chunk " */")))
+(define (comment-env-chunk chunk [init-char #\space])
+  (s-chunk 'comment (list chunk init-char)))

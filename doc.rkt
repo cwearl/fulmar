@@ -1,16 +1,13 @@
 #lang racket
 (require
- racket/contract
- scribble/srcdoc
- (for-doc racket/base 
-          scribble/manual)
- )
+  racket/contract
+  scribble/srcdoc
+  (for-doc racket/base 
+           scribble/manual))
 
 (provide define/doc
          (all-from-out racket/contract
-                       scribble/srcdoc 
-                       )
-         )
+                       scribble/srcdoc))
 
 (define-syntax define/doc
   (syntax-rules ()
@@ -21,23 +18,14 @@
          id
          contract
          (a ...)
-         doc
-         )
-        )
+         doc))
        (define (id a ...)
-         body)
-       )]
+         body))]
     [(define/doc id contract doc body)
      (begin
        (provide
         (thing-doc
          id
          contract
-         doc
-         )
-        )
-       (define id body)
-       )]
-    ))
-
-
+         doc))
+       (define id body))]))

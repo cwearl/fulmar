@@ -5,4 +5,4 @@
 /bin/fulmar
 
 # ignore Racket auto directories
-*/compiled/
+**/compiled/

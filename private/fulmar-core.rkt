@@ -12,6 +12,7 @@
 (define mode (make-parameter 'normal))
 (define indention (make-parameter ""))
 (define line-length (make-parameter 80))
+(define in-comment? (make-parameter #f))
 
 (define (make-whitespace n)
   (make-string n #\space))
@@ -20,8 +21,7 @@
   (or (let ((length (string-length line)))
         (for/first ([i (in-range (- length 1) -1 -1)]
                     #:when (not (equal? #\space (string-ref line i))))
-          (substring line 0 (+ i 1))
-          )) 
+          (substring line 0 (+ i 1))))
       ""))
 
 (define (is-whitespace? line)
@@ -79,6 +79,8 @@
        [(? symbol?)
         (add-literal (symbol->string chunk) new-line)]
        [(? exact-nonnegative-integer?)
+        (add-literal (number->string chunk) new-line)]
+       [(s-chunk 'space _)
         (add-space new-line)]
        [(s-chunk 'new-line _)
         (list "" (finish-line line))]
@@ -90,9 +92,21 @@
        [(s-chunk 'speculative body) 
         (add-speculative body new-line)]
        [(s-chunk 'position-indent body) 
-        (parameterize ([indention (make-whitespace (string-length line))])
+        (parameterize ([indention (if (equal? line "")
+                                      (indention)
+                                      (make-whitespace (string-length line)))])
           (write-chunk body line))]
        [(s-chunk 'indent (list body length))
         (parameterize ([indention (string-append (indention) (make-whitespace length))])
           (write-chunk body line))]
-       )]))
+       [(s-chunk 'comment (list body init-char))
+        (let ([was-in-comment (in-comment?)])
+          (parameterize ([in-comment? #t])
+            (write-chunk 
+             (s-chunk 'concat 
+                      (flatten (list "/*" 
+                            (string init-char) 
+                            (s-chunk 'position-indent body)
+                            (if was-in-comment 
+                                " **" 
+                                " */")))) line)))])]))
