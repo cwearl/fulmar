@@ -25,43 +25,33 @@
 
 (provide (all-defined-out))
 
-(define l literal)
-(define c concat)
-(define b between)
-(define b/a between/attach)
-(define n namespace-define)
-(define d described-smts)
-(define p paren-list)
-(define m macro-define)
-(define s (spaces 1))
-
 (: cs (NestofChunks * -> Chunk))
 (define (cs . chunks)
-  (c chunks s))
+  (concat chunks (spaces 1)))
 
 (: scs (NestofChunks * -> Chunk))
 (define (scs . chunks)
-  (c s chunks s))
+  (concat (spaces 1) chunks (spaces 1)))
 
 (: cc (NestofChunks * -> Chunk))
 (define (cc . chunks)
-  (c chunks ";"))
+  (concat chunks ";"))
 
 (: ccs (Chunk Chunk -> Chunk))
 (define (ccs first second)
-  (c first ";" s second))
+  (concat first ";" (spaces 1) second))
 
 (: bs (NestofChunks * -> Chunk))
 (define (bs . chunks)
-  (apply b s chunks))
+  (apply between (spaces 1) chunks))
 
 (: bb (NestofChunks * -> Chunk))
 (define (bb . chunks)
-  (apply b blank-line chunks))
+  (apply between blank-line chunks))
 
 (: bn (NestofChunks * -> Chunk))
 (define (bn . chunks)
-  (apply b new-line chunks))
+  (apply between new-line chunks))
 
 (: sbs (NestofChunks * -> Chunk))
 (define (sbs . chunks)
@@ -153,14 +143,14 @@
 (: pp-cond-or (Chunk Chunk Chunk -> Chunk))
 (define (pp-cond-or name then else)
   (pp-conditional-ifdef name
-                        (c then)
+                        (concat then)
                         (if (not else)
                             #false
-                            (c else))))
+                            (concat else))))
 
 (: par (NestofChunks * -> Chunk))
 (define (par . chunks)
-  (p (bs chunks)))
+  (paren-list (bs chunks)))
 
 (: ter-cond (Chunk Chunk Chunk -> Chunk))
 (define (ter-cond if then else)
@@ -232,19 +222,19 @@
 
 (: n++ ((U Symbol String) -> Chunk))
 (define (n++ chunk)
-  (l chunk '++))
+  (literal chunk '++))
 
 (: n-and (Chunk NestofChunks * -> Chunk))
 (define (n-and lhs . rhs)
-  (b (scs '&&) lhs rhs))
+  (between (scs '&&) lhs rhs))
 
 (: n-or (Chunk NestofChunks * -> Chunk))
 (define (n-or lhs . rhs)
-  (b (scs "||") lhs rhs))
+  (between (scs "||") lhs rhs))
 
 (: n-not (Chunk -> Chunk))
 (define (n-not chunk)
-  (c '! (par chunk)))
+  (concat '! (par chunk)))
 
 (: tc (NestofChunks * -> Chunk))
 (define (tc . chunks)
@@ -320,7 +310,7 @@
 
 (: take-ptr (NestofChunks * -> Chunk))
 (define (take-ptr . chunks)
-  (c '& chunks))
+  (concat '& chunks))
 
 (: nif (Chunk NestofChunks * -> Chunk))
 (define (nif check . then)
@@ -333,7 +323,7 @@
 
 (: nifelse (Chunk Chunk Chunk -> Chunk))
 (define (nifelse check then else)
-  (b new-line
+  (between new-line
      (nif check then)
      (nelse else)))
 
@@ -343,7 +333,7 @@
 
 (: nifelseif (Chunk Chunk Chunk Chunk -> Chunk))
 (define (nifelseif check1 then1 check2 then2)
-  (b new-line
+  (between new-line
      (nif check1 then1)
      (nelseif check2 then2)))
 
