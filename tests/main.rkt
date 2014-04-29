@@ -47,7 +47,7 @@
         test-length-equals-one
         test-chunk-transform
         test-literal
-        test-spaces
+        test-space
         test-new-line
         test-pp-directive
         test-empty

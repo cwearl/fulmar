@@ -76,14 +76,10 @@
    (check-equal? (write-chunk (literal '(asdf jkl)))
                  '("asdfjkl"))))
 
-(define/provide-test-suite test-spaces
+(define/provide-test-suite test-space
   (test-case
-   "Test spaces"
-   (check-equal? (write-chunk (spaces 4))
-                 '(" "))
-   (check-equal? (write-chunk (spaces 4 3))
-                 '(" "))
-   (check-equal? (write-chunk (spaces '(4 3)))
+   "Test space"
+   (check-equal? (write-chunk space)
                  '(" "))))
 
 (define/provide-test-suite test-new-line

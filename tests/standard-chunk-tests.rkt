@@ -60,13 +60,13 @@
    (check-equal? (write-chunk-with-length (between 1)
                                           test-context)
                  '(""))
-   (check-equal? (write-chunk-with-length (between (spaces) 'asdf 'jkl)
+   (check-equal? (write-chunk-with-length (between space 'asdf 'jkl)
                                           test-context)
                  '("asdf jkl"))
    (check-equal? (write-chunk-with-length (between 1 'asdf)
                                           test-context)
                  '("asdf"))
-   (check-equal? (write-chunk-with-length (between (spaces) 'asdf 'jkl "12345")
+   (check-equal? (write-chunk-with-length (between space 'asdf 'jkl "12345")
                                           test-context)
                  '("asdf jkl 12345"))
    (check-equal? (write-chunk-with-length (between new-line 'asdf "123" "12345" "1")
@@ -80,22 +80,22 @@
    (check-equal? (write-chunk-with-length (between/attach "," 1)
                                           test-context)
                  '(""))
-   (check-equal? (write-chunk-with-length (between/attach "," (spaces) 'asdf 'jkl)
+   (check-equal? (write-chunk-with-length (between/attach "," space 'asdf 'jkl)
                                           test-context)
                  '("asdf, jkl"))
-   (check-equal? (write-chunk-with-length (between/attach "," (spaces) 'asdf)
+   (check-equal? (write-chunk-with-length (between/attach "," space 'asdf)
                                           test-context)
                  '("asdf"))
-   (check-equal? (write-chunk-with-length (between/attach "," (spaces) 'asdf 'jkl "12345")
+   (check-equal? (write-chunk-with-length (between/attach "," space 'asdf 'jkl "12345")
                                           test-context)
                  '("asdf, jkl, 12345"))
-   (check-equal? (write-chunk-with-length (between/attach "," (spaces) 'asdf "123" "12345" "1")
+   (check-equal? (write-chunk-with-length (between/attach "," space 'asdf "123" "12345" "1")
                                           test-context)
                  '("asdf, 123, 12345, 1"))
    (check-equal? (write-chunk-with-length (between/attach "," new-line 'asdf "123" "12345" "1")
                                           test-context)
                  '("1" "12345," "123," "asdf,"))
-   (check-equal? (write-chunk-with-length (between/attach "," (spaces) 'asdf "123" "12345" "1")
+   (check-equal? (write-chunk-with-length (between/attach "," space 'asdf "123" "12345" "1")
                                           4)
                  '("1" "12345," "123," "asdf,"))))
 
@@ -146,11 +146,11 @@
   (test-case
    "Test smt-list"
    (define test-context 80)
-   (check-equal? (write-chunk-with-length (smt-list blank-line 'asdf (spaces) 'jkl)
+   (check-equal? (write-chunk-with-length (smt-list blank-line 'asdf space 'jkl)
                                           test-context)
                  '("jkl;" "" " ;" "" "asdf;"))
    (check-equal? (write-chunk-with-length (smt-list new-line
-                                                    (spaces 4)
+                                                    space
                                                     'asdf
                                                     empty)
                                           test-context)
@@ -181,7 +181,7 @@
    "Test body"
    (define test-context 80)
    (define test-context-2 6)
-   (check-equal? (write-chunk-with-length (body 'asdf (spaces) 'jkl)
+   (check-equal? (write-chunk-with-length (body 'asdf space 'jkl)
                                           test-context)
                  '("{ asdf;  ; jkl; }"))
    (check-equal? (write-chunk-with-length (body "123456")
@@ -189,7 +189,7 @@
                  '("}"
                    "   123456;"
                    "{"))
-   (check-equal? (write-chunk-with-length (body 'asdf (spaces) 'jkl)
+   (check-equal? (write-chunk-with-length (body 'asdf space 'jkl)
                                           test-context-2)
                  '("}"
                    "   jkl;"
@@ -207,7 +207,7 @@
    (define test-context 80)
    (check-equal? (write-chunk-with-length (pp-define 'name) test-context) '("#define name"))
    (check-equal? (write-chunk-with-length (pp-define (concat 'name "2")) test-context) '("#define name2"))
-   (check-equal? (write-chunk-with-length (concat (spaces 3) (pp-define 'name)) test-context) '(" #define name"))
+   (check-equal? (write-chunk-with-length (concat space (pp-define 'name)) test-context) '(" #define name"))
    (check-equal? (write-chunk-with-length (concat "/* " (pp-define 'name)) test-context) '("/* #define name"))))
 
 (define/provide-test-suite test-pp-include
@@ -216,7 +216,7 @@
    (define test-context 80)
    (check-equal? (write-chunk-with-length (pp-include 'name) test-context) '("#include <name>"))
    (check-equal? (write-chunk-with-length (pp-include (concat 'name "2")) test-context) '("#include <name2>"))
-   (check-equal? (write-chunk-with-length (concat (spaces 3) (pp-include 'name)) test-context) '(" #include <name>"))
+   (check-equal? (write-chunk-with-length (concat space (pp-include 'name)) test-context) '(" #include <name>"))
    (check-equal? (write-chunk-with-length (concat "/* " (pp-include 'name)) test-context) '("/* #include <name>"))))
 
 (define/provide-test-suite test-pp-includes
@@ -235,7 +235,7 @@
    (define test-context 80)
    (check-equal? (write-chunk-with-length (pp-ifdef 'condition) test-context) '("#ifdef condition"))
    (check-equal? (write-chunk-with-length (pp-ifdef (concat 'condition "2")) test-context) '("#ifdef condition2"))
-   (check-equal? (write-chunk-with-length (concat (spaces 3) (pp-ifdef 'condition)) test-context) '(" #ifdef condition"))
+   (check-equal? (write-chunk-with-length (concat space (pp-ifdef 'condition)) test-context) '(" #ifdef condition"))
    (check-equal? (write-chunk-with-length (concat "/* " (pp-ifdef 'condition)) test-context) '("/* #ifdef condition"))))
 
 (define/provide-test-suite test-pp-ifndef
@@ -244,7 +244,7 @@
    (define test-context 80)
    (check-equal? (write-chunk-with-length (pp-ifndef 'condition) test-context) '("#ifndef condition"))
    (check-equal? (write-chunk-with-length (pp-ifndef (concat 'condition "2")) test-context) '("#ifndef condition2"))
-   (check-equal? (write-chunk-with-length (concat (spaces 3) (pp-ifndef 'condition)) test-context) '(" #ifndef condition"))
+   (check-equal? (write-chunk-with-length (concat space (pp-ifndef 'condition)) test-context) '(" #ifndef condition"))
    (check-equal? (write-chunk-with-length (concat "/* " (pp-ifndef 'condition)) test-context) '("/* #ifndef condition"))))
 
 (define/provide-test-suite test-pp-else
@@ -252,7 +252,7 @@
    "Test pp-else"
    (define test-context 80)
    (check-equal? (write-chunk-with-length pp-else test-context) '("#else"))
-   (check-equal? (write-chunk-with-length (concat (spaces 3) pp-else) test-context) '(" #else"))
+   (check-equal? (write-chunk-with-length (concat space pp-else) test-context) '(" #else"))
    (check-equal? (write-chunk-with-length (concat "/* " pp-else) test-context) '("/* #else"))))
 
 (define/provide-test-suite test-pp-endif
@@ -261,7 +261,7 @@
    (define test-context 80)
    (check-equal? (write-chunk-with-length (pp-endif 'condition) test-context) '("/* condition */" "#endif"))
    (check-equal? (write-chunk-with-length (pp-endif (concat 'condition "2")) test-context) '("/* condition2 */" "#endif"))
-   (check-equal? (write-chunk-with-length (concat (spaces 3) (pp-endif 'condition)) test-context) '("/* condition */" " #endif"))
+   (check-equal? (write-chunk-with-length (concat space (pp-endif 'condition)) test-context) '("/* condition */" " #endif"))
    (check-equal? (write-chunk-with-length (concat "/* " (pp-endif 'condition)) test-context) '("/* condition */" "/* #endif"))))
 
 (define/provide-test-suite test-pp-conditional
