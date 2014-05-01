@@ -3,7 +3,8 @@
 (require racket/sandbox)
 (require fulmar/version)
 
-(require "verify.rkt")
+(require "verify.rkt"
+         "private/generate.rkt")
 
 (module+ main
   (define root-dir
