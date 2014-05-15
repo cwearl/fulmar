@@ -48,12 +48,12 @@
 ;sequence of spaces chunk
 ; adds some number of spaces
 (: space Chunk)
-(define space " ")
+(define space (Space))
 
 ;new line chunk
 ; adds a new line
 (define new-line
-  new-line-chunk)
+  (Newline))
 
 ;preprocessor directive chunk
 ; correctly adds # to line

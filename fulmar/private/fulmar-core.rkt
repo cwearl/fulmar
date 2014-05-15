@@ -3,11 +3,12 @@
 #;(provide (all-defined-out))
 
 (struct: S-chunk () #:transparent)
-(define new-line-chunk (S-chunk))
 
 (define-type Chunk (U String Symbol Integer S-chunk))
 (define-type NestofChunks (Rec T (U (Listof T) Chunk)))
 
+(struct: Newline         S-chunk () #:transparent)
+(struct: Space           S-chunk () #:transparent)
 (struct: Immediate       S-chunk ([body : Chunk]) #:transparent)
 (struct: Position-indent S-chunk ([body : Chunk]) #:transparent)
 (struct: Concat          S-chunk ([chunks : (Listof Chunk)]) #:transparent)
@@ -131,6 +132,8 @@
        [(Immediate body) 
         (parameterize ([mode 'immediate])
           (write-chunk body line))]
-       [(S-chunk)
+       [(Newline)
         (list "" (finish-line line))]
+       [(Space)
+        (add-space new-line)]
        )]))
