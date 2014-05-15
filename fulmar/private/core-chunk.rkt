@@ -1,4 +1,4 @@
-#lang racket
+#lang typed/racket
 
 (require "fulmar-core.rkt")
 
@@ -93,15 +93,18 @@
 
 ;position indent chunk
 ; sets indent to current position of line
-(define: (position-indent [chunk : Chunk]) : Position-indent
+(: position-indent (Chunk -> Position-indent))
+(define (position-indent chunk)
   (Position-indent chunk))
 
 ;indent chunk
 ; increases current indent
-(define: (indent [length : Integer] [chunk : Chunk]) : Indent
+(: indent (Integer Chunk -> Indent))
+(define (indent length chunk)
   (Indent chunk length))
 
 ;comment env chunk
 ; puts chunks in a comment env environment
-(define: (comment-env-chunk [chunk : Chunk]) : Concat
+(: comment-env-chunk (Chunk -> Concat))
+(define (comment-env-chunk chunk)
   (concat "/* " chunk " */"))
