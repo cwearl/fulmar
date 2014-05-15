@@ -1,6 +1,8 @@
 Fulmar
 ======
 
+Fulmar is currently considered **unstable**, and may break backwards compatibility.
+
 Fulmar is a C++ code generation framework. It was originally created to generate most of the tens of thousands of lines of code that make up the Nebo PDE domain-specific language.
 The goal is to make Fulmar generally useful, though at present it is still very specialized to Nebo.
 Fulmar is being developed by a team of computer science researchers at the University of Utah. See AUTHORS for more details.

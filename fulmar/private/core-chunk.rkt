@@ -42,10 +42,8 @@
 (define (literal . strings)
   (combine-strings strings))
 
-;sequence of spaces chunk
-; adds some number of spaces
-(define (spaces . lengths)
-  (s-chunk 'space null))
+;a single space chunk
+(define space (s-chunk 'space null))
 
 ;new line chunk
 ; adds a new line

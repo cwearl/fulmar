@@ -33,23 +33,3 @@
      ; This hack is required because we print the version info with a configure-runtime submodule, which won't run in the 
      generated-string
      (get-output (make-module-evaluator fmr-path #:allow-for-require import-paths)))))
-
-(module+ main
-  (define root-dir
-    (normalize-path
-     (command-line
-      #:program "verify"
-      #:usage-help "apply fulmar to all .fmr files in a directory (recursing through non-hidden subdirectories) and compare the output to corresponding .h and .cpp files for testing."
-      #:args (filename)
-      filename)))
-  
-  (define fmr-files (map ((curry build-path) root-dir) (find-fmr root-dir)))
-  (define top-fmr-files (filter find-generated fmr-files))
-  
-  (for ([fmr top-fmr-files])
-    (let* ((relative-fmr-string (path->string (find-relative-path root-dir fmr)))
-           (comparison-file (find-generated fmr))
-           (comparison (file->string comparison-file))
-           (output (evaluate-fmr fmr fmr-files))
-           (matched (equal? output comparison)))
-      (displayln (format "~a: ~a" (if matched "matched" "FAILED") relative-fmr-string)))))
