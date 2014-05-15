@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang racket
 
 (require "fulmar-core.rkt")
 
@@ -22,7 +22,7 @@
          (map (λ: ([s : (U Symbol String)]) 
                 (cond
                   [(symbol? s) (symbol->string s)]
-                  ;[(integer? s) ""]
+                  ;[(integer? s) ""] ;; TODO: Fix these lines
                   ;[(S-chunk? s) ""]
                   [else s]))
               values)))

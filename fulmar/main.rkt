@@ -21,7 +21,7 @@
 ; Compile and print the passed chunks.
 (define (print-values vs)
   (for-each displayln
-   (reverse (write-chunk vs))))
+            (reverse (write-chunk vs))))
 
 ; This macro manipulates expressions entered in the REPL
 (define-syntax-rule (fulmar-top-interaction f ...)

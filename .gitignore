@@ -1,8 +1,5 @@
 # ignore auto/temporary backups
 *~
 
-# ignore main fulmar utility
-/bin/fulmar
-
 # ignore Racket auto directories
-*/compiled/
+**/compiled/

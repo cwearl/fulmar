@@ -5,8 +5,8 @@
 ; from core-chunk
 (provide
  flatten*
- literal 
- spaces  
+ literal
+ space
  new-line
  empty
  concat
@@ -324,12 +324,12 @@
 (: namespace-define (Chunk NestofChunks * -> Chunk))
 (define (namespace-define name . chunks)
   (define chunk (concat 'namespace
-                        (immediate 1)
+                        (immediate space)
                         (immediate name)
-                        (immediate 1)
+                        (immediate space)
                         (apply body chunks)))
   
-  (concat chunk 1 (comment-env-chunk name)))
+  (concat chunk space (comment-env-chunk name)))
 
 ;described statements chunk
 (: described-smts (Chunk NestofChunks * -> Chunk))
@@ -342,7 +342,7 @@
 (: constize (Chunk -> Chunk))
 (define (constize chunk)
   (concat chunk
-          (immediate 1)
+          (immediate space)
           (immediate 'const)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -369,19 +369,19 @@
 ;general function declaration
 (: general-function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (general-function-declare name return-type . params)
-  (concat return-type 1 name (apply paren-list (if-empty params
+  (concat return-type space name (apply paren-list (if-empty params
                                                          '(void)
                                                          params))))
 
 ;function declaration
 (: function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (function-declare name return-type . params)
-  (concat 'inline 1 (apply general-function-declare name return-type params)))
+  (concat 'inline space (apply general-function-declare name return-type params)))
 
 ;static function declaration
 (: static-function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (static-function-declare name return-type . params)
-  (concat 'static 1 (apply function-declare name return-type params)))
+  (concat 'static space (apply function-declare name return-type params)))
 
 ;void function declaration
 (: void-function-declare (Chunk NestofChunks -> Chunk))
@@ -392,7 +392,7 @@
 (: function-define (Chunk NestofChunks * -> Chunk))
 (define (function-define signature . chunks)
   (concat signature
-          (immediate 1)
+          (immediate space)
           (apply body chunks)))
 
 ;void function defintion
@@ -405,13 +405,13 @@
 (: returning-function-define (Chunk NestofChunks Chunk -> Chunk))
 (define (returning-function-define signature body return-expr)
   (apply function-define signature (flatten* body (concat 'return
-                                                          (immediate 1)
+                                                          (immediate space)
                                                           (position-indent return-expr)))))
 
 ;constructor assignment
 (: constructor-assignment (Chunk Chunk -> Chunk))
-(define (constructor-assignment var val)
-  (concat var (sur-paren (concat val))))
+(define (constructor-assignment var . val)
+  (concat var (paren-list val)))
 
 ;constructor defintion
 (: constructor (Chunk NestofChunks NestofChunks NestofChunks * -> Chunk))
@@ -419,7 +419,7 @@
   (concat name 
           (paren-list params)
           (if-empty assigns
-                    (immediate 1)
+                    (immediate space)
                     (surround new-line (constructor-assignment-list assigns)))
           (apply body chunks)))
 
@@ -430,7 +430,7 @@
 ;struct declaration
 (: struct-declare (Chunk -> Chunk))
 (define (struct-declare name)
-  (concat 'struct 1 name))
+  (concat 'struct space name))
 
 ;template struct declaration
 (: template-struct-declare (Chunk NestofChunks NestofChunks * -> Chunk))
@@ -464,7 +464,7 @@
 (: struct-define (Chunk NestofChunks * -> Chunk))
 (define (struct-define signature . body)
   (concat signature
-          (immediate 1)
+          (immediate space)
           (apply class-body body)))
 
 ;template struct definition
@@ -488,7 +488,7 @@
 ;typedef statement chunk
 (: typedef-smt (Chunk Chunk -> Chunk))
 (define (typedef-smt lhs rhs)
-  (concat lhs 1 'typedef 1 rhs))
+  (concat lhs space 'typedef space rhs))
 
 ;function call
 (: function-call (Chunk NestofChunks * -> Chunk))
@@ -501,3 +501,7 @@
   (concat obj
           (immediate ".")
           (position-indent (apply function-call fcn args))))
+
+;array access
+(define (array-access array . arg)
+  (concat array (sur-sqbr arg)))
