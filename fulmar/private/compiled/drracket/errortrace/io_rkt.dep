@@ -1,1 +1,0 @@
-("5.92" ("6dc618c77266caa80226b934c9b92e081b0fe7e6" . "a495bdac6df37d606a4632d4e3c8519bc91b82f1") (collects #"fulmar" #"standard-chunk.rkt") (collects #"fulmar" #"private" #"fulmar-core.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"racket" #"main.rkt"))
