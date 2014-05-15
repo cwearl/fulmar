@@ -24,7 +24,7 @@
 (define (flatten* . lst)
     (flatten lst))
 
-(provide (except-out (all-defined-out) mode indention line-length))
+(provide (all-defined-out))
 
 (define mode (make-parameter 'normal))
 (define indention (make-parameter ""))
