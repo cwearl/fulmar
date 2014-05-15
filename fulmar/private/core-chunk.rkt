@@ -47,9 +47,8 @@
 
 ;sequence of spaces chunk
 ; adds some number of spaces
-(: spaces (Integer * -> Integer))
-(define (spaces . lengths)
-  (apply + lengths))
+(: space Chunk)
+(define space " ")
 
 ;new line chunk
 ; adds a new line
