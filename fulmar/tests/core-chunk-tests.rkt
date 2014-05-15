@@ -8,13 +8,6 @@
 
 ;helper functions
 
-(define/provide-test-suite test-combine-lengths
-  (test-case
-   "Test combine-lengths"
-   (check-eq? (combine-lengths 4) 4)
-   (check-eq? (combine-lengths 4 3) 7)
-   (check-eq? (combine-lengths '(4 3)) 7)))
-
 (define/provide-test-suite test-combine-strings
   (test-case
    "Test combine-strings"
