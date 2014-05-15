@@ -125,7 +125,7 @@
     (apply between/attach attach spacing chunks))
   (sur (if-empty chunks
                  empty
-                 (speculative (build 1)
+                 (speculative (build space)
                               length-equals-one
                               (position-indent (build new-line))))))
 
@@ -175,11 +175,11 @@
   (: build (Chunk -> Chunk))
   (define (build spacing)
     (indent 2 (concat ":"
-                      (immediate 1)
+                      (immediate space)
                       (position-indent (apply between/attach "," spacing chunks)))))
   (if-empty chunks
             empty
-            (speculative (build 1)
+            (speculative (build space)
                          length-equals-one
                          (build new-line))))
 
@@ -202,7 +202,7 @@
                       empty
                       (if (= 1 (length chunks))
                           (speculative 
-                           (build 1 1)
+                           (build space space)
                            length-equals-one
                            (indent 3 (build new-line blank-line)))
                           (indent 3 (build new-line blank-line))))))
@@ -237,19 +237,19 @@
 ; #define chunk
 (: pp-define (Chunk -> Chunk))
 (define (pp-define name)
-  (concat pp-directive 'define 1 name))
+  (concat pp-directive 'define space name))
 
 ;preprocessor include chunk
 ; #include <...> chunk
 (: pp-include (Chunk -> Chunk))
 (define (pp-include included)
-  (concat pp-directive 'include 1 (template-list included)))
+  (concat pp-directive 'include space (template-list included)))
 
 ;alternate preprocessor include chunk
 ; #include "..." chunk
 (: pp-alt-include (Chunk -> Chunk))
 (define (pp-alt-include included)
-  (concat pp-directive 'include 1 "\"" included "\""))
+  (concat pp-directive 'include space "\"" included "\""))
 
 ;multiple includes
 (: pp-includes (Chunk * -> Chunk))
@@ -259,12 +259,12 @@
 ;preprocessor if-not-defined chunk
 (: pp-ifdef (Chunk -> Chunk))
 (define (pp-ifdef condition)
-  (concat pp-directive 'ifdef 1 condition))
+  (concat pp-directive 'ifdef space condition))
 
 ;preprocessor if-not-defined chunk
 (: pp-ifndef (Chunk -> Chunk))
 (define (pp-ifndef condition)
-  (concat pp-directive 'ifndef 1 condition))
+  (concat pp-directive 'ifndef space condition))
 
 ;preprocessor if-not-defined chunk
 (define pp-else (concat pp-directive 'else))
@@ -281,7 +281,7 @@
 (define (pp-conditional directive condition then [else #false])
   (concat pp-directive
           directive
-          1
+          space
           condition
           new-line
           (indent 3 then)
@@ -321,7 +321,7 @@
 ; a macro definition
 (: macro-define (Chunk NestofChunks Chunk -> Chunk))
 (define (macro-define name params chunk)
-  (immediate (concat (pp-define name) 1 chunk)))
+  (immediate (concat (pp-define name) space chunk)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;general chunks;;;;;;;
