@@ -416,9 +416,9 @@
                                                           (position-indent return-expr)))))
 
 ;constructor assignment
-(: constructor-assignment (Chunk Chunk -> Chunk))
+(: constructor-assignment (Chunk NestofChunks * -> Chunk))
 (define (constructor-assignment var . val)
-  (concat var (paren-list val)))
+  (concat var (apply paren-list val)))
 
 ;constructor defintion
 (: constructor (Chunk NestofChunks NestofChunks NestofChunks * -> Chunk))
@@ -510,5 +510,6 @@
           (position-indent (apply function-call fcn args))))
 
 ;array access
+(: array-access (Chunk Chunk * -> Chunk))
 (define (array-access array . arg)
-  (concat array (sur-sqbr arg)))
+  (concat array (apply sur-sqbr arg)))
