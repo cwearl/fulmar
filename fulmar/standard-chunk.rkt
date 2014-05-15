@@ -78,6 +78,13 @@
           chunks
           (immediate ">")))
 
+;surround square bracket chunk
+(: sur-sqbr (Chunk * -> Chunk))
+(define (sur-sqbr . chunks)
+  (concat (immediate "[")
+          chunks
+          (immediate "]")))
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ;list chunks;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
