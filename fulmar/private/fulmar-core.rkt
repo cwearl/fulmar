@@ -116,8 +116,8 @@
         (add-literal ch new-line)]
        [(and (? symbol?) ch)
         (add-literal (symbol->string ch) new-line)]
-       [(? exact-nonnegative-integer?)
-        (add-space new-line)]
+       [(and (? exact-nonnegative-integer?) ch)
+        (add-literal (number->string ch) new-line)]
        [(Speculative attempt success? backup) 
         (add-speculative `(,attempt ,success? ,backup) new-line)]
        [(Indent body length)
