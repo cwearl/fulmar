@@ -14,14 +14,9 @@
    (check-equal? (combine-strings "asdf") "asdf")
    (check-equal? (combine-strings 'asdf) "asdf")
    (check-equal? (combine-strings "asdf" "jkl") "asdfjkl")
-   (check-equal? (combine-strings '("asdf" "jkl")) "asdfjkl")
-   (check-equal? (combine-strings '(("asdf") "jkl")) "asdfjkl")
-   (check-equal? (combine-strings '("asdf" ("jkl"))) "asdfjkl")
-   (check-equal? (combine-strings '(("asdf") ("jkl"))) "asdfjkl")
    (check-equal? (combine-strings "asdf" 'jkl) "asdfjkl")
    (check-equal? (combine-strings 'asdf "jkl") "asdfjkl")
-   (check-equal? (combine-strings 'asdf 'jkl) "asdfjkl")
-   (check-equal? (combine-strings '(asdf jkl)) "asdfjkl")))
+   (check-equal? (combine-strings 'asdf 'jkl) "asdfjkl")))
 
 (define/provide-test-suite test-length-equals-one
   (test-case
@@ -65,8 +60,6 @@
    (check-equal? (write-chunk (literal 'asdf "jkl"))
                  '("asdfjkl"))
    (check-equal? (write-chunk (literal 'asdf 'jkl))
-                 '("asdfjkl"))
-   (check-equal? (write-chunk (literal '(asdf jkl)))
                  '("asdfjkl"))))
 
 (define/provide-test-suite test-space
