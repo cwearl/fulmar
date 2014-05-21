@@ -181,9 +181,6 @@
    "Test body"
    (define test-context 80)
    (define test-context-2 6)
-   (check-equal? (write-chunk-with-length (body 'asdf space 'jkl)
-                                          test-context)
-                 '("{ asdf;  ; jkl; }"))
    (check-equal? (write-chunk-with-length (body "123456")
                                           test-context-2)
                  '("}"
@@ -539,9 +536,6 @@
                                           test-context)
                  '("signature { first; }"))
    (check-equal? (write-chunk-with-length (function-define 'signature 'first 'second)
-                                          test-context)
-                 '("signature { first; second; }"))
-   (check-equal? (write-chunk-with-length (function-define 'signature 'first 'second)
                                           20)
                  '("}"
                    "   second;"
@@ -588,15 +582,25 @@
                                           test-context)
                  '("inline return-type name(void) { return expr; }"))
    (check-equal? (write-chunk-with-length (returning-function-define (function-declare 'name 'return-type (list 'first))
-                                                                     (list 'first)
-                                                                     'expr)
-                                          test-context)
-                 '("inline return-type name(first) { first; return expr; }"))
+                                                                       (list 'first)
+                                                                       'expr)
+                                            test-context)
+                   '("}"
+                     "   return expr;"
+                     ""
+                     "   first;"
+                     "inline return-type name(first) {"))
    (check-equal? (write-chunk-with-length (returning-function-define (function-declare 'name 'return-type (list 'first 'second))
                                                                      (list 'first 'second)
                                                                      'expr)
                                           test-context)
-                 '("inline return-type name(first, second) { first; second; return expr; }"))
+                 '("}"
+                   "   return expr;"
+                   ""
+                   "   second;"
+                   ""
+                   "   first;"
+                   "inline return-type name(first, second) {"))
    (check-equal? (write-chunk-with-length (returning-function-define (function-declare 'name 'return-type (list 'first 'second))
                                                                      (list 'first 'second)
                                                                      'expr)
@@ -653,7 +657,11 @@
                                                        'asdf
                                                        'jkl)
                                           test-context)
-                 '("{ asdf; jkl; }"
+                 '("}"
+                   "   jkl;"
+                   ""
+                   "   asdf;"
+                   "{"
                    "  : assign1, assign2"
                    "name(first, second)"))))
 
@@ -711,7 +719,11 @@
    (define test-context 80)
    (check-equal? (write-chunk-with-length (struct-define 'signature 'first 'second)
                                           test-context)
-                 '("signature { first second }"))
+                 '("}"
+                   "   second"
+                   ""
+                   "   first"
+                   "signature {"))
    (check-equal? (write-chunk-with-length (struct-define 'signature 'first 'second)
                                           8)
                  '("}"
@@ -730,7 +742,11 @@
                                                                   'first
                                                                   'second)
                                           test-context)
-                 '(" struct name { first second }"
+                 '("}"
+                   "   second"
+                   ""
+                   "   first"
+                   " struct name {"
                    "template<first, second>"))
    (check-equal? (write-chunk-with-length (template-struct-define 'name
                                                                   (list 'first 'second)
