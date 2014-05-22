@@ -169,9 +169,9 @@
                    "     asdf")))
   (test-case
    "Test indent - interaction with position-indent tests"
-   (check-equal? (write-chunk (indent 3 (position-indent (concat 'asdf new-line 'jkl))))
+   (check-equal? (write-chunk (concat 123 (position-indent (concat 'asdf new-line 'jkl))))
                  '("   jkl"
-                   "   asdf"))
+                   "123asdf"))
    (check-equal? (write-chunk (indent 3 (concat 'asdf (position-indent (concat new-line 'jkl)))))
                  '("       jkl"
                    "   asdf"))

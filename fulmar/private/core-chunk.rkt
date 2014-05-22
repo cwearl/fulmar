@@ -104,6 +104,7 @@
 
 ;comment env chunk
 ; puts chunks in a comment env environment
-(: comment-env-chunk (Chunk -> Concat))
-(define (comment-env-chunk chunk)
-  (concat "/* " chunk " */"))
+(: comment-env-chunk (case-> [Chunk -> Comment]
+                             [Chunk Char -> Comment]))
+(define (comment-env-chunk chunk [init-char #\space])
+  (Comment chunk init-char))

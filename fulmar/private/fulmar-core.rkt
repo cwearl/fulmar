@@ -12,6 +12,8 @@
 (struct: Immediate       S-chunk ([body : Chunk]) #:transparent)
 (struct: Position-indent S-chunk ([body : Chunk]) #:transparent)
 (struct: Concat          S-chunk ([chunks : (Listof Chunk)]) #:transparent)
+(struct: Comment         S-chunk ([body : Chunk]
+                                  [init-char : Char]) #:transparent)
 (struct: Indent          S-chunk ([body : Chunk]
                                   [length : Integer]) #:transparent)
 (struct: Speculative     S-chunk ([attempt : Chunk]
@@ -30,6 +32,8 @@
 (define mode (make-parameter 'normal))
 (define indention (make-parameter ""))
 (define line-length (make-parameter 80))
+(: in-comment? (Parameterof Boolean))
+(define in-comment? (make-parameter #f))
 
 (: make-whitespace (Integer -> String))
 (define (make-whitespace n)
@@ -127,6 +131,17 @@
        [(Position-indent body) 
         (parameterize ([indention (make-whitespace (string-length line))])
           (write-chunk body line))]
+       [(Comment body init-char)
+        (let ([was-in-comment (in-comment?)])
+          (parameterize ([in-comment? #t])
+            (write-chunk
+             (Concat
+              (flatten (list "/*"
+                             (string init-char)
+                             (Position-indent body)
+                             (if was-in-comment
+                                 " **"
+                                 " */")))) line)))]
        [(Concat chunks) 
         (add-concatenated chunks new-line)]
        [(Immediate body) 
