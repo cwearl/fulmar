@@ -6,107 +6,114 @@
   (flatten lst))
 
 (struct s-chunk (name body) #:transparent)
+(struct f-line (string) #:transparent)
 
-(provide (except-out (all-defined-out) mode indention line-length))
-
-(define mode (make-parameter 'normal))
-(define indention (make-parameter ""))
-(define line-length (make-parameter 80))
-(define in-comment? (make-parameter #f))
+(provide (all-defined-out))
 
 (define (make-whitespace n)
-  (make-string n #\space))
+  (f-line (make-list n #\space)))
 
 (define (remove-whitespace line)
-  (or (let ((length (string-length line)))
-        (for/first ([i (in-range (- length 1) -1 -1)]
-                    #:when (not (equal? #\space (string-ref line i))))
-          (substring line 0 (+ i 1))))
-      ""))
+  (f-line (or (let ((length (length (f-line-string line))))
+                (for/first ([i (in-range (- length 1) -1 -1)]
+                            #:when (not (equal? #\space (list-ref (f-line-string line) i))))
+                           (take (f-line-string line) (+ i 1))))
+              '())))
 
 (define (is-whitespace? line)
-  (zero? (string-length (remove-whitespace line))))
+  (zero? (length (remove-whitespace (f-line-string line)))))
 
-(define (finish-line given-line)
-  (if (equal? given-line (indention))
-      ""
+(define (finish-line given-line indentation)
+  (if (equal? given-line indentation)
+      (f-line '())
       (remove-whitespace given-line)))
 
-(define (add-literal string line)
-  (let* ((stringl (string-length string))
-         (linel (string-length line)))
+(define (add-literal string line mode indentation line-length)
+  (let* ((stringl (length string))
+         (linel (length (f-line-string line))))
     (cond [(= 0 stringl)
            (list line)]
-          [(or (equal? 'immediate (mode)) 
+          [(or (equal? 'immediate mode)
                (<= (+ stringl linel)
-                   (line-length))
-               (>= (string-length (indention))
+                   line-length)
+               (>= (length indentation)
                    linel))
-           (list (string-append line string))]
+           (list (f-line (append (f-line-string line) string)))]
           [else
-           (list (string-append (indention) string)
+           (list (f-line (append indentation string))
                  (finish-line line))])))
 
-(define (add-space line)
-  (if (or (equal? (mode) 'immediate)
-          (< (string-length line) (line-length)))
-      (list (string-append line " "))
-      (list "" (finish-line line))))
+(define (add-space line mode indentation line-length)
+  (if (or (equal? 'immediate mode)
+          (< (length (f-line-string line)) line-length))
+      (f-line (list (append (f-line-string line) (list #\space))))
+      (list (f-line '()) (finish-line line indentation))))
 
-(define (add-concatenated nekots line)
+(define (add-concatenated nekots line mode indentation line-length in-comment?)
   (for/fold ([lines (list line)]) ([nekot (in-list nekots)])
-    (append (write-chunk nekot (car lines))
+    (append (write-chunk nekot (car lines) mode indentation line-length in-comment?)
             (cdr lines))))
 
-(define (add-speculative body line)
+(define (add-speculative body line mode indentation line-length in-comment?)
   (match-let* ([(list attempt success? backup) body]
-               [attempted (write-chunk attempt line)])
+               [attempted (write-chunk attempt line mode indentation line-length in-comment?)])
     (if (success? attempted)
         attempted
-        (write-chunk backup line))))
+        (write-chunk backup line mode indentation line-length in-comment?))))
 
 (define write-chunk
   (case-lambda 
     [(chunk)
-     (write-chunk chunk "")]
-    [(chunk line)
-     (define new-line (if (equal? line "")
-                          (indention)
+     (write-chunk chunk (f-line '()) 'normal '() 80 #f)]
+    [(chunk line mode indentation line-length in-comment?)
+     (define new-line (if (equal? line (f-line '()))
+                          (f-line indentation)
                           line))
      (match chunk
        [(? string?)
-        (add-literal chunk new-line)]
+        (add-literal chunk new-line mode indentation line-length)]
        [(? symbol?)
-        (add-literal (symbol->string chunk) new-line)]
+        (add-literal (string->list (symbol->string chunk)) new-line mode indentation line-length)]
        [(? exact-nonnegative-integer?)
-        (add-literal (number->string chunk) new-line)]
+        (add-literal (string->list (number->string chunk)) new-line mode indentation line-length)]
        [(s-chunk 'space _)
-        (add-space new-line)]
+        (add-space new-line mode indentation line-length)]
        [(s-chunk 'new-line _)
-        (list "" (finish-line line))]
+        (list (f-line '())
+              (finish-line line indentation line-length))]
        [(s-chunk 'concat body) 
-        (add-concatenated body new-line)]
+        (add-concatenated body new-line mode indentation line-length in-comment?)]
        [(s-chunk 'immediate body) 
-        (parameterize ([mode 'immediate])
-          (write-chunk body line))]
+        (write-chunk body line 'immediate indentation line-length in-comment?)]
        [(s-chunk 'speculative body) 
-        (add-speculative body new-line)]
+        (add-speculative body new-line mode indentation line-length)]
        [(s-chunk 'position-indent body) 
-        (parameterize ([indention (if (equal? line "")
-                                      (indention)
-                                      (make-whitespace (string-length line)))])
-          (write-chunk body line))]
+        (write-chunk body
+                     line
+                     mode
+                     (if (equal? line (f-line '()))
+                         indentation
+                         (make-whitespace (length (f-line-string line))))
+                     line-length
+                     in-comment?)]
        [(s-chunk 'indent (list body length))
-        (parameterize ([indention (string-append (indention) (make-whitespace length))])
-          (write-chunk body line))]
+        (write-chunk body
+                     line
+                     mode
+                     (append indentation (make-whitespace length))
+                     line-length
+                     in-comment?)]
        [(s-chunk 'comment (list body init-char))
-        (let ([was-in-comment (in-comment?)])
-          (parameterize ([in-comment? #t])
-            (write-chunk 
-             (s-chunk 'concat 
-                      (flatten (list "/*" 
-                            (string init-char) 
-                            (s-chunk 'position-indent body)
-                            (if was-in-comment 
-                                " **" 
-                                " */")))) line)))])]))
+        (write-chunk
+         (s-chunk 'concat
+                  (flatten (list "/*"
+                                 (string init-char)
+                                 (s-chunk 'position-indent body)
+                                 (if in-comment?
+                                     " **"
+                                     " */"))))
+         line
+         mode
+         indentation
+         line-length
+         #t)])]))
