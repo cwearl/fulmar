@@ -2,31 +2,24 @@
 
 ;;; GET FULMAR CHUNK-MAKING FUNCTIONS ;;;
 
-(require/typed fulmar/private/fulmar-core
-               [#:struct s-chunk ([name : Symbol] [body : Chunk])])
+(require "private/fulmar-core.rkt"
+         "private/core-chunk.rkt"
+         "standard-chunk.rkt"
+         "utility.rkt")
 
-; Almost certainly not correct!
-; This type definition needs to be fixed when we type-ify more fulmar.
-(define-type Chunk (Rec Ch (U s-chunk String Symbol (Listof Ch))))
-
-(require/typed fulmar/standard-chunk
-               [concat (Chunk * -> Chunk)]
-               [between (Chunk Chunk * -> Chunk)]
-               [between/attach (Chunk Chunk Chunk * -> Chunk)])
-
+; This really belongs in an abbreviations file or somewhere. Anywhere but here.
+; It's here now because I don't have a complete typed abbreviations file, and
+; if I did, I'm not sure requiring it in this file would be a good idea.
 (: between-spaces ((Listof Chunk) -> Chunk))
 (define (between-spaces chunks)
   (apply between " " chunks))
-
-;;; GENERAL-PURPOSE STUFF ;;;
-;;  should go somewhere else  ;;
 
 ;;; TYPE DEFINITIONS ;;;
 
 (define-type NDBoolean (U Boolean 'unspecified))
 (define-type C++-base-type (U C++-pointable-type Symbol))
-(define-type C++-type-size (U Null 'long 'short 'longlong))
-(define-type C++-type-signedness (U Null 'signed 'unsigned))
+(define-type C++-type-size (U "" 'long 'short 'longlong))
+(define-type C++-type-signedness (U "" 'signed 'unsigned))
 (define-type C++-type-qualifier (U 'const 'volatile))
 (define-type C++-float-type (U 'float 'double 'longdouble))
 
@@ -45,7 +38,7 @@
 (struct: C++-pointer-type C++-pointable-type () #:transparent)
 
 (struct: C++-array-type C++-pointable-type
-  ([length : Integer]) ; Should actually be someting like (U Integer Chunk)
+  ([length : Chunk])
   #:transparent)
 
 ; Primitive type stuff
@@ -64,55 +57,55 @@
 
 ;;; PUBLIC CONSTRUCTORS ;;;
 
-(provide fmr-float
-         fmr-double
-         fmr-long-double
-         fmr-int
-         fmr-char
-         fmr-pointer
-         fmr-reference
-         fmr-array
-         fmr-template-type)
+(provide typ-float
+         typ-double
+         typ-long-double
+         typ-int
+         typ-char
+         typ-pointer
+         typ-reference
+         typ-array
+         typ-template-type)
 
-(: fmr-float (C++-type-qualifier * -> C++-pointable-type))
-(define (fmr-float . qualifiers)
+(: typ-float (C++-type-qualifier * -> C++-pointable-type))
+(define (typ-float . qualifiers)
   (C++-pointable-type 'float qualifiers))
 
-(: fmr-double (C++-type-qualifier * -> C++-pointable-type))
-(define (fmr-double . qualifiers)
+(: typ-double (C++-type-qualifier * -> C++-pointable-type))
+(define (typ-double . qualifiers)
   (C++-pointable-type 'double qualifiers))
 
-(: fmr-long-double (C++-type-qualifier * -> C++-sizable-type))
-(define (fmr-long-double . qualifiers)
+(: typ-long-double (C++-type-qualifier * -> C++-sizable-type))
+(define (typ-long-double . qualifiers)
   (C++-sizable-type 'double qualifiers 'long))
 
-(: fmr-int (C++-type-size
+(: typ-int (C++-type-size
             C++-type-signedness
             C++-type-qualifier * -> C++-integer-type))
-(define (fmr-int size signedness . qualifiers)
+(define (typ-int size signedness . qualifiers)
   (C++-integer-type 'int qualifiers size signedness))
 
-(: fmr-char (C++-type-signedness C++-type-qualifier * -> C++-integer-type))
-(define (fmr-char signedness . qualifiers)
-  (C++-integer-type 'char qualifiers '() signedness))
+(: typ-char (C++-type-signedness C++-type-qualifier * -> C++-integer-type))
+(define (typ-char signedness . qualifiers)
+  (C++-integer-type 'char qualifiers "" signedness))
 
-(: fmr-pointer (C++-pointable-type C++-type-qualifier * -> C++-pointer-type))
-(define (fmr-pointer base . qualifiers)
+(: typ-pointer (C++-pointable-type C++-type-qualifier * -> C++-pointer-type))
+(define (typ-pointer base . qualifiers)
   (C++-pointer-type base qualifiers))
 
-(: fmr-reference (C++-pointable-type C++-type-qualifier * -> C++-reference-type))
-(define (fmr-reference base . qualifiers)
+(: typ-reference (C++-pointable-type C++-type-qualifier * -> C++-reference-type))
+(define (typ-reference base . qualifiers)
   (C++-reference-type base qualifiers))
 
-(: fmr-array (C++-pointable-type
+(: typ-array (C++-pointable-type
               Integer
               C++-type-qualifier * -> C++-array-type))
-(define (fmr-array base length . qualifiers)
+(define (typ-array base length . qualifiers)
   (C++-array-type base qualifiers length))
 
-(: fmr-template-type (C++-base-type
+(: typ-template-type (C++-base-type
                       (U C++-type C++-type-qualifier) * -> C++-templated-type))
-(define (fmr-template-type base . qualifiers-and-params)
+(define (typ-template-type base . qualifiers-and-params)
   (let: ([sqa : (Pairof (Listof C++-type) (Listof C++-type-qualifier))
               (segregate (λ: ([q-or-p : (U C++-type C++-type-qualifier)])
                            (if (C++-type? q-or-p)
@@ -126,8 +119,8 @@
 
 ;;; TYPE RENDERING ;;;
 
-(provide fmr-variable-decl
-         fmr-type-decl)
+(provide dcl-variable
+         dcl-type)
 
 (: render-base-type (C++-base-type -> Chunk))
 (define (render-base-type type)
@@ -148,35 +141,35 @@
      #;=>
      (between-spaces `(,(render-base-type base) ,@qualifiers))]))
 
-(: fmr-variable-decl ((U C++-type C++-base-type) Chunk -> Chunk))
-(define (fmr-variable-decl type name)
+(: dcl-variable ((U C++-type C++-base-type) Chunk -> Chunk))
+(define (dcl-variable type name)
   (match type
     [(C++-reference-type (and base (C++-array-type _ _ _)) qualifiers)
      #;=>
-     (fmr-variable-decl base
+     (dcl-variable base
       (concat "(&" (between-spaces `(,@qualifiers ,name)) ")"))]
     [(C++-pointer-type (and base (C++-array-type _ _ _)) qualifiers)
      #;=>
-     (fmr-variable-decl base
+     (dcl-variable base
       (concat "(*" (between-spaces `(,@qualifiers ,name)) ")"))]
     [(C++-reference-type base qualifiers)
      #;=>
-     (fmr-variable-decl base
+     (dcl-variable base
       (concat "&" (between-spaces `(,@qualifiers ,name))))]
     [(C++-pointer-type base qualifiers)
      #;=>
-     (fmr-variable-decl base
+     (dcl-variable base
       (concat "*" (between-spaces `(,@qualifiers ,name))))]
     [(C++-array-type base _ length)
      #;=>
-     (fmr-variable-decl base
-      (concat name "[" (number->string length) "]"))] ; The number->string bit will go away when number literals are chunks
+     (dcl-variable base
+      (concat name "[" length "]"))]
     [(C++-templated-type base qualifiers parameters)
      #;=>
      (between-spaces
-      `(,(concat (fmr-type-decl base)
+      `(,(concat (dcl-type base)
                  "< "
-                 (apply between/attach "," " " (map fmr-type-decl parameters))
+                 (apply between/attach "," " " (map dcl-type parameters))
                  " >") ,@qualifiers ,name))]
     [(and t (C++-qualified-type _ _))
      #;=>
@@ -190,6 +183,6 @@
          (between-spaces `(,type ,name))
          (error "Unexpected type: " type))]))
 
-(: fmr-type-decl ((U C++-type C++-base-type) -> Chunk))
-(define (fmr-type-decl type)
-  (fmr-variable-decl type '()))
+(: dcl-type ((U C++-type C++-base-type) -> Chunk))
+(define (dcl-type type)
+  (dcl-variable type empty))
