@@ -5,21 +5,25 @@
 (require "private/fulmar-core.rkt"
          "private/core-chunk.rkt"
          "standard-chunk.rkt"
-         "utility.rkt")
+         "private/utility.rkt")
 
 ; This really belongs in an abbreviations file or somewhere. Anywhere but here.
 ; It's here now because I don't have a complete typed abbreviations file, and
 ; if I did, I'm not sure requiring it in this file would be a good idea.
 (: between-spaces ((Listof Chunk) -> Chunk))
 (define (between-spaces chunks)
-  (apply between " " chunks))
+  (let ([chunks (filter (λ (x) (not (eq? empty x))) chunks)])
+    (match chunks
+      ['() empty]
+      [(cons x '()) x]
+      [_ (apply between " " chunks)])))
 
 ;;; TYPE DEFINITIONS ;;;
 
 (define-type NDBoolean (U Boolean 'unspecified))
 (define-type C++-base-type (U C++-pointable-type Symbol))
-(define-type C++-type-size (U "" 'long 'short 'longlong))
-(define-type C++-type-signedness (U "" 'signed 'unsigned))
+(define-type C++-type-size (U 'long 'short 'longlong))
+(define-type C++-type-signedness (U 'signed 'unsigned))
 (define-type C++-type-qualifier (U 'const 'volatile))
 (define-type C++-float-type (U 'float 'double 'longdouble))
 
@@ -43,11 +47,11 @@
 
 ; Primitive type stuff
 (struct: C++-sizable-type C++-pointable-type
-  ([size : C++-type-size])
+  ([size : (Maybe C++-type-size)])
   #:transparent)
 
 (struct: C++-integer-type C++-sizable-type
-  ([signedness : C++-type-signedness])
+  ([signedness : (Maybe C++-type-signedness)])
   #:transparent)
 
 ; Template type stuff
@@ -77,17 +81,21 @@
 
 (: typ-long-double (C++-type-qualifier * -> C++-sizable-type))
 (define (typ-long-double . qualifiers)
-  (C++-sizable-type 'double qualifiers 'long))
+  (C++-sizable-type 'double qualifiers (Just 'long)))
 
-(: typ-int (C++-type-size
-            C++-type-signedness
+(: typ-int ([#:size (U Null C++-type-size)]
+            [#:sign (U Null C++-type-signedness)]
             C++-type-qualifier * -> C++-integer-type))
-(define (typ-int size signedness . qualifiers)
-  (C++-integer-type 'int qualifiers size signedness))
+(define (typ-int #:size [size '()] #:sign [signedness '()] . qualifiers)
+  (let ([size (if (null? size) (Nothing) (Just size))]
+        [signedness (if (null? signedness) (Nothing) (Just signedness))])
+    (C++-integer-type 'int qualifiers size signedness)))
 
-(: typ-char (C++-type-signedness C++-type-qualifier * -> C++-integer-type))
-(define (typ-char signedness . qualifiers)
-  (C++-integer-type 'char qualifiers "" signedness))
+(: typ-char ([#:sign (U Null C++-type-signedness)]
+             C++-type-qualifier * -> C++-integer-type))
+(define (typ-char #:sign [signedness '()] . qualifiers)
+  (let ([signedness (if (null? signedness) (Nothing) (Just signedness))])
+    (C++-integer-type 'char qualifiers (Nothing) signedness)))
 
 (: typ-pointer (C++-pointable-type C++-type-qualifier * -> C++-pointer-type))
 (define (typ-pointer base . qualifiers)
@@ -133,10 +141,10 @@
   (match type
     [(C++-integer-type base qualifiers size signedness)
      #;=>
-     (between-spaces `(,size ,signedness ,(render-base-type base) ,@qualifiers))]
+     (between-spaces (append (all-justs `(,size ,signedness)) `(,(render-base-type base) ,@qualifiers)))]
     [(C++-sizable-type base qualifiers size)
      #;=>
-     (between-spaces `(,size ,(render-base-type base) ,@qualifiers))]
+     (between-spaces (cons-with-maybe size `(,(render-base-type base) ,@qualifiers)))]
     [(C++-qualified-type base qualifiers)
      #;=>
      (between-spaces `(,(render-base-type base) ,@qualifiers))]))
