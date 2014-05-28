@@ -23,25 +23,84 @@
 (define (is-whitespace? line)
   (zero? (length (remove-whitespace (f-line-string line)))))
 
-(define (finish-line given-line indentation)
-  (if (equal? given-line indentation)
-      (f-line '())
-      (remove-whitespace given-line)))
+(define finish-lineo
+  (lambda (given-line indentation out)
+    (conde
+     [(== given-line indentation)
+      (== (f-line '()) out)]
+     [(=/= given-line indentation)
+      (remove-whitespaceo given-line out)])))
 
-(define (add-literal string line mode indentation line-length)
-  (let* ((stringl (length string))
-         (linel (length (f-line-string line))))
-    (cond [(= 0 stringl)
-           (list line)]
-          [(or (equal? 'immediate mode)
-               (<= (+ stringl linel)
-                   line-length)
-               (>= (length indentation)
-                   linel))
-           (list (f-line (append (f-line-string line) string)))]
-          [else
-           (list (f-line (append indentation string))
-                 (finish-line line))])))
+(define appendo
+    (lambda (l s out)
+      (conde
+        [(fresh (a d res)
+           (== (cons a d) l)
+           (appendo d s res)
+           (== (cons a res) out))]
+        [(== '() l)
+         (== s out)])))
+
+;lst1 is at least as long as lst2
+(define as-longo
+  (lambda (lst1 lst2 out)
+    (conde
+     [(== '() lst2)
+      (== #t out)]
+     [(fresh (a d)
+             (== (cons a d) lst2)
+             (== '() lst1)
+             (== #f out))]
+     [(fresh (a1 d1 a2 d2)
+             (== (cons a2 d2) lst2)
+             (== (cons a1 d1) lst1)
+             (as-longo d1 d2 out))])))
+
+(define (add-literalo string line mode indentation line-length out)
+  (conde
+   ;empty string
+   [(== '() string)
+    (== (cons line '()) out)]
+   ;non empty string
+   [(fresh (s-line)
+           (=/= '() string)
+           (== (f-line s-line) line)
+           (conde
+            ;fits on one line
+            [(conde
+              [(== 'immediate mode)]
+              [(fresh (res length)
+                      (appendo s-line string res)
+                      (make-whitespaceo line-length length)
+                      (as-longo res length #t))]
+              [(fresh (length)
+                      (make-whitespaceo indentation length)
+                      (as-longo length s-line #t))])
+             (== (cons (f-line (appendo s-line string)) '()) out)]
+            ;need new line
+            [(=/= 'immediate mode)
+             (fresh (res length)
+                    (appendo s-line string res)
+                    (make-whitespaceo line-length length)
+                    (as-longo res length #f))
+             (fresh (length)
+                    (make-whitespaceo indentation length)
+                    (as-longo length s-line #f))
+             (fresh (res)
+                    (appendo indentation string res)
+                    (== out
+                        (cons (f-line res)
+                              (cons (finish-lineo line)
+                                    '()))))]))]))
+
+(define add-spaceo
+  (lambda (line mode indentation line-length)
+    (fresh (s-line)
+           (== (f-line s-line) line)
+           (conde
+            [(conde
+              [(== 'immediate mode)]
+              [???
 
 (define (add-space line mode indentation line-length)
   (if (or (equal? 'immediate mode)
