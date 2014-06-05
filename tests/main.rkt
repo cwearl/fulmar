@@ -42,8 +42,7 @@
 ;core chunk tests:
 (define/contract core-chunk-tests
   (listof test-suite?)
-  (list test-combine-lengths
-        test-combine-strings
+  (list test-combine-strings
         test-length-equals-one
         test-chunk-transform
         test-literal
