@@ -2,7 +2,7 @@
 (require
   racket/contract
   scribble/srcdoc
-  (for-doc racket/base 
+  (for-doc racket/base
            scribble/manual))
 
 (provide define/doc
