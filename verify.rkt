@@ -14,10 +14,15 @@
   (define fmr-files (map ((curry build-path) root-dir) (find-fmr root-dir)))
   (define top-fmr-files (filter find-generated fmr-files))
   
-  (for ([fmr top-fmr-files])
-    (let* ((relative-fmr-string (path->string (find-relative-path root-dir fmr)))
-           (comparison-file (find-generated fmr))
-           (comparison (file->string comparison-file))
-           (output (evaluate-fmr fmr fmr-files))
-           (matched (equal? output comparison)))
-      (displayln (format "~a: ~a" (if matched "matched" "FAILED") relative-fmr-string)))))
+  (define matched
+    (for/and ([fmr top-fmr-files])
+      (let* ((relative-fmr-string (path->string (find-relative-path root-dir fmr)))
+             (comparison-file (find-generated fmr))
+             (comparison (file->string comparison-file))
+             (output (evaluate-fmr fmr fmr-files))
+             (matched (equal? output comparison)))
+        (displayln (format "~a: ~a" (if matched "matched" "FAILED") relative-fmr-string))
+        matched)))
+  (exit (if matched
+            0
+            1)))
