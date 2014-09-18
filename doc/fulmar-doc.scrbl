@@ -10,14 +10,13 @@
 The standard chunks are intended to be the useful high-level forms available to
 end users of Fulmar. They come for free when you use @racketfont{#lang fulmar}.
 
-@(gen-doc "../standard-chunk.rkt")
+@(doc-gen "standard-chunk.rkt")
 
 @section{type-decls}
-@(gen-doc "../type-decls.rkt")
+@(doc-gen "type-decls.rkt")
 
 @section{verify}
-@(gen-doc "../verify.rkt")
+@(doc-gen "verify.rkt")
 
 @section{fulmar-core}
-@(gen-doc "../private/fulmar-core.rkt")
-
+@(doc-gen "private/fulmar-core.rkt")

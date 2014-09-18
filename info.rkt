@@ -5,3 +5,4 @@
 (define deps '("base"
                "scribble-lib"))
 (define build-deps '("at-exp-lib"))
+(define scribblings '(("doc/fulmar-doc.scrbl" ())))
