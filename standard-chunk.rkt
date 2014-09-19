@@ -1,6 +1,7 @@
 #lang typed/racket
 
-(require "private/core-chunk.rkt")
+(require "private/core-chunk.rkt"
+         "private/doc/document.rkt")
 
 ; from core-chunk
 (provide
@@ -23,6 +24,10 @@
 ;basic chunks;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
+(document empty*?
+"Mostly a helper for other standard chunks. Takes anything as its input. If the
+input is an empty list or a list of nested lists that are all empty, returns #t.
+For ANY OTHER INPUT, returns #f.")
 (: empty*? (Any -> Boolean))
 (define (empty*? lst)
   (match lst
