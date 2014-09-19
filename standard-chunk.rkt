@@ -35,9 +35,10 @@ For ANY OTHER INPUT, returns #f.")
     [(list xs ...) (for/and: : Boolean ([x xs]) (empty*? x))]
     [_ #f]))
 
-;if empty
-; returns then, if given is null (or a list that flattens to null)
-; returns else, otherwise
+(document if-empty
+"Macro of the form: (if-empty given then else)"
+"Returns then, if given is null (or a list that flattens to null).
+ Returns else, otherwise.")
 (define-syntax if-empty
   (syntax-rules ()
     [(if-empty given then else)
@@ -45,45 +46,59 @@ For ANY OTHER INPUT, returns #f.")
          then
          else)]))
 
-;surround/before and after chunk
-; adds surround before and after chunk
+(document surround
+"Surrounds the second given chunk with copies of the first.
+ Useful if you need to make sure the President is always guarded by the Secret
+ Service:"
+"(surround \"SS\" \"president\") => \"SSpresidentSS\"")
 (: surround (Chunk Chunk -> Chunk))
 (define (surround surround chunk)
   (concat surround chunk surround))
 
-;blank lines chunk
-; adds n blank lines
+(document blank-lines
+"Adds n blank lines."
+"Actually, you'll notice that this function accepts any number of integers.
+ If you provide more than one, the numbers will be added together to produce
+ the number of blank lines that will be emitted. This might be useful if, for
+ example, you know you want 2 blank lines, then n more.")
 (: blank-lines (Integer * -> Chunk))
 (define (blank-lines . lengths)
   (concat (ann (make-list (apply +  (cons 1 lengths))
                           new-line) (Listof Chunk))))
 
-;blank line chunk
-; adds a blank line
+(document blank-line
+"Adds one blank line")
 (define blank-line (blank-lines 1))
 
-;surround parenthesis chunk
+(document sur-paren
+"Surround a chunk in parenthesis. No, really! See:"
+"(sur-paren \"chunk\") => \"(chunk)\""
+"It even works with multiple chunks:"
+"(sur-paren \"A\" \"chunk\") => \"(Achunk)\"")
 (: sur-paren (Chunk * -> Chunk))
 (define (sur-paren . chunks)
   (concat (immediate "(")
           chunks
           (immediate ")")))
 
-;surround curly bracket chunk
+(document sur-crbr
+"Surround a chunk in curly brackets. Same as sur-paren, but with these: {}")
 (: sur-crbr (Chunk * -> Chunk))
 (define (sur-crbr . chunks)
   (concat (immediate "{")
           chunks
           (immediate "}")))
 
-;surround angle bracket chunk
+(document sur-anbr
+"Surround a chunk in angle brackets. Same as sur-paren, but with these: <>")
 (: sur-anbr (Chunk * -> Chunk))
 (define (sur-anbr . chunks)
   (concat (immediate "<")
           chunks
           (immediate ">")))
 
-;surround square bracket chunk
+(document sur-sqbr
+"Surround a chunk in square brackets. Same as sur-paren, but with these: []")
 (: sur-sqbr (Chunk * -> Chunk))
 (define (sur-sqbr . chunks)
   (concat (immediate "[")
