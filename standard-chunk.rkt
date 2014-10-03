@@ -109,9 +109,16 @@ For ANY OTHER INPUT, returns #f.")
 ;list chunks;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;attach a chunk to other chunks
-; adds to-add immediately after each of the given chunks
-; except: to-add is NOT added to the final chunk
+(document attach-list-separator
+"Takes a list separator chunk, and a list of chunks. Takes each chunk in the
+ list except the last and appends a copy of the separator chunk to it. Then
+ concatenates the whole list together, in order."
+"(attach-list-separator \", \" `(a b c d e)) => \"a, b, c, d, e\""
+"You can also give this function its list as a rest argument. It will take any
+ arguments after the first to be chunks that need separators:"
+"(attach-list-separator \", \" `a 'b 'c 'd 'e) => \"a, b, c, d, e\""
+"Note: This function flattens. So (attach-list-separator 'x '(a b) 'c 'd) will
+ give \"axbxcxd\", NOT \"abxcxd\".")
 (: attach-list-separator (Chunk NestofChunks * -> (Listof Chunk)))
 (define (attach-list-separator to-attach . chunk-lists)
   (define chunks (flatten* chunk-lists))
