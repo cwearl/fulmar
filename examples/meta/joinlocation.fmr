@@ -1,0 +1,37 @@
+#lang fulmar
+
+(require fulmar/meta)
+
+#<<pre-section-end
+struct SingleValue;
+struct SomethingElse;
+pre-section-end
+
+(definitions
+  (define/meta
+    (join-location l1 l2)
+    [('SingleValue 'SingleValue) 'SingleValue]
+    [('SingleValue l) l]
+    [(l 'SingleValue) l]
+    [(l l) l])
+  (define/meta (m-equal a b)
+    [(v v) v]))
+
+#<<tests-section-end
+int main(int argc, const char *argv[])
+{
+    typename JoinLocation<SingleValue, SingleValue>::result typedef result1;
+    typename MEqual<result1, SingleValue>::result typedef assert1;
+
+    typename JoinLocation<SingleValue, SomethingElse>::result typedef result2;
+    typename MEqual<result2, SomethingElse>::result typedef assert2;
+
+    typename JoinLocation<SomethingElse, SingleValue>::result typedef result3;
+    typename MEqual<result3, SomethingElse>::result typedef assert3;
+
+    typename JoinLocation<SomethingElse, SomethingElse>::result typedef result4;
+    typename MEqual<result4, SomethingElse>::result typedef assert4;
+
+    return 0;
+}
+tests-section-end
