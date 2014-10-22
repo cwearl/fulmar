@@ -7,28 +7,6 @@
 
 (provide define/meta definitions definitions-chunk)
 
-; Reimplementation of template-use from standard-chunks to handle the
-; extra space before the closing angle bracket.
-(define-syntax if-empty-new
-  (syntax-rules ()
-    [(if-empty given then else)
-     (if (empty*? given)
-         then
-         else)]))
-
-(define (sur-anbr-new . chunks)
-  (concat (immediate "<")
-          chunks
-          (immediate "> ")))
-
-(define (template-list-new . chunks)
-  (apply arg-list sur-anbr-new "," chunks))
-
-(define (template-use-new name . args)
-  (concat name (if-empty-new args empty (apply template-list-new args))))
-
-(define type-template-new template-use-new)
-
 ; This should probably also be in fulmar's standard chunks or abbreviations
 (define (stmt-def-struct name . body)
   (stmt (def-struct (dcl-struct name) body)))
@@ -80,7 +58,7 @@ END
                      field-count
                      (length args)
                      arguments-list)))
-    (apply (curry type-template-new name-cpp-id) args))
+    (apply (curry type-template name-cpp-id) args))
   reffun)
 
 (define-for-syntax (meta-struct-stx name fields)
@@ -122,7 +100,7 @@ END
                      field-count
                      (length args)
                      arguments-list)))
-    (typename (scope (apply (curry type-template-new name-cpp-id) args) 'result)))
+    (typename (scope (apply (curry type-template name-cpp-id) args) 'result)))
   reffun)
 
 

@@ -83,6 +83,13 @@ For ANY OTHER INPUT, returns #f.")
           chunks
           (immediate ">")))
 
+;surround angle bracket chunk that includes an extra space before the closing >
+(: sur-anbr-tpl (Chunk * -> Chunk))
+(define (sur-anbr-tpl . chunks)
+  (concat (immediate "<")
+          chunks
+          (immediate " >")))
+
 ;surround square bracket chunk
 (: sur-sqbr (Chunk * -> Chunk))
 (define (sur-sqbr . chunks)
@@ -142,7 +149,7 @@ For ANY OTHER INPUT, returns #f.")
 ;template argument list chunk
 (: template-list (NestofChunks * -> Chunk))
 (define (template-list . chunks)
-  (apply arg-list sur-anbr "," chunks))
+  (apply arg-list sur-anbr-tpl "," chunks))
 
 ;body list chunk
 (: body-list (Chunk NestofChunks * -> Chunk))
@@ -248,7 +255,7 @@ For ANY OTHER INPUT, returns #f.")
 ; #include <...> chunk
 (: pp-include (Chunk -> Chunk))
 (define (pp-include included)
-  (concat pp-directive 'include space (template-list included)))
+  (concat pp-directive 'include space (sur-anbr included)))
 
 ;alternate preprocessor include chunk
 ; #include "..." chunk

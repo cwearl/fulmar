@@ -137,10 +137,10 @@
    (define test-context-2 80)
    (check-equal? (write-chunk-with-length (template-list 'asdf empty 'jkl)
                                           test-context)
-                 '(" jkl>" " ," "<asdf,"))
+                 '(" jkl >" " ," "<asdf,"))
    (check-equal? (write-chunk-with-length (template-list 'asdf empty 'jkl)
                                           test-context-2)
-                 '("<asdf, , jkl>"))))
+                 '("<asdf, , jkl >"))))
 
 (define/provide-test-suite test-smt-list
   (test-case
@@ -426,17 +426,17 @@
    (check-equal? (write-chunk-with-length (template-define null 'asdf)
                                           test-context)
                  '(" asdf"
-                   "template<>"))
+                   "template< >"))
    (check-equal? (write-chunk-with-length (template-define (list 'first) 
                                                            'asdf)
                                           test-context)
                  '(" asdf"
-                   "template<first>"))
+                   "template<first >"))
    (check-equal? (write-chunk-with-length (template-define (list 'first 'second)
                                                            'asdf)
                                           test-context)
                  '(" asdf"
-                   "template<first, second>"))
+                   "template<first, second >"))
    (check-equal? (write-chunk-with-length (template-define (list (concat (comment-env-chunk 'test)
                                                                          new-line
                                                                          'first)
@@ -444,7 +444,7 @@
                                                            'asdf)
                                           test-context)
                  '(" asdf"
-                   "         second>"
+                   "         second >"
                    "         first,"
                    "template</* test */"))))
 
@@ -457,13 +457,13 @@
                  '("name"))
    (check-equal? (write-chunk-with-length (template-use 'name (list 'first))
                                           test-context)
-                 '("name<first>"))
+                 '("name<first >"))
    (check-equal? (write-chunk-with-length (template-use 'name (list 'first 'second))
                                           test-context)
-                 '("name<first, second>"))
+                 '("name<first, second >"))
    (check-equal? (write-chunk-with-length (template-use 'name (list 'first 'second))
                                           6)
-                 '("     second>"
+                 '("     second >"
                    "name<first,"))))
 
 ;function chunks
@@ -682,25 +682,25 @@
    (check-equal? (write-chunk-with-length (template-struct-declare 'name null null)
                                           test-context)
                  '(" struct name"
-                   "template<>"))
+                   "template< >"))
    (check-equal? (write-chunk-with-length (template-struct-declare 'name
                                                                    (list 'first)
                                                                    (list 'first))
                                           test-context)
-                 '(" struct name<first>"
-                   "template<first>"))
+                 '(" struct name<first >"
+                   "template<first >"))
    (check-equal? (write-chunk-with-length (template-struct-declare 'name
                                                                    (list 'first 'second)
                                                                    (list 'first 'second))
                                           test-context)
-                 '(" struct name<first, second>"
-                   "template<first, second>"))
+                 '(" struct name<first, second >"
+                   "template<first, second >"))
    (check-equal? (write-chunk-with-length (template-struct-declare 'name
                                                                    (list 'first)
                                                                    (list 'first 'second))
                                           test-context)
-                 '(" struct name<first, second>"
-                   "template<first>"))))
+                 '(" struct name<first, second >"
+                   "template<first >"))))
 
 (define/provide-test-suite test-section-define
   (test-case
@@ -747,7 +747,7 @@
                    ""
                    "   first"
                    " struct name {"
-                   "template<first, second>"))
+                   "template<first, second >"))
    (check-equal? (write-chunk-with-length (template-struct-define 'name
                                                                   (list 'first 'second)
                                                                   null
@@ -759,7 +759,7 @@
                    ""
                    "   first"
                    " struct name {"
-                   "         second>"
+                   "         second >"
                    "template<first,"))))
 
 (define/provide-test-suite test-scope-resolution-operator

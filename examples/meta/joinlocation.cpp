@@ -2,26 +2,26 @@
 
 struct SingleValue;
 struct SomethingElse;
-template<typename L1, typename L2>
+template<typename L1, typename L2 >
  struct JoinLocation;
 
-template<typename A, typename B>
+template<typename A, typename B >
  struct MEqual;
 
-template<>
- struct JoinLocation<SingleValue, SingleValue> { SingleValue typedef result; };
+template< >
+ struct JoinLocation<SingleValue, SingleValue > { SingleValue typedef result; };
 
-template<typename L>
- struct JoinLocation<SingleValue, L> { L typedef result; };
+template<typename L >
+ struct JoinLocation<SingleValue, L > { L typedef result; };
 
-template<typename L>
- struct JoinLocation<L, SingleValue> { L typedef result; };
+template<typename L >
+ struct JoinLocation<L, SingleValue > { L typedef result; };
 
-template<typename L>
- struct JoinLocation<L, L> { L typedef result; };
+template<typename L >
+ struct JoinLocation<L, L > { L typedef result; };
 
-template<typename V>
- struct MEqual<V, V> { V typedef result; };
+template<typename V >
+ struct MEqual<V, V > { V typedef result; };
 int main(int argc, const char *argv[])
 {
     typename JoinLocation<SingleValue, SingleValue>::result typedef result1;
