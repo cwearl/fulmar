@@ -100,16 +100,16 @@ END
     (typename (scope (apply (curry type-template name-cpp-id) args) 'result)))
   reffun)
 
-
-; Trying to figure out what this is meant to be doing. Some sort of transformation on the match pattern. Returning three things (which seem to be lists). Appears to be matching uses of unquoting. Did I go with unquoting in the final version? No! I went with explicit quoting and the default for non call-position being a variable binding, just like Racket's match.
-
-; But I think the idea was to take the match clause and produce a list of identifiers the match clause binds. And maybe to transform it into a form from which to create the C++ specialization stuff too?
-
-; Ah! We've also got to construct appropriate reference combinations of the matchargs for each arg. And we have to construct template parameters for _ matches without binding them in the result expression. And I was having terrible trouble matching _ with syntax case because it has it's own meaning. But adding _ to the () list seems to work.
-
-; So the three lists were probably: 1. variables to add to the template parameters for this case. 2. pattern variables to bind in the result expression. 3. reference expression to use for reference to arg that this pattern is for.
+; syntax phase structure to hold computed information abuot the match clause.
+; * vars is a list of identifiers extracted from the match clause that need to get
+; into the template arguments and bindings for which need to be available to the
+; return expression.
+; * ref is an expression that, given vars are bound appropriately, will produce a
+; reference to this subexpression
 (begin-for-syntax
   (struct transformed (vars ref) #:transparent))
+
+; creates a transformed struct as described above based on the match clause
 (define-for-syntax (transform-match stx)
   (syntax-case stx (quote _)
     [_
@@ -127,10 +127,6 @@ END
      (if (identifier? #'id)
        (transformed (list #'id) #'id)
        (transformed '() #'id))]))
-
-(define-syntax (transform-match-test stx)
-  (syntax-case stx ()
-    [(_ arg) (transform-match #'arg)]))
 
 (define-for-syntax (match-case name-cpp-id args matchargs return)
   (define transformed-args (map transform-match matchargs))
@@ -168,11 +164,6 @@ END
                  (match-case name-cpp-id args (syntax->list #'(matchargs ...)) #'return)]))
             clauses))))
 
-(define-syntax (match-case-test stx)
-  (syntax-case stx ()
-    [(_ n (args ...) (matchargs ...) return)
-     (match-case (syntax-e #'n) (syntax->list #'(args ...)) (syntax->list #'(matchargs ...)) #'return)]))
-
 (define-for-syntax (meta-fn-stx stx)
   (syntax-case stx ()
     [(_ (name args ...)
@@ -199,7 +190,7 @@ END
      (meta-struct-stx #'name #'(field fields ...))]))
 
 
-; Definitions chunk implementation. May be untested.
+; Definitions chunk implementation.
 
 (define (definitions-chunk args)
   (apply top-list
@@ -211,8 +202,7 @@ END
               args)
             (map
               (lambda (item)
-                (cond
-                  [(meta-function? item) ((meta-function-def-thunk item))]))
+                ((meta-function-def-thunk item)))
               (filter meta-function? args)))))
 
 (define-syntax (definitions stx)
@@ -270,64 +260,5 @@ It would be better if these were unit tests.
 (meta/define (myf2 arg)
   [('double) (myf 'a)])
 (write-chunk ((meta-function-def-thunk myf2)))
-
-
-
-
-  (meta/define zero)
-  (meta/define succ (n))
-  (meta/define m-lambda (name body))
-  (meta/define app (fun arg))
-  (meta/define ref (name))
-  (meta/define lit (t))
-  (meta/define emptyenv)
-  (meta/define binding (name value env))
-  (meta/define closure (lam env))
-; functions
-  (meta/define (env-lookup name env)
-    [(name (binding name value env))  value]
-    [(_    (binding name2 value env)) (env-lookup name env)])
-  (meta/define (m-eval exp env)
-    [((lit t)              _) t]
-    [((ref name)           _) (env-lookup name env)]
-    [((m-lambda name body) _) (closure (m-lambda name body) env)]
-    [((app fun arg)        _) (m-apply (m-eval fun env)
-                                       (m-eval arg env))])
-  (meta/define (m-apply proc value)
-    [((closure (m-lambda name body) env) _)
-     (m-eval body (binding name value env))])
-
-
-(display (string-join (reverse (write-chunk ((meta-function-def-thunk m-eval)))) "\n"))
-
-
-(definitions
-  ; structs
-  (meta/define zero)
-  (meta/define succ (n))
-  (meta/define m-lambda (name body))
-  (meta/define app (fun arg))
-  (meta/define ref (name))
-  (meta/define lit (t))
-  (meta/define emptyenv)
-  (meta/define binding (name value env))
-  (meta/define closure (lam env))
-; functions
-  (meta/define (env-lookup name env)
-    [(name (binding name value env))  value]
-    [(_    (binding name2 value env)) (env-lookup name env)])
-  (meta/define (eval exp env)
-    [((lit t)              _) t]
-    [((ref name)           _) (env-lookup name env)]
-    [((m-lambda name body) _) (closure (m-lambda name body) env)]
-    [((app fun arg)        _) (m-apply (m-eval fun env)
-                                       (m-eval arg env))])
-  (meta/define (m-apply proc value)
-    [((closure (m-lambda name body) env) _)
-     (m-eval body (binding name value env))]))
-
-
-
-
 
 |#
