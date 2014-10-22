@@ -7,10 +7,6 @@
 
 (provide define/meta definitions definitions-chunk)
 
-; This should probably also be in fulmar's standard chunks or abbreviations
-(define (stmt-def-struct name . body)
-  (stmt (def-struct (dcl-struct name) body)))
-
 
 ; Structs that hold the functions called to produce chunks for various parts
 ; of meta-functions and meta-structs. Using instances as procedures gets the ref.
@@ -18,6 +14,7 @@
         #:property prop:procedure (struct-field-index ref-fn))
 (struct meta-function (decl-thunk def-thunk ref-fn) #:transparent
         #:property prop:procedure (struct-field-index ref-fn))
+
 
 ; Remove hyphens and titlecase to make a C++-like type name.
 (define-for-syntax (make-cpp-id id)
