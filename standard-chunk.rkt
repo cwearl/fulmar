@@ -111,8 +111,9 @@ For ANY OTHER INPUT, returns #f.")
 
 (document attach-list-separator
 "Takes a list separator chunk, and a list of chunks. Takes each chunk in the
- list except the last and appends a copy of the separator chunk to it. Then
- concatenates the whole list together, in order."
+ list except the last and appends a copy of the separator chunk to it. The
+ result is a list of chunks with list separators. Before you consider using this
+ function directly, be sure you wouldn't rather use between/attach."
 "(attach-list-separator \", \" `(a b c d e)) => \"a, b, c, d, e\""
 "You can also give this function its list as a rest argument. It will take any
  arguments after the first to be chunks that need separators:"
@@ -128,16 +129,31 @@ For ANY OTHER INPUT, returns #f.")
             (flatten* (lmap (λ: ([chunk : Chunk]) (concat chunk (immediate to-attach)))
                             (take chunks (- (length chunks) 1))) (last chunks))))
 
-;insert a chunk between other chunks
-; concatenates given chunks with add-between between given chunks
+(document between
+"Takes an add-between chunk, and a list of chunks. Concatenates given chunks
+ with add-between between each of the given chunks. Operates similarly to
+ attach-list-separator, but does not assume you want to keep the add-between
+ chunk paired with the preceding list chunk.")
 (: between (Chunk NestofChunks * -> Chunk))
 (define (between add-between-chunk . chunks)
   (define ladd-between (inst add-between Chunk Chunk))
   (concat (ladd-between (flatten* chunks) add-between-chunk)))
 
-; combine between and attach functionality
-;  adds to-add after each of the given chunks
-;    and then adds add-between between new chunks
+(document between/attach
+"Combines between and attach functionality to give a convenient way of making
+ multi-line lists or function bodies in an intelligent way. Takes a to-attach
+ chunk, an add-between chunk, and then a list of chunks to build into the list.
+ It then attaches the to-attach chunk to each chunk in the list using
+ attach-list-separator. Finally, it uses the between function to insert the
+ add-between chunk after each to-attach."
+"This function will work hard to do the Right Thing™ with lists or function
+ bodies. It tries, for example, to keep commas on the same line as the preceding
+ list element."
+"Assuming line-length was parameterized to a value of 10:"
+"(between/attach \",\" space (range 8))"
+"=>"
+"\"0, 1, 2, 3,\""
+"\"4, 5, 6, 7\"")
 (: between/attach (Chunk Chunk NestofChunks * -> Chunk))
 (define (between/attach to-attach add-between . chunks)
   (apply between add-between (apply attach-list-separator to-attach chunks)))
