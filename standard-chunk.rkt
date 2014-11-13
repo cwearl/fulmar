@@ -35,9 +35,10 @@ For ANY OTHER INPUT, returns #f.")
     [(list xs ...) (for/and: : Boolean ([x xs]) (empty*? x))]
     [_ #f]))
 
-;if empty
-; returns then, if given is null (or a list that flattens to null)
-; returns else, otherwise
+(document if-empty
+"Macro of the form: (if-empty given then else)"
+"Returns then, if given is null (or a list that flattens to null).
+ Returns else, otherwise.")
 (define-syntax if-empty
   (syntax-rules ()
     [(if-empty given then else)
@@ -45,45 +46,59 @@ For ANY OTHER INPUT, returns #f.")
          then
          else)]))
 
-;surround/before and after chunk
-; adds surround before and after chunk
+(document surround
+"Surrounds the second given chunk with copies of the first.
+ Useful if you need to make sure the President is always guarded by the Secret
+ Service:"
+"(surround \"SS\" \"president\") => \"SSpresidentSS\"")
 (: surround (Chunk Chunk -> Chunk))
 (define (surround surround chunk)
   (concat surround chunk surround))
 
-;blank lines chunk
-; adds n blank lines
+(document blank-lines
+"Adds n blank lines."
+"Actually, you'll notice that this function accepts any number of integers.
+ If you provide more than one, the numbers will be added together to produce
+ the number of blank lines that will be emitted. This might be useful if, for
+ example, you know you want 2 blank lines, then n more.")
 (: blank-lines (Integer * -> Chunk))
 (define (blank-lines . lengths)
   (concat (ann (make-list (apply +  (cons 1 lengths))
                           new-line) (Listof Chunk))))
 
-;blank line chunk
-; adds a blank line
+(document blank-line
+"Adds one blank line")
 (define blank-line (blank-lines 1))
 
-;surround parenthesis chunk
+(document sur-paren
+"Surround a chunk in parenthesis. No, really! See:"
+"(sur-paren \"chunk\") => \"(chunk)\""
+"It even works with multiple chunks:"
+"(sur-paren \"A\" \"chunk\") => \"(Achunk)\"")
 (: sur-paren (Chunk * -> Chunk))
 (define (sur-paren . chunks)
   (concat (immediate "(")
           chunks
           (immediate ")")))
 
-;surround curly bracket chunk
+(document sur-crbr
+"Surround a chunk in curly brackets. Same as sur-paren, but with these: {}")
 (: sur-crbr (Chunk * -> Chunk))
 (define (sur-crbr . chunks)
   (concat (immediate "{")
           chunks
           (immediate "}")))
 
-;surround angle bracket chunk
+(document sur-anbr
+"Surround a chunk in angle brackets. Same as sur-paren, but with these: <>")
 (: sur-anbr (Chunk * -> Chunk))
 (define (sur-anbr . chunks)
   (concat (immediate "<")
           chunks
           (immediate ">")))
 
-;surround square bracket chunk
+(document sur-sqbr
+"Surround a chunk in square brackets. Same as sur-paren, but with these: []")
 (: sur-sqbr (Chunk * -> Chunk))
 (define (sur-sqbr . chunks)
   (concat (immediate "[")
@@ -94,9 +109,17 @@ For ANY OTHER INPUT, returns #f.")
 ;list chunks;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;attach a chunk to other chunks
-; adds to-add immediately after each of the given chunks
-; except: to-add is NOT added to the final chunk
+(document attach-list-separator
+"Takes a list separator chunk, and a list of chunks. Takes each chunk in the
+ list except the last and appends a copy of the separator chunk to it. The
+ result is a list of chunks with list separators. Before you consider using this
+ function directly, be sure you wouldn't rather use between/attach."
+"(attach-list-separator \", \" `(a b c d e)) => \"a, b, c, d, e\""
+"You can also give this function its list as a rest argument. It will take any
+ arguments after the first to be chunks that need separators:"
+"(attach-list-separator \", \" `a 'b 'c 'd 'e) => \"a, b, c, d, e\""
+"Note: This function flattens. So (attach-list-separator 'x '(a b) 'c 'd) will
+ give \"axbxcxd\", NOT \"abxcxd\".")
 (: attach-list-separator (Chunk NestofChunks * -> (Listof Chunk)))
 (define (attach-list-separator to-attach . chunk-lists)
   (define chunks (flatten* chunk-lists))
@@ -106,16 +129,31 @@ For ANY OTHER INPUT, returns #f.")
             (flatten* (lmap (λ: ([chunk : Chunk]) (concat chunk (immediate to-attach)))
                             (take chunks (- (length chunks) 1))) (last chunks))))
 
-;insert a chunk between other chunks
-; concatenates given chunks with add-between between given chunks
+(document between
+"Takes an add-between chunk, and a list of chunks. Concatenates given chunks
+ with add-between between each of the given chunks. Operates similarly to
+ attach-list-separator, but does not assume you want to keep the add-between
+ chunk paired with the preceding list chunk.")
 (: between (Chunk NestofChunks * -> Chunk))
 (define (between add-between-chunk . chunks)
   (define ladd-between (inst add-between Chunk Chunk))
   (concat (ladd-between (flatten* chunks) add-between-chunk)))
 
-; combine between and attach functionality
-;  adds to-add after each of the given chunks
-;    and then adds add-between between new chunks
+(document between/attach
+"Combines between and attach functionality to give a convenient way of making
+ multi-line lists or function bodies in an intelligent way. Takes a to-attach
+ chunk, an add-between chunk, and then a list of chunks to build into the list.
+ It then attaches the to-attach chunk to each chunk in the list using
+ attach-list-separator. Finally, it uses the between function to insert the
+ add-between chunk after each to-attach."
+"This function will work hard to do the Right Thing™ with lists or function
+ bodies. It tries, for example, to keep commas on the same line as the preceding
+ list element."
+"Assuming line-length was parameterized to a value of 10:"
+"(between/attach \",\" space (range 8))"
+"=>"
+"\"0, 1, 2, 3,\""
+"\"4, 5, 6, 7\"")
 (: between/attach (Chunk Chunk NestofChunks * -> Chunk))
 (define (between/attach to-attach add-between . chunks)
   (apply between add-between (apply attach-list-separator to-attach chunks)))
