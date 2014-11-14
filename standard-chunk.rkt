@@ -158,9 +158,12 @@ For ANY OTHER INPUT, returns #f.")
 (define (between/attach to-attach add-between . chunks)
   (apply between add-between (apply attach-list-separator to-attach chunks)))
 
-;argument list chunk
-; attempts to put chunks on a single line with a space between each chunk
-; if that fails, puts chunks on their own lines
+(document arg-list
+"Argument list chunk"
+"Attempts to put chunks on a single line with a space between each chunk.
+ If that fails, puts chunks on their own lines. Commonly useful for lists and
+ arguments to functions. Handier than rolling something for this purpose by
+ hand.")
 (: arg-list ((Chunk -> Chunk) Chunk NestofChunks * -> Chunk))
 (define (arg-list sur attach . chunks)
   (: build (Chunk -> Chunk))
@@ -172,17 +175,25 @@ For ANY OTHER INPUT, returns #f.")
                               length-equals-one
                               (position-indent (build new-line))))))
 
-;parenthesis argument list chunk
+(document paren-list
+"Parenthesis argument list chunk"
+"Takes any list of chunks, separates them with commas, and surrounds the whole
+ list with parenthesis.")
 (: paren-list (NestofChunks * -> Chunk))
 (define (paren-list . chunks)
   (apply arg-list sur-paren "," chunks))
 
-;template argument list chunk
+(document template-list
+"Template argument list chunk"
+"Takes any list of chunks, separates them with commas, and surrounds the whole
+ list with angle brackets.")
 (: template-list (NestofChunks * -> Chunk))
 (define (template-list . chunks)
   (apply arg-list sur-anbr "," chunks))
 
-;body list chunk
+(document body-list
+"Takes a separator chunk and a list of chunks, separates the chunks with the
+ separator, and surrounds the whole thing with curly braces.")
 (: body-list (Chunk NestofChunks * -> Chunk))
 (define (body-list attach . chunks)
   (apply arg-list sur-crbr attach chunks))
