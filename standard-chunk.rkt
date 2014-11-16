@@ -213,9 +213,10 @@ For ANY OTHER INPUT, returns #f.")
 (define (internal-smt-list spacing . chunks)
   (apply between/attach ";" spacing chunks))
 
-;list of statement chunks
-; adds spacing added between each chunk
-;  and attaches a semi-colon to the end of each chunk
+(document smt-list
+"Takes a spacing chunk and any number of chunks, adds spacing added between each
+ chunk and attaches a semi-colon to the end of each chunk."
+"(smt-list space 'a 'b 'c) => \"a; b; c;\"")
 (: smt-list (Chunk NestofChunks * -> Chunk))
 (define (smt-list spacing . chunks)
   (if-empty chunks
@@ -223,9 +224,11 @@ For ANY OTHER INPUT, returns #f.")
             (concat (apply internal-smt-list spacing chunks)
                     (immediate ";"))))
 
-;constructor assignment list chunk
-; each assignment is separated by a comma
-; - first line is indented 2 spaces and begun with a colon
+(document constructor-assignment-list
+"Constructor assignment list chunk"
+"Each assignment is separated by a comma - first line is indented 2 spaces and
+ begun with a colon."
+"(constructor-assignment-list \"a(other.a)\" \"b(other.b)\" \"c(other.c)\" => \"  : a(other.a), b(other.b), c(other.c)\"")
 (: constructor-assignment-list (NestofChunks * -> Chunk))
 (define (constructor-assignment-list . chunks)
   (: build (Chunk -> Chunk))
@@ -239,13 +242,17 @@ For ANY OTHER INPUT, returns #f.")
                          length-equals-one
                          (build new-line))))
 
-;general body chunk
-; surrounds chunks with curly brackets
-; - adds a semi-colon after each chunk, if use-semi-colons is true
-; - attempts to put chunks on a single line with a space between each chunk
-; - if that fails, puts chunks on their own lines with indented
-;   open curly bracket is immediately on current line
-;   close curly bracket is on it's own line
+(document general-body
+"General body chunk"
+"Takes a boolean (use-semi-colons) and any number of chunks."
+"Surrounds chunks with curly brackets"
+"- adds a semi-colon after each chunk, if use-semi-colons is true"
+"- attempts to put chunks on a single line with a space between each chunk"
+"- if that fails, puts chunks on their own lines with indented"
+"This version places the open curly bracket immediately on current line and the
+ close curly bracket on its own line. This roughly corresponds to Java or
+ Google style, with attached brackets. The indent level is 3 spaces. This is not
+ currently user-configurable.")
 (: general-body (Boolean NestofChunks * -> Chunk))
 (define (general-body use-semi-colons . chunks)
   (: build (Chunk Chunk -> Chunk))
