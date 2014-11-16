@@ -198,15 +198,17 @@ For ANY OTHER INPUT, returns #f.")
 (define (body-list attach . chunks)
   (apply arg-list sur-crbr attach chunks))
 
-;list of chunks
-; blank line added between each chunk
+(document top-list
+"Takes any number of chunks as arguments and inserts a blank line between each.")
 (: top-list (NestofChunks * -> Chunk))
 (define (top-list . chunks)
   (apply between blank-line chunks))
 
-;list of statement chunks without final semi-colon
-; adds spacing added between each chunk
-;  and attaches a semi-colon to the end of each chunk (except last)
+(document internal-smt-list
+"List of statement chunks without final semi-colon."
+"Takes a spacing chunk and any number of chunks, adds spacing between each chunk
+ and attaches a semi-colon to the end of each chunk (except the last)."
+"(internal-smt-list space 'a 'b 'c) => \"a; b; c\"")
 (: internal-smt-list (Chunk NestofChunks * -> Chunk))
 (define (internal-smt-list spacing . chunks)
   (apply between/attach ";" spacing chunks))
