@@ -270,24 +270,26 @@ For ANY OTHER INPUT, returns #f.")
                            (indent 3 (build new-line blank-line)))
                           (indent 3 (build new-line blank-line))))))
 
-;body chunk
-; surrounds chunks with curly brackets
-; - adds a semi-colon after each chunk
-; - attempts to put chunks on a single line with a space between each chunk
-; - if that fails, puts chunks on their own lines with indented
-;   open curly bracket is immediately on current line
-;   close curly bracket is on it's own line
+(document body
+"Body with semicolons"
+"Basically a shortcut for (general-body #true ...)"
+"Surrounds chunks with curly brackets"
+"- adds a semi-colon after each chunk"
+"- attempts to put chunks on a single line with a space between each chunk"
+"- if that fails, puts chunks on their own lines with indented"
+"Style is the same as with general-body above.")
 (: body (NestofChunks * -> Chunk))
 (define (body . chunks)
   (apply general-body #true chunks))
 
-;class body chunk
-; surrounds chunks with curly brackets
-; - does NOT add semi-colons after each chunk
-; - attempts to put chunks on a single line with a space between each chunk
-; - if that fails, puts chunks on their own lines with indented
-;   open curly bracket is immediately on current line
-;   close curly bracket is on it's own line
+(document class-body
+"Body without semicolons"
+"Basically a shortcut for (general-body #false ...)"
+"Surrounds chunks with curly brackets"
+"- does NOT add semi-colons after each chunk"
+"- attempts to put chunks on a single line with a space between each chunk"
+"- if that fails, puts chunks on their own lines with indented"
+"Style is the same as with general-body above.")
 (: class-body (NestofChunks * -> Chunk))
 (define (class-body . chunks)
   (apply general-body #false chunks))
