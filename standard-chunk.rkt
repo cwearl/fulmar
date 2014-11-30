@@ -298,48 +298,75 @@ For ANY OTHER INPUT, returns #f.")
 ;preprocessor chunks;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;preprocessor define chunk
-; #define chunk
+(document pp-define
+"Preprocessor define chunk"
+"Accepts one argument, a name. Produces:"
+"#define <name>")
 (: pp-define (Chunk -> Chunk))
 (define (pp-define name)
   (concat pp-directive 'define space name))
 
-;preprocessor include chunk
-; #include <...> chunk
+(document pp-include
+"Preprocessor include chunk"
+"Accepts one argument, a header filename. Produces:"
+"#include <<filename>>"
+"Where the outer pointy brackets are literal.")
 (: pp-include (Chunk -> Chunk))
 (define (pp-include included)
   (concat pp-directive 'include space (template-list included)))
 
-;alternate preprocessor include chunk
-; #include "..." chunk
+(document pp-alt-include
+"Alternate preprocessor include chunk"
+"Accepts one argument, a header filename. Produces:"
+"#include \"<filename>\"")
 (: pp-alt-include (Chunk -> Chunk))
 (define (pp-alt-include included)
   (concat pp-directive 'include space "\"" included "\""))
 
-;multiple includes
+(document pp-includes
+"Multiple includes"
+"Accepts any number of arguments and produces an include directive for each.")
 (: pp-includes (Chunk * -> Chunk))
 (define (pp-includes . chunks)
   (apply between new-line (map pp-include (flatten* chunks))))
 
-;preprocessor if-not-defined chunk
+(document pp-ifdef
+"Preprocessor if-defined chunk"
+"Accepts one argument, a preprocessor ifdef condition, and makes an ifdef line.")
 (: pp-ifdef (Chunk -> Chunk))
 (define (pp-ifdef condition)
   (concat pp-directive 'ifdef space condition))
 
-;preprocessor if-not-defined chunk
+(document pp-ifndef
+"Preprocessor if-not-defined chunk"
+"Makes an ifndef preprocessor directive.")
 (: pp-ifndef (Chunk -> Chunk))
 (define (pp-ifndef condition)
   (concat pp-directive 'ifndef space condition))
 
-;preprocessor if-not-defined chunk
+(document pp-else
+"Preprocessor else chunk"
+"Makes an else preprocessor directive. Constant value, should not be called.")
 (define pp-else (concat pp-directive 'else))
 
-;preprocessor endif chunk
+(document pp-endif
+"Preprocessor endif chunk"
+"Makes an endif preprocessor directive. The argument will end up in a comment
+ on the same line as the endif, and can be used to specify what condition is
+ being endifed.")
 (: pp-endif (Chunk -> Chunk))
 (define (pp-endif condition)
   (concat pp-directive 'endif new-line (comment-env-chunk condition)))
 
-;preprocessor conditional chunk
+(document pp-conditional
+"Preprocessor conditional chunk"
+"General preprocessor conditional block in a single handy package. Accepts 3
+ required arguments and one optional argument: directive, condition, then, else."
+"directive - the preprocessor command that comes right after the #."
+"condition - argument to the directive, following on the same line."
+"then - Chunk of code to be placed before the endif."
+"else - if present, chunk of code to go after an else, between then and endif."
+"Example: (pp-conditional 'ifdef ARM64 \"do_arm64();\" \"reticulate_splines();\")")
 (: pp-conditional (case->
                    [Chunk Chunk Chunk -> Chunk]
                    [Chunk Chunk Chunk (U Chunk False) -> Chunk]))
