@@ -386,21 +386,43 @@ For ANY OTHER INPUT, returns #f.")
               empty)
           (pp-endif condition)))
 
-;preprocessor conditional ifdef chunk
+(document pp-conditional-ifdef
+"Preprocessor conditional ifdef chunk"
+"Basically a shortcut for (pp-conditional 'ifdef ...)"
+"Makes a preprocessor ifdef line with then and optional else bodies. Its 2
+ required arguments are the name of the define to check, and the 'then' body.
+ The optional argument is an 'else' body.")
 (: pp-conditional-ifdef (case->
                          [Chunk Chunk -> Chunk]
                          [Chunk Chunk (U False Chunk) -> Chunk]))
 (define (pp-conditional-ifdef condition then [else #false])
   (pp-conditional 'ifdef condition then else))
 
-;preprocessor conditional ifndef chunk
+(document pp-conditional-ifndef
+"Preprocessor conditional ifndef chunk"
+"Basically a shortcut for (pp-conditional 'ifndef ...)"
+"Makes a preprocessor ifndef line with then and optional else bodies. Its 2
+ required arguments are the name of the define to check, and the 'then' body.
+ The optional argument is an 'else' body.")
 (: pp-conditional-ifndef (case->
                           [Chunk Chunk -> Chunk]
                           [Chunk Chunk (U False Chunk) -> Chunk]))
 (define (pp-conditional-ifndef condition then [else #false])
   (pp-conditional 'ifndef condition then else))
 
-;preprocessor h file wrapper chunk
+(document pp-header-file
+"Preprocessor include guard / header file wrapper chunk"
+"This is a pretty standard #include guard. Takes at least 1 argument: a name to
+ define (usually something like 'MY_HEADER_H). Further arguments will become the
+ body of the header file."
+"Example:"
+"(pp-header-file 'FOO_STRUCT_H \"struct foo { int member; };\")"
+"Produces:"
+"#ifndef FOO_STRUCT_H"
+"#define FOO_STRUCT_H"
+"   struct foo { int member; };"
+"#endif"
+"/* FOO_STRUCT_H */")
 (: pp-header-file (Chunk NestofChunks * -> Chunk))
 (define (pp-header-file file-name . chunks)
   (pp-conditional-ifndef file-name
