@@ -445,7 +445,14 @@ For ANY OTHER INPUT, returns #f.")
 ;general chunks;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;namespace define chunk
+(document namespace-define
+"Declare a namespace for a block of code."
+"Accepts a name and any number of further arguments. The name goes after the
+ namespace keyword, and the remaining arguments get put into a body which goes
+ in the namespace block. After the code block, a comment containing the name is
+ added to clarify what is being ended. Example:"
+"(namespace-define 'foo \"bar()\") =>"
+"namespace foo { bar(); } /* foo */")
 (: namespace-define (Chunk NestofChunks * -> Chunk))
 (define (namespace-define name . chunks)
   (define chunk (concat 'namespace
