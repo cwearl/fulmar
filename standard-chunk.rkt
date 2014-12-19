@@ -431,8 +431,12 @@ For ANY OTHER INPUT, returns #f.")
                                  (apply top-list chunks)
                                  new-line)))
 
-;macro defintion chunk
-; a macro definition
+(document macro-define
+"Macro defintion chunk"
+"General macro definition. Accepts at least one argument. The first will be the
+ name of the macro. Following arguments will become the definition of the macro.
+ Be careful, as it's quite easy to create invalid code if your definition
+ contains newlines.")
 (: macro-define (Chunk NestofChunks Chunk -> Chunk))
 (define (macro-define name params chunk)
   (immediate (concat (pp-define name) space chunk)))
