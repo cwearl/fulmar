@@ -463,7 +463,14 @@ For ANY OTHER INPUT, returns #f.")
   
   (concat chunk space (comment-env-chunk name)))
 
-;described statements chunk
+(document described-smts
+"Described statements chunk"
+"Accepts a comment and any number of other chunks. Puts the comment into a
+ comment environment (surrounds it with /* */) and then places the remaining
+ arguments normally, after a newline. Example:"
+"(described-smts \"Automatically synchronize cardinal grammaters\" \"encabulate();\") =>"
+"/* Automatically synchronize cardinal grammaters */"
+"encabulate();")
 (: described-smts (Chunk NestofChunks * -> Chunk))
 (define (described-smts comment . chunks)
   (concat (comment-env-chunk comment)
