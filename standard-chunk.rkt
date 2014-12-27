@@ -477,7 +477,12 @@ For ANY OTHER INPUT, returns #f.")
           new-line
           (apply between/attach ";" new-line chunks)))
 
-;make constant
+(document constize
+"Make constant"
+"To be used with types or identifiers. Takes a type, identifier, or any chunk,
+ and appends const to the end of it."
+"(constize \"int a\") =>"
+"int a const")
 (: constize (Chunk -> Chunk))
 (define (constize chunk)
   (concat chunk
