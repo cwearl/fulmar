@@ -493,7 +493,14 @@ For ANY OTHER INPUT, returns #f.")
 ;template chunks;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;make given chunk a template with given template parameters
+(document template-define
+"Make a template with given template parameters"
+"Takes two arguments: a list of parameters, and a name. Produces a template
+ declaration (sans the final semicolon)."
+"Example:"
+"(template-define '(p1 p2 p3) 'MyTemplate) =>"
+"template<p1, p2, p3>"
+"MyTemplate")
 (: template-define (NestofChunks Chunk -> Chunk))
 (define (template-define params chunk)
   (concat 'template
