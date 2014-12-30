@@ -508,7 +508,14 @@ For ANY OTHER INPUT, returns #f.")
           new-line
           (indent 1 chunk)))
 
-;make a use of a template
+(document template-use
+"Make use of a template"
+"Takes a name and any number of template arguments. Produces a reference to the
+ given template with the given arguments. If only a name is given, no pointy
+ brackets are produced."
+"Example:"
+"(template-use 'foo 'bar 'baaz) =>"
+"foo<bar, baaz>")
 (: template-use (NestofChunks NestofChunks * -> Chunk))
 (define (template-use name . args)
   (concat name (if-empty args empty (apply template-list args))))
