@@ -566,14 +566,19 @@ For ANY OTHER INPUT, returns #f.")
 (define (void-function-declare name params)
   (function-declare name 'void params))
 
-;function defintion
+(document function-define
+"Takes a function signature, and any number of other chunks. Produces a function
+ definition consisting of the given signature, followed by a body with the
+ given chunks.")
 (: function-define (Chunk NestofChunks * -> Chunk))
 (define (function-define signature . chunks)
   (concat signature
           (immediate space)
           (apply body chunks)))
 
-;void function defintion
+(document void-function-define
+"Defines a void inline function. This is essentially a shortcut for using
+ function-define with a void-function-declare.")
 (: void-function-define (Chunk NestofChunks NestofChunks * -> Chunk))
 (define (void-function-define name params . body)
   (apply function-define (void-function-declare name params)
