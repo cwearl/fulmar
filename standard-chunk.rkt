@@ -524,7 +524,12 @@ For ANY OTHER INPUT, returns #f.")
 ;function chunks;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;general function declaration
+(document general-function-declare
+"General function declaration"
+"Takes a name, a return type, and any number of additional arguments."
+"Example:"
+"(general-function-declare 'foo 'bar "int baaz" "float quux") =>"
+"bar foo(int baaz, float quux)")
 (: general-function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (general-function-declare name return-type . params)
   (concat return-type space name (apply paren-list (if-empty params
