@@ -528,7 +528,7 @@ For ANY OTHER INPUT, returns #f.")
 "General function declaration"
 "Takes a name, a return type, and any number of additional arguments."
 "Example:"
-"(general-function-declare 'foo 'bar "int baaz" "float quux") =>"
+"(general-function-declare 'foo 'bar \"int baaz\" \"float quux\") =>"
 "bar foo(int baaz, float quux)")
 (: general-function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (general-function-declare name return-type . params)
@@ -536,7 +536,13 @@ For ANY OTHER INPUT, returns #f.")
                                                          '(void)
                                                          params))))
 
-;function declaration
+(document function-declare
+"Declares an inline function"
+"This is exactly the same as general-function-declare except it makes the"
+"declared function inline."
+"Example:"
+"(function-declare 'foo 'bar \"int baaz\" \"float quux\") =>"
+"inline bar foo(int baaz, float quux)")
 (: function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (function-declare name return-type . params)
   (concat 'inline space (apply general-function-declare name return-type params)))
