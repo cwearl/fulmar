@@ -584,7 +584,13 @@ For ANY OTHER INPUT, returns #f.")
   (apply function-define (void-function-declare name params)
          body))
 
-;returning function defintion
+(document returning-function-define
+"Takes a signature, a body, and a return expression. Produces a function
+ definition with the given signature and body. Appends a return statement with
+ the given return expression to the body."
+"Example:"
+"(returning-function-define (function-declare 'id 'int \"int x\") '() 'x) =>"
+"inline int id(int x) { return x; }")
 (: returning-function-define (Chunk NestofChunks Chunk -> Chunk))
 (define (returning-function-define signature body return-expr)
   (apply function-define signature (flatten* body (concat 'return
