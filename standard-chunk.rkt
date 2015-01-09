@@ -557,7 +557,11 @@ For ANY OTHER INPUT, returns #f.")
 (define (static-function-declare name return-type . params)
   (concat 'static space (apply function-declare name return-type params)))
 
-;void function declaration
+(document void-function-declare
+"Declares an inline void function"
+"Example:"
+"(void-function-declare 'foo \"int baaz\") =>"
+"inline void foo(int baaz)")
 (: void-function-declare (Chunk NestofChunks -> Chunk))
 (define (void-function-declare name params)
   (function-declare name 'void params))
