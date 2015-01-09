@@ -538,8 +538,8 @@ For ANY OTHER INPUT, returns #f.")
 
 (document function-declare
 "Declares an inline function"
-"This is exactly the same as general-function-declare except it makes the"
-"declared function inline."
+"This is exactly the same as general-function-declare except it makes the
+ declared function inline."
 "Example:"
 "(function-declare 'foo 'bar \"int baaz\" \"float quux\") =>"
 "inline bar foo(int baaz, float quux)")
@@ -547,7 +547,12 @@ For ANY OTHER INPUT, returns #f.")
 (define (function-declare name return-type . params)
   (concat 'inline space (apply general-function-declare name return-type params)))
 
-;static function declaration
+(document static-function-declare
+"Exactly the same as function-declare, but additionally declares the function
+ static."
+"Example:"
+"(static-function-declare 'foo 'bar \"int baaz\" \"float quux\") =>"
+"static inline bar foo(int baaz, float quux)")
 (: static-function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (static-function-declare name return-type . params)
   (concat 'static space (apply function-declare name return-type params)))
