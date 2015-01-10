@@ -597,7 +597,8 @@ For ANY OTHER INPUT, returns #f.")
                                                           (immediate space)
                                                           (position-indent return-expr)))))
 
-;constructor assignment
+(document constructor-assignment
+"Creates an initializer list for a constructor.")
 (: constructor-assignment (Chunk NestofChunks * -> Chunk))
 (define (constructor-assignment var . val)
   (concat var (apply paren-list val)))
