@@ -226,9 +226,11 @@ For ANY OTHER INPUT, returns #f.")
 
 (document constructor-assignment-list
 "Constructor assignment list chunk"
+"Creates an initializer list for a class constructor."
 "Each assignment is separated by a comma - first line is indented 2 spaces and
  begun with a colon."
-"(constructor-assignment-list \"a(other.a)\" \"b(other.b)\" \"c(other.c)\" => \"  : a(other.a), b(other.b), c(other.c)\"")
+"(constructor-assignment-list \"a(other.a)\" \"b(other.b)\" \"c(other.c)\" => \"  : a(other.a), b(other.b), c(other.c)\""
+"(constructor-assignment-list (constructor-assignment 'a 'other.a)) => \"  : a(other.a)\"")
 (: constructor-assignment-list (NestofChunks * -> Chunk))
 (define (constructor-assignment-list . chunks)
   (: build (Chunk -> Chunk))
@@ -598,7 +600,9 @@ For ANY OTHER INPUT, returns #f.")
                                                           (position-indent return-expr)))))
 
 (document constructor-assignment
-"Creates an initializer list for a constructor.")
+"Creates an initializer (part of an initializer list) for a constructor."
+"The first argument is the variable to assign, and successive arguments go in
+ the parenthesis.")
 (: constructor-assignment (Chunk NestofChunks * -> Chunk))
 (define (constructor-assignment var . val)
   (concat var (apply paren-list val)))
