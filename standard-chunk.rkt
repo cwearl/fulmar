@@ -198,22 +198,25 @@ For ANY OTHER INPUT, returns #f.")
 (define (body-list attach . chunks)
   (apply arg-list sur-crbr attach chunks))
 
-;list of chunks
-; blank line added between each chunk
+(document top-list
+"Takes any number of chunks as arguments and inserts a blank line between each.")
 (: top-list (NestofChunks * -> Chunk))
 (define (top-list . chunks)
   (apply between blank-line chunks))
 
-;list of statement chunks without final semi-colon
-; adds spacing added between each chunk
-;  and attaches a semi-colon to the end of each chunk (except last)
+(document internal-smt-list
+"List of statement chunks without final semi-colon."
+"Takes a spacing chunk and any number of chunks, adds spacing between each chunk
+ and attaches a semi-colon to the end of each chunk (except the last)."
+"(internal-smt-list space 'a 'b 'c) => \"a; b; c\"")
 (: internal-smt-list (Chunk NestofChunks * -> Chunk))
 (define (internal-smt-list spacing . chunks)
   (apply between/attach ";" spacing chunks))
 
-;list of statement chunks
-; adds spacing added between each chunk
-;  and attaches a semi-colon to the end of each chunk
+(document smt-list
+"Takes a spacing chunk and any number of chunks, adds spacing added between each
+ chunk and attaches a semi-colon to the end of each chunk."
+"(smt-list space 'a 'b 'c) => \"a; b; c;\"")
 (: smt-list (Chunk NestofChunks * -> Chunk))
 (define (smt-list spacing . chunks)
   (if-empty chunks
@@ -221,9 +224,11 @@ For ANY OTHER INPUT, returns #f.")
             (concat (apply internal-smt-list spacing chunks)
                     (immediate ";"))))
 
-;constructor assignment list chunk
-; each assignment is separated by a comma
-; - first line is indented 2 spaces and begun with a colon
+(document constructor-assignment-list
+"Constructor assignment list chunk"
+"Each assignment is separated by a comma - first line is indented 2 spaces and
+ begun with a colon."
+"(constructor-assignment-list \"a(other.a)\" \"b(other.b)\" \"c(other.c)\" => \"  : a(other.a), b(other.b), c(other.c)\"")
 (: constructor-assignment-list (NestofChunks * -> Chunk))
 (define (constructor-assignment-list . chunks)
   (: build (Chunk -> Chunk))
@@ -237,13 +242,17 @@ For ANY OTHER INPUT, returns #f.")
                          length-equals-one
                          (build new-line))))
 
-;general body chunk
-; surrounds chunks with curly brackets
-; - adds a semi-colon after each chunk, if use-semi-colons is true
-; - attempts to put chunks on a single line with a space between each chunk
-; - if that fails, puts chunks on their own lines with indented
-;   open curly bracket is immediately on current line
-;   close curly bracket is on it's own line
+(document general-body
+"General body chunk"
+"Takes a boolean (use-semi-colons) and any number of chunks."
+"Surrounds chunks with curly brackets"
+"- adds a semi-colon after each chunk, if use-semi-colons is true"
+"- attempts to put chunks on a single line with a space between each chunk"
+"- if that fails, puts chunks on their own lines with indented"
+"This version places the open curly bracket immediately on current line and the
+ close curly bracket on its own line. This roughly corresponds to Java or
+ Google style, with attached brackets. The indent level is 3 spaces. This is not
+ currently user-configurable.")
 (: general-body (Boolean NestofChunks * -> Chunk))
 (define (general-body use-semi-colons . chunks)
   (: build (Chunk Chunk -> Chunk))
@@ -261,24 +270,26 @@ For ANY OTHER INPUT, returns #f.")
                            (indent 3 (build new-line blank-line)))
                           (indent 3 (build new-line blank-line))))))
 
-;body chunk
-; surrounds chunks with curly brackets
-; - adds a semi-colon after each chunk
-; - attempts to put chunks on a single line with a space between each chunk
-; - if that fails, puts chunks on their own lines with indented
-;   open curly bracket is immediately on current line
-;   close curly bracket is on it's own line
+(document body
+"Body with semicolons"
+"Basically a shortcut for (general-body #true ...)"
+"Surrounds chunks with curly brackets"
+"- adds a semi-colon after each chunk"
+"- attempts to put chunks on a single line with a space between each chunk"
+"- if that fails, puts chunks on their own lines with indented"
+"Style is the same as with general-body above.")
 (: body (NestofChunks * -> Chunk))
 (define (body . chunks)
   (apply general-body #true chunks))
 
-;class body chunk
-; surrounds chunks with curly brackets
-; - does NOT add semi-colons after each chunk
-; - attempts to put chunks on a single line with a space between each chunk
-; - if that fails, puts chunks on their own lines with indented
-;   open curly bracket is immediately on current line
-;   close curly bracket is on it's own line
+(document class-body
+"Body without semicolons"
+"Basically a shortcut for (general-body #false ...)"
+"Surrounds chunks with curly brackets"
+"- does NOT add semi-colons after each chunk"
+"- attempts to put chunks on a single line with a space between each chunk"
+"- if that fails, puts chunks on their own lines with indented"
+"Style is the same as with general-body above.")
 (: class-body (NestofChunks * -> Chunk))
 (define (class-body . chunks)
   (apply general-body #false chunks))
@@ -287,48 +298,75 @@ For ANY OTHER INPUT, returns #f.")
 ;preprocessor chunks;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;preprocessor define chunk
-; #define chunk
+(document pp-define
+"Preprocessor define chunk"
+"Accepts one argument, a name. Produces:"
+"#define <name>")
 (: pp-define (Chunk -> Chunk))
 (define (pp-define name)
   (concat pp-directive 'define space name))
 
-;preprocessor include chunk
-; #include <...> chunk
+(document pp-include
+"Preprocessor include chunk"
+"Accepts one argument, a header filename. Produces:"
+"#include <<filename>>"
+"Where the outer pointy brackets are literal.")
 (: pp-include (Chunk -> Chunk))
 (define (pp-include included)
   (concat pp-directive 'include space (template-list included)))
 
-;alternate preprocessor include chunk
-; #include "..." chunk
+(document pp-alt-include
+"Alternate preprocessor include chunk"
+"Accepts one argument, a header filename. Produces:"
+"#include \"<filename>\"")
 (: pp-alt-include (Chunk -> Chunk))
 (define (pp-alt-include included)
   (concat pp-directive 'include space "\"" included "\""))
 
-;multiple includes
+(document pp-includes
+"Multiple includes"
+"Accepts any number of arguments and produces an include directive for each.")
 (: pp-includes (Chunk * -> Chunk))
 (define (pp-includes . chunks)
   (apply between new-line (map pp-include (flatten* chunks))))
 
-;preprocessor if-not-defined chunk
+(document pp-ifdef
+"Preprocessor if-defined chunk"
+"Accepts one argument, a preprocessor ifdef condition, and makes an ifdef line.")
 (: pp-ifdef (Chunk -> Chunk))
 (define (pp-ifdef condition)
   (concat pp-directive 'ifdef space condition))
 
-;preprocessor if-not-defined chunk
+(document pp-ifndef
+"Preprocessor if-not-defined chunk"
+"Makes an ifndef preprocessor directive.")
 (: pp-ifndef (Chunk -> Chunk))
 (define (pp-ifndef condition)
   (concat pp-directive 'ifndef space condition))
 
-;preprocessor if-not-defined chunk
+(document pp-else
+"Preprocessor else chunk"
+"Makes an else preprocessor directive. Constant value, should not be called.")
 (define pp-else (concat pp-directive 'else))
 
-;preprocessor endif chunk
+(document pp-endif
+"Preprocessor endif chunk"
+"Makes an endif preprocessor directive. The argument will end up in a comment
+ on the same line as the endif, and can be used to specify what condition is
+ being endifed.")
 (: pp-endif (Chunk -> Chunk))
 (define (pp-endif condition)
   (concat pp-directive 'endif new-line (comment-env-chunk condition)))
 
-;preprocessor conditional chunk
+(document pp-conditional
+"Preprocessor conditional chunk"
+"General preprocessor conditional block in a single handy package. Accepts 3
+ required arguments and one optional argument: directive, condition, then, else."
+"directive - the preprocessor command that comes right after the #."
+"condition - argument to the directive, following on the same line."
+"then - Chunk of code to be placed before the endif."
+"else - if present, chunk of code to go after an else, between then and endif."
+"Example: (pp-conditional 'ifdef ARM64 \"do_arm64();\" \"reticulate_splines();\")")
 (: pp-conditional (case->
                    [Chunk Chunk Chunk -> Chunk]
                    [Chunk Chunk Chunk (U Chunk False) -> Chunk]))
@@ -348,21 +386,43 @@ For ANY OTHER INPUT, returns #f.")
               empty)
           (pp-endif condition)))
 
-;preprocessor conditional ifdef chunk
+(document pp-conditional-ifdef
+"Preprocessor conditional ifdef chunk"
+"Basically a shortcut for (pp-conditional 'ifdef ...)"
+"Makes a preprocessor ifdef line with then and optional else bodies. Its 2
+ required arguments are the name of the define to check, and the 'then' body.
+ The optional argument is an 'else' body.")
 (: pp-conditional-ifdef (case->
                          [Chunk Chunk -> Chunk]
                          [Chunk Chunk (U False Chunk) -> Chunk]))
 (define (pp-conditional-ifdef condition then [else #false])
   (pp-conditional 'ifdef condition then else))
 
-;preprocessor conditional ifndef chunk
+(document pp-conditional-ifndef
+"Preprocessor conditional ifndef chunk"
+"Basically a shortcut for (pp-conditional 'ifndef ...)"
+"Makes a preprocessor ifndef line with then and optional else bodies. Its 2
+ required arguments are the name of the define to check, and the 'then' body.
+ The optional argument is an 'else' body.")
 (: pp-conditional-ifndef (case->
                           [Chunk Chunk -> Chunk]
                           [Chunk Chunk (U False Chunk) -> Chunk]))
 (define (pp-conditional-ifndef condition then [else #false])
   (pp-conditional 'ifndef condition then else))
 
-;preprocessor h file wrapper chunk
+(document pp-header-file
+"Preprocessor include guard / header file wrapper chunk"
+"This is a pretty standard #include guard. Takes at least 1 argument: a name to
+ define (usually something like 'MY_HEADER_H). Further arguments will become the
+ body of the header file."
+"Example:"
+"(pp-header-file 'FOO_STRUCT_H \"struct foo { int member; };\")"
+"Produces:"
+"#ifndef FOO_STRUCT_H"
+"#define FOO_STRUCT_H"
+"   struct foo { int member; };"
+"#endif"
+"/* FOO_STRUCT_H */")
 (: pp-header-file (Chunk NestofChunks * -> Chunk))
 (define (pp-header-file file-name . chunks)
   (pp-conditional-ifndef file-name
@@ -371,8 +431,12 @@ For ANY OTHER INPUT, returns #f.")
                                  (apply top-list chunks)
                                  new-line)))
 
-;macro defintion chunk
-; a macro definition
+(document macro-define
+"Macro defintion chunk"
+"General macro definition. Accepts at least one argument. The first will be the
+ name of the macro. Following arguments will become the definition of the macro.
+ Be careful, as it's quite easy to create invalid code if your definition
+ contains newlines.")
 (: macro-define (Chunk NestofChunks Chunk -> Chunk))
 (define (macro-define name params chunk)
   (immediate (concat (pp-define name) space chunk)))
@@ -381,7 +445,14 @@ For ANY OTHER INPUT, returns #f.")
 ;general chunks;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;namespace define chunk
+(document namespace-define
+"Declare a namespace for a block of code."
+"Accepts a name and any number of further arguments. The name goes after the
+ namespace keyword, and the remaining arguments get put into a body which goes
+ in the namespace block. After the code block, a comment containing the name is
+ added to clarify what is being ended. Example:"
+"(namespace-define 'foo \"bar()\") =>"
+"namespace foo { bar(); } /* foo */")
 (: namespace-define (Chunk NestofChunks * -> Chunk))
 (define (namespace-define name . chunks)
   (define chunk (concat 'namespace
@@ -392,14 +463,26 @@ For ANY OTHER INPUT, returns #f.")
   
   (concat chunk space (comment-env-chunk name)))
 
-;described statements chunk
+(document described-smts
+"Described statements chunk"
+"Accepts a comment and any number of other chunks. Puts the comment into a
+ comment environment (surrounds it with /* */) and then places the remaining
+ arguments normally, after a newline. Example:"
+"(described-smts \"Automatically synchronize cardinal grammaters\" \"encabulate();\") =>"
+"/* Automatically synchronize cardinal grammaters */"
+"encabulate();")
 (: described-smts (Chunk NestofChunks * -> Chunk))
 (define (described-smts comment . chunks)
   (concat (comment-env-chunk comment)
           new-line
           (apply between/attach ";" new-line chunks)))
 
-;make constant
+(document constize
+"Make constant"
+"To be used with types or identifiers. Takes a type, identifier, or any chunk,
+ and appends const to the end of it."
+"(constize \"int a\") =>"
+"int a const")
 (: constize (Chunk -> Chunk))
 (define (constize chunk)
   (concat chunk
@@ -410,7 +493,14 @@ For ANY OTHER INPUT, returns #f.")
 ;template chunks;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;make given chunk a template with given template parameters
+(document template-define
+"Make a template with given template parameters"
+"Takes two arguments: a list of parameters, and a name. Produces a template
+ declaration (sans the final semicolon)."
+"Example:"
+"(template-define '(p1 p2 p3) 'MyTemplate) =>"
+"template<p1, p2, p3>"
+"MyTemplate")
 (: template-define (NestofChunks Chunk -> Chunk))
 (define (template-define params chunk)
   (concat 'template
@@ -418,7 +508,14 @@ For ANY OTHER INPUT, returns #f.")
           new-line
           (indent 1 chunk)))
 
-;make a use of a template
+(document template-use
+"Make use of a template"
+"Takes a name and any number of template arguments. Produces a reference to the
+ given template with the given arguments. If only a name is given, no pointy
+ brackets are produced."
+"Example:"
+"(template-use 'foo 'bar 'baaz) =>"
+"foo<bar, baaz>")
 (: template-use (NestofChunks NestofChunks * -> Chunk))
 (define (template-use name . args)
   (concat name (if-empty args empty (apply template-list args))))
@@ -427,49 +524,81 @@ For ANY OTHER INPUT, returns #f.")
 ;function chunks;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;general function declaration
+(document general-function-declare
+"General function declaration"
+"Takes a name, a return type, and any number of additional arguments."
+"Example:"
+"(general-function-declare 'foo 'bar \"int baaz\" \"float quux\") =>"
+"bar foo(int baaz, float quux)")
 (: general-function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (general-function-declare name return-type . params)
   (concat return-type space name (apply paren-list (if-empty params
                                                          '(void)
                                                          params))))
 
-;function declaration
+(document function-declare
+"Declares an inline function"
+"This is exactly the same as general-function-declare except it makes the
+ declared function inline."
+"Example:"
+"(function-declare 'foo 'bar \"int baaz\" \"float quux\") =>"
+"inline bar foo(int baaz, float quux)")
 (: function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (function-declare name return-type . params)
   (concat 'inline space (apply general-function-declare name return-type params)))
 
-;static function declaration
+(document static-function-declare
+"Exactly the same as function-declare, but additionally declares the function
+ static."
+"Example:"
+"(static-function-declare 'foo 'bar \"int baaz\" \"float quux\") =>"
+"static inline bar foo(int baaz, float quux)")
 (: static-function-declare (Chunk Chunk NestofChunks * -> Chunk))
 (define (static-function-declare name return-type . params)
   (concat 'static space (apply function-declare name return-type params)))
 
-;void function declaration
+(document void-function-declare
+"Declares an inline void function"
+"Example:"
+"(void-function-declare 'foo \"int baaz\") =>"
+"inline void foo(int baaz)")
 (: void-function-declare (Chunk NestofChunks -> Chunk))
 (define (void-function-declare name params)
   (function-declare name 'void params))
 
-;function defintion
+(document function-define
+"Takes a function signature, and any number of other chunks. Produces a function
+ definition consisting of the given signature, followed by a body with the
+ given chunks.")
 (: function-define (Chunk NestofChunks * -> Chunk))
 (define (function-define signature . chunks)
   (concat signature
           (immediate space)
           (apply body chunks)))
 
-;void function defintion
+(document void-function-define
+"Defines a void inline function. This is essentially a shortcut for using
+ function-define with a void-function-declare.")
 (: void-function-define (Chunk NestofChunks NestofChunks * -> Chunk))
 (define (void-function-define name params . body)
   (apply function-define (void-function-declare name params)
          body))
 
-;returning function defintion
+(document returning-function-define
+"Takes a signature, a body, and a return expression. Produces a function
+ definition with the given signature and body. Appends a return statement with
+ the given return expression to the body."
+"Example:"
+"(returning-function-define (function-declare 'id 'int \"int x\") '() 'x) =>"
+"inline int id(int x) { return x; }")
 (: returning-function-define (Chunk NestofChunks Chunk -> Chunk))
 (define (returning-function-define signature body return-expr)
   (apply function-define signature (flatten* body (concat 'return
                                                           (immediate space)
                                                           (position-indent return-expr)))))
 
-;constructor assignment
+(document constructor-assignment
+"Creates an initializer list for a constructor.")
 (: constructor-assignment (Chunk NestofChunks * -> Chunk))
 (define (constructor-assignment var . val)
   (concat var (apply paren-list val)))
