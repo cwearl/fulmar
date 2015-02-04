@@ -631,7 +631,12 @@ For ANY OTHER INPUT, returns #f.")
 ;class/struct chunks;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;struct declaration
+(document struct-declare
+"Declare a struct with the given name."
+"Example:"
+"(struct-declare 'foo)"
+"=>"
+"struct foo")
 (: struct-declare (Chunk -> Chunk))
 (define (struct-declare name)
   (concat 'struct space name))
