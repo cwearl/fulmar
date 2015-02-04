@@ -601,13 +601,23 @@ For ANY OTHER INPUT, returns #f.")
 
 (document constructor-assignment
 "Creates an initializer (part of an initializer list) for a constructor."
-"The first argument is the variable to assign, and successive arguments go in
- the parenthesis.")
+"The first argument is the variable to assign or the name of the constructor to
+ call, and successive arguments go in the parenthesis.")
 (: constructor-assignment (Chunk NestofChunks * -> Chunk))
 (define (constructor-assignment var . val)
   (concat var (apply paren-list val)))
 
-;constructor defintion
+(document constructor
+"Takes a name, a list of parameters, a list of constructor assignments, and any
+ number of other arguments and produces a constructor for a class."
+"Example:"
+"(constructor 'foo '(\"int bar\" \"float baaz\")
+ (list (constructor-assignment 'qux 'bar)
+ (constructor-assignment 'quux 'bar 'baaz)) \"x = qux + quux\")"
+"=>"
+"foo(int bar, float baaz)"
+"  : qux(bar), quux(baaz)"
+"{ x = qux + quux; }")
 (: constructor (Chunk NestofChunks NestofChunks NestofChunks * -> Chunk))
 (define (constructor name params assigns . chunks)
   (concat name 
