@@ -632,7 +632,8 @@ For ANY OTHER INPUT, returns #f.")
 ;;;;;;;;;;;;;;;;;;;;;;
 
 (document struct-declare
-"Declare a struct with the given name."
+"Declare a struct with the given name. This is ONLY a declaration, and is not
+ intended to define the content of a struct."
 "Example:"
 "(struct-declare 'foo)"
 "=>"
