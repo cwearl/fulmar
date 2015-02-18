@@ -90,12 +90,22 @@ For ANY OTHER INPUT, returns #f.")
           (immediate "}")))
 
 (document sur-anbr
-"Surround a chunk in angle brackets. Same as sur-paren, but with these: <>")
+"Surround a chunk in angle brackets. Same as sur-paren, but with these: <>"
+"This function is designed to avoid producing a \">>\" at the end of the list.
+ Since the predominant use of an anble bracketed list in C++ is for templates,
+ and foo<bar<baz>> is a compiler error, this function works hard to produce
+ foo<bar<baz> > instead. If this is not what you need, consider rolling your
+ own.")
 (: sur-anbr (Chunk * -> Chunk))
 (define (sur-anbr . chunks)
-  (concat (immediate "<")
-          chunks
-          (immediate ">")))
+  (speculative (concat (immediate "<")
+                       chunks
+                       (immediate ">"))
+               not-ends-in->>
+               (concat (immediate "<")
+                       chunks
+                       space
+                       (immediate ">"))))
 
 (document sur-sqbr
 "Surround a chunk in square brackets. Same as sur-paren, but with these: []")
