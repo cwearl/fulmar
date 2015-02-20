@@ -122,7 +122,7 @@
   (report-backend-or chunk #false))
 (: kernel-call (Chunk NestofChunks * -> Chunk))
 (define (kernel-call name . args)
-  (type-template name (template-list (template-list args))))
+  (concat name (if-empty args empty (apply arg-list sur-anbr "," args))))
 (: device-only (NestofChunks * -> Chunk))
 (define (device-only . chunks)
   (add-spaces '__device__ chunks))
