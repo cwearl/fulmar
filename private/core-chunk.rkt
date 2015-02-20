@@ -1,6 +1,7 @@
 #lang typed/racket
 
-(require "fulmar-core.rkt")
+(require "fulmar-core.rkt"
+         "doc/document.rkt")
 
 ;fulmar core chunks - these directly build nekots or use fulmar-core functionality
 
@@ -32,6 +33,15 @@
   (and (pair? lst)
        (= 1 (length lst))))
 
+
+(document not-ends-in->>
+"Helper function for speculative that will return false if the given chunks
+ end in >>.")
+(: not-ends-in->> ((Listof String) -> Boolean))
+(define (not-ends-in->> lst)
+  (match lst
+    [`(,(regexp #rx">>$") . ,_) #f]
+    [_ #t]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;nekot-building chunks;;;;;;;

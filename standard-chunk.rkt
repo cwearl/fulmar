@@ -90,12 +90,32 @@ For ANY OTHER INPUT, returns #f.")
           (immediate "}")))
 
 (document sur-anbr
-"Surround a chunk in angle brackets. Same as sur-paren, but with these: <>")
+"Surround a chunk in angle brackets. Same as sur-paren, but with these: <>"
+"If you need to surround a template list in pointy brackets, use
+ sur-anbr-template instead.")
 (: sur-anbr (Chunk * -> Chunk))
 (define (sur-anbr . chunks)
   (concat (immediate "<")
           chunks
           (immediate ">")))
+
+(document sur-anbr-template
+"Surround a chunk in angle brackets, carefully avoiding C++ parser problems."
+"This function is designed to avoid producing a \">>\" at the end of the list.
+ Since the predominant use of an anble bracketed list in C++ is for templates,
+ and foo<bar<baz>> is a compiler error, this function works hard to produce
+ foo<bar<baz> > instead. If this is not what you need, consider using sur-anbr
+ instead.")
+(: sur-anbr-template (Chunk * -> Chunk))
+(define (sur-anbr-template . chunks)
+  (speculative (concat (immediate "<")
+                       chunks
+                       (immediate ">"))
+               not-ends-in->>
+               (concat (immediate "<")
+                       chunks
+                       space
+                       (immediate ">"))))
 
 (document sur-sqbr
 "Surround a chunk in square brackets. Same as sur-paren, but with these: []")
@@ -189,7 +209,7 @@ For ANY OTHER INPUT, returns #f.")
  list with angle brackets.")
 (: template-list (NestofChunks * -> Chunk))
 (define (template-list . chunks)
-  (apply arg-list sur-anbr "," chunks))
+  (apply arg-list sur-anbr-template "," chunks))
 
 (document body-list
 "Takes a separator chunk and a list of chunks, separates the chunks with the
