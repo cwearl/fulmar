@@ -670,17 +670,26 @@ For ANY OTHER INPUT, returns #f.")
             empty
             (concat type ":" new-line (indent 1 (apply between blank-line chunks)))))
 
-;public section
+(document public-section
+"A public section definition. The arguments are placed under a public: line."
+"(public-section c ...) can be thought of as a shortcut for (section-define
+ 'public c ...)")
 (: public-section (NestofChunks * -> Chunk))
 (define (public-section . chunks)
   (apply section-define 'public chunks))
 
-;private section
+(document private-section
+"A private section definition. The arguments are placed under a private: line."
+"(private-section c ...) can be thought of as a shortcut for (section-define
+ 'private c ...)")
 (: private-section (NestofChunks * -> Chunk))
 (define (private-section . chunks)
   (apply section-define 'private chunks))
 
-;protected section
+(document protected-section
+"A protected section definition. The arguments are placed under a protected: line."
+"(protected-section c ...) can be thought of as a shortcut for (section-define
+ 'protected c ...)")
 (: protected-section (NestofChunks * -> Chunk))
 (define (protected-section . chunks)
   (apply section-define 'protected chunks))
