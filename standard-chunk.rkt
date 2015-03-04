@@ -642,7 +642,14 @@ For ANY OTHER INPUT, returns #f.")
 (define (struct-declare name)
   (concat 'struct space name))
 
-;template struct declaration
+(document template-struct-declare
+"Declares a templated struct. Useful for making generic structs or partially
+ instantiated struct templates."
+"Example:"
+"(template-struct-declare 'a '(b c d) 'e 'f)"
+"=>"
+"template<b, c, d>"
+"  struct a<e, f>")
 (: template-struct-declare (Chunk NestofChunks NestofChunks * -> Chunk))
 (define (template-struct-declare name params . args)
   (template-define params (apply template-use (struct-declare name)
