@@ -655,7 +655,15 @@ For ANY OTHER INPUT, returns #f.")
   (template-define params (apply template-use (struct-declare name)
                                  args)))
 
-;struct section
+(document section-define
+"Produces a section definition, such as those used in class definitions to mark
+ groups of variables and methods as private, public, or protected."
+"Example:"
+"(section-define 'private (smt-list new-line \"int foo\" \"float bar\"))"
+"=>"
+"private:"
+"  int foo;"
+"  float bar;")
 (: section-define (Chunk NestofChunks * -> Chunk))
 (define (section-define type . chunks)
   (if-empty chunks
