@@ -1,0 +1,26 @@
+#lang fulmar
+
+(require fulmar/meta)
+
+(definitions
+  (define/meta zero)
+  (define/meta succ (n))
+  (define/meta (add m n)
+    [((succ n-minus-one) m) (add n-minus-one
+                                 (succ m))]
+    [((zero) m) m])
+  (define/meta (m-equal a b)
+    [(v v) v]))
+
+
+#<<tests-section-end
+int main(int argc, const char *argv[])
+{
+    typename Add<Succ<Succ<Zero > >, Succ<Zero> >::result typedef result;
+
+    typename MEqual<result, Succ<Succ<Succ<Zero> > > >::result typedef assert;
+
+    return 0;
+}
+tests-section-end
+

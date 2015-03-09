@@ -1,0 +1,61 @@
+#lang fulmar
+
+(require fulmar/meta)
+
+#<<imports-section-end
+#include<stdlib.h>
+#include<iostream>
+#include<assert.h>
+imports-section-end
+
+(definitions
+  ; structs
+  (define/meta zero)
+  (define/meta succ (n))
+  (define/meta m-lambda (name body))
+  (define/meta app (fun arg))
+  (define/meta ref (name))
+  (define/meta lit (t))
+  (define/meta emptyenv)
+  (define/meta binding (name value env))
+  (define/meta closure (lam env))
+; functions
+  (define/meta (env-lookup name env)
+    [(name (binding name value env))  value]
+    [(_    (binding name2 value env)) (env-lookup name env)])
+  (define/meta (m-eval exp env)
+    [((lit t)              _) t]
+    [((ref name)           _) (env-lookup name env)]
+    [((m-lambda name body) _) (closure (m-lambda name body) env)]
+    [((app fun arg)        _) (m-apply (m-eval fun env)
+                                       (m-eval arg env))])
+  (define/meta (m-apply proc value)
+    [((closure (m-lambda name body) env) _)
+     (m-eval body (binding name value env))])
+  (define/meta (m-equal a b)
+    [(v v) v]))
+
+#<<tests-section-end
+class X {};
+class Y {};
+
+int main (int argc, char* argv[]) {
+
+  // Testing [2 => 1, 3 => 0](3):
+  typename EnvLookup<X, Binding<Y, Succ<Zero>,
+                                Binding<X, Zero,
+                                        Emptyenv> > > :: result typedef result1;
+
+  typename MEqual<result1, Zero>::result typedef assert1;
+
+  // Testing ((lambda (x) x) 2):
+
+  typename MEval<App<MLambda<X,Ref<X> >,Lit<Succ<Succ<Zero> > > >,Emptyenv> :: result typedef result2;
+
+  typename MEqual<result2, Succ<Succ<Zero> > >::result typedef assert2;
+
+  std::cout << "All tests passed!" << std::endl;
+
+  return EXIT_SUCCESS ;
+}
+tests-section-end
