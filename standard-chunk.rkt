@@ -714,7 +714,17 @@ For ANY OTHER INPUT, returns #f.")
 (define (protected-section . chunks)
   (apply section-define 'protected chunks))
 
-;struct definition
+(document struct-define
+"Takes a signature (which can come from struct-declare or
+ template-struct-declare) and any number of other chunks, and produces a struct
+ definition. The signature will become the type signature of the struct, while
+ the remaining arguments will become the body of the struct."
+"Example:"
+"(struct-define (struct-declare 'foo) \"int a;\" \"float b;\")"
+"struct foo {"
+"  int a;"
+"  float b;"
+"}")
 (: struct-define (Chunk NestofChunks * -> Chunk))
 (define (struct-define signature . body)
   (concat signature
@@ -727,7 +737,13 @@ For ANY OTHER INPUT, returns #f.")
   (apply struct-define (template-struct-declare name params args)
          body))
 
-;scope resolution operator
+(document scope-resolution-operator
+"Takes a scope and an identifier and produces a chunk that will reference that
+ identifier in the context of that given scope."
+"Example:"
+"(scope-resolution-operator 'std 'endl)"
+"=>"
+"std::endl")
 (: scope-resolution-operator (Chunk Chunk -> Chunk))
 (define (scope-resolution-operator scope variable)
   (concat scope
