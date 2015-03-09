@@ -335,7 +335,7 @@ For ANY OTHER INPUT, returns #f.")
 "Where the outer pointy brackets are literal.")
 (: pp-include (Chunk -> Chunk))
 (define (pp-include included)
-  (concat pp-directive 'include space (sur-anbr included)))
+  (concat pp-directive 'include space (template-list included)))
 
 (document pp-alt-include
 "Alternate preprocessor include chunk"

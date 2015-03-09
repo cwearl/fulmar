@@ -14,11 +14,12 @@
 
 
 #<<tests-section-end
+
 int main(int argc, const char *argv[])
 {
-    typename Add<Succ<Succ<Zero > >, Succ<Zero> >::result typedef result;
+    Add<Succ<Succ<Zero > >, Succ<Zero> >::result typedef result;
 
-    typename MEqual<result, Succ<Succ<Succ<Zero> > > >::result typedef assert;
+    MEqual<result, Succ<Succ<Succ<Zero> > > >::result typedef assert;
 
     return 0;
 }
