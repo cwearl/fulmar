@@ -246,9 +246,11 @@ For ANY OTHER INPUT, returns #f.")
 
 (document constructor-assignment-list
 "Constructor assignment list chunk"
+"Creates an initializer list for a class constructor."
 "Each assignment is separated by a comma - first line is indented 2 spaces and
  begun with a colon."
-"(constructor-assignment-list \"a(other.a)\" \"b(other.b)\" \"c(other.c)\" => \"  : a(other.a), b(other.b), c(other.c)\"")
+"(constructor-assignment-list \"a(other.a)\" \"b(other.b)\" \"c(other.c)\" => \"  : a(other.a), b(other.b), c(other.c)\""
+"(constructor-assignment-list (constructor-assignment 'a 'other.a)) => \"  : a(other.a)\"")
 (: constructor-assignment-list (NestofChunks * -> Chunk))
 (define (constructor-assignment-list . chunks)
   (: build (Chunk -> Chunk))
@@ -618,12 +620,24 @@ For ANY OTHER INPUT, returns #f.")
                                                           (position-indent return-expr)))))
 
 (document constructor-assignment
-"Creates an initializer list for a constructor.")
+"Creates an initializer (part of an initializer list) for a constructor."
+"The first argument is the variable to assign or the name of the constructor to
+ call, and successive arguments go in the parenthesis.")
 (: constructor-assignment (Chunk NestofChunks * -> Chunk))
 (define (constructor-assignment var . val)
   (concat var (apply paren-list val)))
 
-;constructor defintion
+(document constructor
+"Takes a name, a list of parameters, a list of constructor assignments, and any
+ number of other arguments and produces a constructor for a class."
+"Example:"
+"(constructor 'foo '(\"int bar\" \"float baaz\")
+ (list (constructor-assignment 'qux 'bar)
+ (constructor-assignment 'quux 'bar 'baaz)) \"x = qux + quux\")"
+"=>"
+"foo(int bar, float baaz)"
+"  : qux(bar), quux(baaz)"
+"{ x = qux + quux; }")
 (: constructor (Chunk NestofChunks NestofChunks NestofChunks * -> Chunk))
 (define (constructor name params assigns . chunks)
   (concat name 
@@ -637,35 +651,65 @@ For ANY OTHER INPUT, returns #f.")
 ;class/struct chunks;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;struct declaration
+(document struct-declare
+"Declare a struct with the given name. This is ONLY a declaration, and is not
+ intended to define the content of a struct."
+"Example:"
+"(struct-declare 'foo)"
+"=>"
+"struct foo")
 (: struct-declare (Chunk -> Chunk))
 (define (struct-declare name)
   (concat 'struct space name))
 
-;template struct declaration
+(document template-struct-declare
+"Declares a templated struct. Useful for making generic structs or partially
+ instantiated struct templates."
+"Example:"
+"(template-struct-declare 'a '(b c d) 'e 'f)"
+"=>"
+"template<b, c, d>"
+"  struct a<e, f>")
 (: template-struct-declare (Chunk NestofChunks NestofChunks * -> Chunk))
 (define (template-struct-declare name params . args)
   (template-define params (apply template-use (struct-declare name)
                                  args)))
 
-;struct section
+(document section-define
+"Produces a section definition, such as those used in class definitions to mark
+ groups of variables and methods as private, public, or protected."
+"Example:"
+"(section-define 'private (smt-list new-line \"int foo\" \"float bar\"))"
+"=>"
+"private:"
+"  int foo;"
+"  float bar;")
 (: section-define (Chunk NestofChunks * -> Chunk))
 (define (section-define type . chunks)
   (if-empty chunks
             empty
             (concat type ":" new-line (indent 1 (apply between blank-line chunks)))))
 
-;public section
+(document public-section
+"A public section definition. The arguments are placed under a public: line."
+"(public-section c ...) can be thought of as a shortcut for (section-define
+ 'public c ...)")
 (: public-section (NestofChunks * -> Chunk))
 (define (public-section . chunks)
   (apply section-define 'public chunks))
 
-;private section
+(document private-section
+"A private section definition. The arguments are placed under a private: line."
+"(private-section c ...) can be thought of as a shortcut for (section-define
+ 'private c ...)")
 (: private-section (NestofChunks * -> Chunk))
 (define (private-section . chunks)
   (apply section-define 'private chunks))
 
-;protected section
+(document protected-section
+"A protected section definition. The arguments are placed under a protected: line."
+"(protected-section c ...) can be thought of as a shortcut for (section-define
+ 'protected c ...)")
 (: protected-section (NestofChunks * -> Chunk))
 (define (protected-section . chunks)
   (apply section-define 'protected chunks))
