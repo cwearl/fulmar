@@ -777,7 +777,13 @@ For ANY OTHER INPUT, returns #f.")
 (define (function-call fcn . args)
   (concat fcn (apply paren-list args)))
 
-;member function call
+(document member-function-call
+"Object member function call. Accepts some object, the name of a member function
+ in its class, and any number of arguments. Produces a member function call."
+"Example:"
+"(member-function-call 'my-square 'scale 20 3)"
+"=>"
+"my-square.scale(20, 3)")
 (: member-function-call (Chunk Chunk NestofChunks * -> Chunk))
 (define (member-function-call obj fcn . args)
   (concat obj
