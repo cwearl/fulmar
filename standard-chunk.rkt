@@ -794,7 +794,13 @@ For ANY OTHER INPUT, returns #f.")
           (immediate ".")
           (position-indent (apply function-call fcn args))))
 
-;array access
+(document array-access
+"Array access chunk. Accepts an array and any number of other arguments.
+ Produces an access to the array with the given arguments."
+"Example:"
+"(array-access 'fib 5)"
+"=>"
+"fib[5]")
 (: array-access (Chunk Chunk * -> Chunk))
 (define (array-access array . arg)
   (concat array (apply sur-sqbr arg)))
