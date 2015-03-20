@@ -755,7 +755,13 @@ For ANY OTHER INPUT, returns #f.")
 ;statement chunks;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;typedef statement chunk
+(document typedef-smt
+"Typedef chunk. Accepts two chunks, lhs and rhs, and produces a typedef,
+ assigning rhs to be an equivalent type to lhs."
+"Example:"
+"(typedef-smt 'FieldType 'Result)"
+"=>"
+"FieldType typedef Result")
 (: typedef-smt (Chunk Chunk -> Chunk))
 (define (typedef-smt lhs rhs)
   (concat lhs space 'typedef space rhs))
