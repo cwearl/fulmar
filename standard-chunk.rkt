@@ -766,7 +766,13 @@ For ANY OTHER INPUT, returns #f.")
 (define (typedef-smt lhs rhs)
   (concat lhs space 'typedef space rhs))
 
-;function call
+(document function-call
+"Function call. Accepts the name of a function and any number of arguments to be
+ passed to it and produces a function call."
+"Example:"
+"(function-call 'Ackermann 3 4)"
+"=>"
+"Ackermann(3, 4)")
 (: function-call (Chunk NestofChunks * -> Chunk))
 (define (function-call fcn . args)
   (concat fcn (apply paren-list args)))
