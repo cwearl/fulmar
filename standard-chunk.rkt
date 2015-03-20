@@ -783,7 +783,11 @@ For ANY OTHER INPUT, returns #f.")
 "Example:"
 "(member-function-call 'my-square 'scale 20 3)"
 "=>"
-"my-square.scale(20, 3)")
+"my-square.scale(20, 3)"
+"Example 2:"
+"(member-function-call (function-call 'getObject 6) 'id)"
+"=>"
+"getObject(6).id()")
 (: member-function-call (Chunk Chunk NestofChunks * -> Chunk))
 (define (member-function-call obj fcn . args)
   (concat obj
