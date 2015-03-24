@@ -714,7 +714,17 @@ For ANY OTHER INPUT, returns #f.")
 (define (protected-section . chunks)
   (apply section-define 'protected chunks))
 
-;struct definition
+(document struct-define
+"Takes a signature (which can come from struct-declare or
+ template-struct-declare) and any number of other chunks, and produces a struct
+ definition. The signature will become the type signature of the struct, while
+ the remaining arguments will become the body of the struct."
+"Example:"
+"(struct-define (struct-declare 'foo) \"int a;\" \"float b;\")"
+"struct foo {"
+"  int a;"
+"  float b;"
+"}")
 (: struct-define (Chunk NestofChunks * -> Chunk))
 (define (struct-define signature . body)
   (concat signature
@@ -727,7 +737,13 @@ For ANY OTHER INPUT, returns #f.")
   (apply struct-define (template-struct-declare name params args)
          body))
 
-;scope resolution operator
+(document scope-resolution-operator
+"Takes a scope and an identifier and produces a chunk that will reference that
+ identifier in the context of that given scope."
+"Example:"
+"(scope-resolution-operator 'std 'endl)"
+"=>"
+"std::endl")
 (: scope-resolution-operator (Chunk Chunk -> Chunk))
 (define (scope-resolution-operator scope variable)
   (concat scope
@@ -739,24 +755,52 @@ For ANY OTHER INPUT, returns #f.")
 ;statement chunks;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;typedef statement chunk
+(document typedef-smt
+"Typedef chunk. Accepts two chunks, lhs and rhs, and produces a typedef,
+ assigning rhs to be an equivalent type to lhs."
+"Example:"
+"(typedef-smt 'FieldType 'Result)"
+"=>"
+"FieldType typedef Result")
 (: typedef-smt (Chunk Chunk -> Chunk))
 (define (typedef-smt lhs rhs)
   (concat lhs space 'typedef space rhs))
 
-;function call
+(document function-call
+"Function call. Accepts the name of a function and any number of arguments to be
+ passed to it and produces a function call."
+"Example:"
+"(function-call 'Ackermann 3 4)"
+"=>"
+"Ackermann(3, 4)")
 (: function-call (Chunk NestofChunks * -> Chunk))
 (define (function-call fcn . args)
   (concat fcn (apply paren-list args)))
 
-;member function call
+(document member-function-call
+"Object member function call. Accepts some object, the name of a member function
+ in its class, and any number of arguments. Produces a member function call."
+"Example:"
+"(member-function-call 'my-square 'scale 20 3)"
+"=>"
+"my-square.scale(20, 3)"
+"Example 2:"
+"(member-function-call (function-call 'getObject 6) 'id)"
+"=>"
+"getObject(6).id()")
 (: member-function-call (Chunk Chunk NestofChunks * -> Chunk))
 (define (member-function-call obj fcn . args)
   (concat obj
           (immediate ".")
           (position-indent (apply function-call fcn args))))
 
-;array access
+(document array-access
+"Array access chunk. Accepts an array and any number of other arguments.
+ Produces an access to the array with the given arguments."
+"Example:"
+"(array-access 'fib 5)"
+"=>"
+"fib[5]")
 (: array-access (Chunk Chunk * -> Chunk))
 (define (array-access array . arg)
   (concat array (apply sur-sqbr arg)))
