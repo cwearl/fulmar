@@ -152,3 +152,10 @@
        [(Space)
         (add-space new-line)]
        )]))
+
+; Compile and print the passed chunks.
+(: print-values (-> (U Chunk Any) Void))
+(define (print-values vs)
+  (when (or (S-chunk? vs) (string? vs) (symbol? vs) (exact-integer? vs))
+    (for-each displayln
+            (reverse (write-chunk vs)))))

@@ -1,21 +1,17 @@
-#lang racket
+#lang typed-racket/minimal
 
-(require racket
+(require typed/racket
          racket/require
          fulmar/private/fulmar-core
-         fulmar/version
-         fulmar/doc)
+         fulmar/version)
 
-(provide (except-out (all-from-out racket) #%module-begin #%top-interaction )
+(provide (except-out (all-from-out typed/racket) #%module-begin #%top-interaction empty)
          (rename-out
           [fulmar-module-begin #%module-begin]
           [fulmar-top-interaction #%top-interaction]))
 
-; Provide a reader supporting at-expressions for srcdoc.
 (module reader syntax/module-reader
-  #:language 'fulmar
-  (require (only-in scribble/reader use-at-readtable))
-  (use-at-readtable))
+  #:language 'fulmar/typed)
 
 ; This macro manipulates expressions entered in the REPL
 (define-syntax-rule (fulmar-top-interaction f ...)
@@ -26,9 +22,7 @@
   (syntax-case stx ()
     [(_ a ...)
      (with-syntax ([racket/base (datum->syntax stx 'racket/base)]
-                   [fulmar/standard-chunk (datum->syntax stx 'fulmar/standard-chunk)]
-                   [fulmar/doc (datum->syntax stx 'fulmar/doc)]
-                   [scribble/manual (datum->syntax stx 'scribble/manual)])
+                   [fulmar/standard-chunk (datum->syntax stx 'fulmar/standard-chunk)])
        #'(#%module-begin
           ; Use a configure-runtime submodule to print the generated string before module execution.
           (module configure-runtime racket/base
@@ -37,11 +31,7 @@
             (display generated-string))
           ; Bring in stuff we need for srcdoc documentation. Because we do want to introduce bindings, we need to use a mixed hygiene macro.
           (require
-            fulmar/standard-chunk
-            fulmar/doc
-            (for-doc
-             racket/base
-             scribble/manual))
+            fulmar/standard-chunk)
           a
           ...))]))
 
